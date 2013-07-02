@@ -1,0 +1,19 @@
+Human-Scale Articulated Skeleton
+3D Chart
+Tensor-product Mouse Rotation
+Shadow Casting
+Physics
+Animation
+
+3D to Planar 2D transformation projection
+	Image Textures
+	Text
+
+Alternate Renderers
+	HTML5 Canvas
+	WebGL?
+
+Shapes
+	Extruded Shapes
+  	Arrows
+	Triangulated Torus
