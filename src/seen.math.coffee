@@ -1,233 +1,232 @@
-seen = (exports ? this).seen ?= {}
 
-do ->
-  ARRAY_CACHE = new Array(16)
-  IDENTITY = [1.0, 0.0, 0.0, 0.0,
-              0.0, 1.0, 0.0, 0.0,
-              0.0, 0.0, 1.0, 0.0,
-              0.0, 0.0, 0.0, 1.0]
+ARRAY_CACHE = new Array(16)
+IDENTITY = [1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0]
 
-  class Matrix
-    constructor: (@m = null) ->
-      @m ?= IDENTITY.slice()
-      return @
+class seen.Matrix
+  constructor: (@m = null) ->
+    @m ?= IDENTITY.slice()
+    return @
 
-    copy: ->
-      return new Matrix(@m.slice())
+  copy: ->
+    return new seen.Matrix(@m.slice())
 
-    reset: ->
-      @m = IDENTITY.slice()
-      return @
+  reset: ->
+    @m = IDENTITY.slice()
+    return @
 
-    _multiplyM: (m) ->
-      c = ARRAY_CACHE
-      for j in [0...4]
-        for i in [0...16] by 4
-          c[i + j] = 
-            m[i    ] * @m[     j] + 
-            m[i + 1] * @m[ 4 + j] + 
-            m[i + 2] * @m[ 8 + j] +
-            m[i + 3] * @m[12 + j]
-      ARRAY_CACHE = @m
-      @m = c
-      return @
+  _multiply: (b) ->
+    return @_multiplyM(b.m)
 
-    _rotx: (theta) ->
-      ct = Math.cos(theta)
-      st = Math.sin(theta)
-      rm = [ 1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1 ]
-      return @_multiplyM(rm)
+  _multiplyM: (m) ->
+    c = ARRAY_CACHE
+    for j in [0...4]
+      for i in [0...16] by 4
+        c[i + j] = 
+          m[i    ] * @m[     j] + 
+          m[i + 1] * @m[ 4 + j] + 
+          m[i + 2] * @m[ 8 + j] +
+          m[i + 3] * @m[12 + j]
+    ARRAY_CACHE = @m
+    @m = c
+    return @
 
-    _roty: (theta)  ->
-      ct = Math.cos(theta)
-      st = Math.sin(theta)
-      rm = [ ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1 ]
-      return @_multiplyM(rm)
+  _rotx: (theta) ->
+    ct = Math.cos(theta)
+    st = Math.sin(theta)
+    rm = [ 1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1 ]
+    return @_multiplyM(rm)
 
-    _rotz: (theta) ->
-      ct = Math.cos(theta)
-      st = Math.sin(theta)
-      rm = [ ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]
-      return @_multiplyM(rm)
+  _roty: (theta)  ->
+    ct = Math.cos(theta)
+    st = Math.sin(theta)
+    rm = [ ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1 ]
+    return @_multiplyM(rm)
 
-    _translate: (x = 0, y = 0, z = 0) ->
-      @m[3]  += x
-      @m[7]  += y
-      @m[11] += z
-      return @
+  _rotz: (theta) ->
+    ct = Math.cos(theta)
+    st = Math.sin(theta)
+    rm = [ ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]
+    return @_multiplyM(rm)
 
-    _scale: (sx = 1, sy, sz) ->
-      sy     ?= sx
-      sz     ?= sy
-      @m[0]  *= sx
-      @m[5]  *= sy
-      @m[10] *= sz
-      return @
+  _translate: (x = 0, y = 0, z = 0) ->
+    @m[3]  += x
+    @m[7]  += y
+    @m[11] += z
+    return @
 
-    multiply: (b) ->
-      return @multiplyM(b.m)
+  _scale: (sx = 1, sy, sz) ->
+    sy     ?= sx
+    sz     ?= sy
+    @m[0]  *= sx
+    @m[5]  *= sy
+    @m[10] *= sz
+    return @
 
-    multiplyM: (m) ->
-      return @copy()._multiplyM(m)
+  multiply: (b) ->
+    return @copy()._multiply(b)
 
-    rotx: (theta) ->
-      return @copy()._rotx(theta)
+  multiplyM: (m) ->
+    return @copy()._multiplyM(m)
 
-    roty: (theta) ->
-      return @copy()._roty(theta)
+  rotx: (theta) ->
+    return @copy()._rotx(theta)
 
-    rotz: (theta) ->
-      return @copy()._rotz(theta)
+  roty: (theta) ->
+    return @copy()._roty(theta)
 
-    translate: (x,y,z) ->
-      return @copy()._translate(x,y,z)
+  rotz: (theta) ->
+    return @copy()._rotz(theta)
 
-    scale: (sx,sy,sz) ->
-      return @copy()._scale(sx,sy,sx)
+  translate: (x,y,z) ->
+    return @copy()._translate(x,y,z)
 
-  seen.Matrices = {
-    identity : new Matrix()
-    flipX    : new Matrix()._scale(-1, 1, 1)
-    flipY    : new Matrix()._scale( 1,-1, 1)
-    flipZ    : new Matrix()._scale( 1, 1,-1)
-  }
+  scale: (sx,sy,sz) ->
+    return @copy()._scale(sx,sy,sx)
 
-  class Transformable
-    constructor: ->
-      @m = new Matrix
+seen.M = () -> new seen.Matrix(arguments...)
 
-    scale: (sx, sy, sz) ->
-      @m._scale(sx, sy, sz)
-      return @
+seen.Matrices = {
+  identity : seen.M()
+  flipX    : seen.M()._scale(-1, 1, 1)
+  flipY    : seen.M()._scale( 1,-1, 1)
+  flipZ    : seen.M()._scale( 1, 1,-1)
+}
 
-    translate: (x, y, z) ->
-      @m._translate(x,y,z)
-      return @
+class seen.Transformable
+  constructor: ->
+    @m = new seen.Matrix()
 
-    rotx: (theta) ->
-      @m._rotx(theta)
-      return @
+  scale: (sx, sy, sz) ->
+    @m._scale(sx, sy, sz)
+    return @
 
-    roty: (theta) ->
-      @m._roty(theta)
-      return @
+  translate: (x, y, z) ->
+    @m._translate(x,y,z)
+    return @
 
-    rotz: (theta) ->
-      @m._rotz(theta)
-      return @
+  rotx: (theta) ->
+    @m._rotx(theta)
+    return @
 
-    matrix: (m) ->
-      @m._multiplyM(m)
-      return @
+  roty: (theta) ->
+    @m._roty(theta)
+    return @
 
-    transform: (m) ->
-      @m._multiply(m)
-      return @
+  rotz: (theta) ->
+    @m._rotz(theta)
+    return @
 
-    reset: () ->
-      @m.reset()
-      return @
+  matrix: (m) ->
+    @m._multiplyM(m)
+    return @
 
+  transform: (m) ->
+    @m._multiply(m)
+    return @
 
-  class Point
-    constructor: (@x = 0, @y = 0, @z = 0, @w = 1) ->
+  reset: () ->
+    @m.reset()
+    return @
 
-    transform: (matrix) ->
-      r = POINT_CACHE
-      r.x = @x * matrix.m[0] + @y * matrix.m[1] + @z * matrix.m[2] + @w * matrix.m[3]
-      r.y = @x * matrix.m[4] + @y * matrix.m[5] + @z * matrix.m[6] + @w * matrix.m[7]
-      r.z = @x * matrix.m[8] + @y * matrix.m[9] + @z * matrix.m[10] + @w * matrix.m[11]
-      r.w = @x * matrix.m[12] + @y * matrix.m[13] + @z * matrix.m[14] + @w * matrix.m[15]
-    
-      @set(r)
-      return @
+class seen.Point
+  constructor: (@x = 0, @y = 0, @z = 0, @w = 1) ->
 
-    set: (p) ->
-      @x = p.x
-      @y = p.y
-      @z = p.z
-      @w = p.w
-      return @
-    
-    copy: () ->
-      return new Point(@x, @y, @z, @w)
+  transform: (matrix) ->
+    r = POINT_CACHE
+    r.x = @x * matrix.m[0] + @y * matrix.m[1] + @z * matrix.m[2] + @w * matrix.m[3]
+    r.y = @x * matrix.m[4] + @y * matrix.m[5] + @z * matrix.m[6] + @w * matrix.m[7]
+    r.z = @x * matrix.m[8] + @y * matrix.m[9] + @z * matrix.m[10] + @w * matrix.m[11]
+    r.w = @x * matrix.m[12] + @y * matrix.m[13] + @z * matrix.m[14] + @w * matrix.m[15]
+  
+    @set(r)
+    return @
 
-    normalize: () ->
-      return @copy()._normalize()
-    
-    add: (q) ->
-      return @copy()._add(q)
+  set: (p) ->
+    @x = p.x
+    @y = p.y
+    @z = p.z
+    @w = p.w
+    return @
+  
+  copy: () ->
+    return new seen.Point(@x, @y, @z, @w)
 
-    subtract: (q) ->
-      return @copy()._subtract(q)
+  normalize: () ->
+    return @copy()._normalize()
 
-    multiply: (q) ->
-      return @copy()._multiply(q)
+  add: (q) ->
+    return @copy()._add(q)
 
-    divide: (q) ->
-      return @copy()._divide(q)
+  subtract: (q) ->
+    return @copy()._subtract(q)
 
-    cross: (q) ->
-      return @copy()._cross(q)
+  cross: (q) ->
+    return @copy()._cross(q)
 
-    dot: (q) ->
-      return @x * q.x + @y * q.y + @z * q.z
+  dot: (q) ->
+    return @x * q.x + @y * q.y + @z * q.z
 
-    _multiply: (n) ->
-      @x *= n
-      @y *= n
-      @z *= n
-      return @
+  multiply: (n) ->
+    return @copy()._multiply(n)
 
-    _divide: (n) ->
-      @x /= n
-      @y /= n
-      @z /= n
-      return @
+  divide: (n) ->
+    return @copy()._divide(n)
 
-    _normalize: () ->
-      n = Math.sqrt(@dot(@))
-      if n == 0
-        @set(Points.Z)
-      else
-        @_divide(n)
-      return @
+  _multiply: (n) ->
+    @x *= n
+    @y *= n
+    @z *= n
+    return @
 
-    _add: (q) ->
-      @x += q.x
-      @y += q.y
-      @z += q.z
-      return @
+  _divide: (n) ->
+    @x /= n
+    @y /= n
+    @z /= n
+    return @
 
-    _subtract: (q) ->
-      @x -= q.x
-      @y -= q.y
-      @z -= q.z
-      return @
+  _normalize: () ->
+    n = Math.sqrt(@dot(@))
+    if n == 0
+      @set(Points.Z)
+    else
+      @_divide(n)
+    return @
 
-    _cross: (q) ->
-      r = POINT_CACHE
-      r.x = @y * q.z - @z * q.y
-      r.y = @z * q.x - @x * q.z
-      r.z = @x * q.y - @y * q.x
+  _add: (q) ->
+    @x += q.x
+    @y += q.y
+    @z += q.z
+    return @
 
-      @set(r)
-      return @
+  _subtract: (q) ->
+    @x -= q.x
+    @y -= q.y
+    @z -= q.z
+    return @
 
-    toJSON: () ->
-      return [@x, @y, @z, @w]
+  _cross: (q) ->
+    r = POINT_CACHE
+    r.x = @y * q.z - @z * q.y
+    r.y = @z * q.x - @x * q.z
+    r.z = @x * q.y - @y * q.x
 
-  Points = {
-    X    : new Point(1, 0, 0)
-    Y    : new Point(0, 1, 0)
-    Z    : new Point(0, 0, 1)
-    EYE  : new Point(0, 0, -1)
-    ZERO : new Point(0, 0, 0)
-  }
+    @set(r)
+    return @
 
-  POINT_CACHE = new Point()
+  toJSON: () ->
+    return [@x, @y, @z, @w]
 
-  seen.Matrix = Matrix
-  seen.Point = Point
-  seen.Points = Points
-  seen.Transformable = Transformable
+seen.P = () -> new seen.Point(arguments...)
+
+POINT_CACHE = seen.P()
+
+seen.Points = {
+  X    : seen.P(1, 0, 0)
+  Y    : seen.P(0, 1, 0)
+  Z    : seen.P(0, 0, 1)
+  ZERO : seen.P(0, 0, 0)
+}
+

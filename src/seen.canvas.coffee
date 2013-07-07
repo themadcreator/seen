@@ -29,13 +29,15 @@ do ->
           el.setAttribute('d', _line(points))
           return @
         style : (style) ->
-          el.setAttribute('style', "fill: #{style.fill}; stroke: #{style.stroke};")
+          str = ''
+          for key,val of style
+            str += "#{key}:#{val};"
+          el.setAttribute('style', str)
           return @
       }
 
     text : () ->
       el = @_manifest('text')
-      el.setAttribute 'text-anchor', 'middle'
       el.setAttribute 'font-family', 'Roboto'
       return {
         el        : el
@@ -43,7 +45,10 @@ do ->
           el.textContent = text
           return @
         style     : (style) ->
-          el.setAttribute('style', "fill: #{style.fill}; stroke: #{style.stroke};")
+          str = ''
+          for key,val of style
+            str += "#{key}:#{val};"
+          el.setAttribute('style', str)
           return @
         transform : (transform) ->
           m = transform.m

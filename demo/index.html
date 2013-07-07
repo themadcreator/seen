@@ -13,16 +13,19 @@
   <script src="dist/seen.js"></script>
 
   <script type="text/coffeescript" src="demo.coffee"></script>
+  <script type="text/coffeescript" src="data-demo.coffee"></script>
   <script type="text/coffeescript" src="projections.coffee"></script>
   <script type="text/coffeescript">
     $(document).ready ->
       #scene = seen.perpective100x100()
-      #scene = seen.demoScene()
+      scene = seen.demoScene()
       #scene = seen.demoSkeletonScene()
-      scene = seen.demoText()
+      #scene = seen.demoText()
+      #scene = seen.demoChart()
+
 
       scene.canvas = new seen.SvgCanvas($('svg.seen-canvas'))
-        .add(new seen.SvgRenderDebug(scene))
+        #.add(new seen.SvgRenderDebug(scene))
         .add(new seen.SvgFillRect())
 
       scene.startRenderLoop()

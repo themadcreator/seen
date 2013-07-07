@@ -1,13 +1,3 @@
-seen = (exports ? this).seen ?= {}
-
-seen.Util = {
-  defaults: (obj, opts, defaults) ->
-    for prop of opts
-      if not obj[prop]? then obj[prop] = opts[prop]
-    for prop of defaults
-      if not obj[prop]? then obj[prop] = defaults[prop]
-  }
-
 class seen.Scene
   defaults:
     cullBackfaces : true
@@ -21,10 +11,11 @@ class seen.Scene
     d3.rebind(@, @dispatch, ['on'])
 
     @group  = new seen.Group()
-    @shader = new seen.Shaders.Phong()
+    @shader = seen.Shaders.phong
     @lights =
       points   : []
       ambients : []
+    @surfaces = []
 
   startRenderLoop: (msecDelay = 30) ->
     setInterval(@render, msecDelay)
@@ -36,18 +27,17 @@ class seen.Scene
     @dispatch.afterRender(surfaces : surfaces)
     return @
 
-  renderSurfaces: (view = null) =>
+  renderSurfaces: () =>
     # compute tranformation matrix
-    projection = if not view? then @projection else view.multiply(@projection)
-    projection = projection.multiply(@viewport)
+    projection = @projection.multiply(@viewport)
 
     # project surface geometry and shade
-    @surfaces = []
+    @surfaces.length = 0
     @group.eachTransformedShape (shape, transform) =>
       for surface in shape.surfaces
         render = surface.getRenderSurface(transform, projection)
         
-        if (not @cullBackfaces or surface.ignoreBackfaceCulling or render.projected.normal.z < 0) 
+        if (not @cullBackfaces or not surface.cullBackfaces or render.projected.normal.z < 0) 
           if surface.fill?
             render.fill = @shader.getFaceColor(@lights, render.transformed, surface.fill)
 

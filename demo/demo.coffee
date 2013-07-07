@@ -1,5 +1,3 @@
-seen = (exports ? this).seen ?= {}
-
 
 seen.emptyScene = () ->
   scene = new seen.Scene()
@@ -98,7 +96,7 @@ seen.demoSimpleScene = () ->
 randomColors = (shape) ->
   hue = Math.random()
   for surface in shape.surfaces
-    surface.fill = new seen.Colors.fromHsl(hue, 0.5, 0.4)
+    surface.fill = seen.C.hsl(hue, 0.5, 0.4)
 
 
 seen.demoSkeletonScene = () ->

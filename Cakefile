@@ -5,12 +5,16 @@ LICENSE = "/* Copyright github/TheMadCreator #{new Date().getFullYear()} */\n\n"
 
 DISTS = {
   'seen.js' : [
+    'src/seen.namespace.coffee'
+    'src/seen.util.coffee'
     'src/seen.math.coffee'
-    'src/seen.geom.coffee'
-    'src/seen.camera.coffee'
     'src/seen.light.coffee'
+    'src/seen.geom.coffee'
+    'src/seen.painters.coffee'
+    'src/seen.shapes.coffee'
+    'src/seen.camera.coffee'
     'src/seen.canvas.coffee'
-    'src/seen.coffee'
+    'src/seen.scene.coffee'
   ]
 }
 
