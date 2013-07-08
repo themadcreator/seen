@@ -86,7 +86,7 @@ class seen.Matrix
   scale: (sx,sy,sz) ->
     return @copy()._scale(sx,sy,sx)
 
-seen.M = () -> new seen.Matrix(arguments...)
+seen.M = (m) -> new seen.Matrix(m)
 
 seen.Matrices = {
   identity : seen.M()
@@ -152,7 +152,7 @@ class seen.Point
     return @
   
   copy: () ->
-    return new seen.Point(@x, @y, @z, @w)
+    return new Point(@x, @y, @z, @w)
 
   normalize: () ->
     return @copy()._normalize()
@@ -219,7 +219,7 @@ class seen.Point
   toJSON: () ->
     return [@x, @y, @z, @w]
 
-seen.P = () -> new seen.Point(arguments...)
+seen.P = (x,y,z,w) -> new seen.Point(x,y,z,w)
 
 POINT_CACHE = seen.P()
 

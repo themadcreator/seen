@@ -1,5 +1,3 @@
-seen = (exports ? this).seen ?= {}
-
 seen.Projections = {
   perspectiveFov : (fovyInDegrees = 50, front = 100) ->
     tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0)

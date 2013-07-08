@@ -23,7 +23,7 @@ class seen.Scene
   render: () =>
     @dispatch.beforeRender()
     surfaces = @renderSurfaces()
-    @canvas.render(surfaces)
+    @renderer.render(surfaces)
     @dispatch.afterRender(surfaces : surfaces)
     return @
 
@@ -35,14 +35,11 @@ class seen.Scene
     @surfaces.length = 0
     @group.eachTransformedShape (shape, transform) =>
       for surface in shape.surfaces
-        render = surface.getRenderSurface(transform, projection)
+        render = surface.updateRenderData(transform, projection)
         
-        if (not @cullBackfaces or not surface.cullBackfaces or render.projected.normal.z < 0) 
-          if surface.fill?
-            render.fill = @shader.getFaceColor(@lights, render.transformed, surface.fill)
-
-          if surface.stroke?
-            render.stroke = surface.stroke
+        if (not @cullBackfaces or not surface.cullBackfaces or render.projected.normal.z < 0)
+          render.fill   = surface.fill?.render(@lights, @shader, render.transformed)
+          render.stroke = surface.stroke?.render(@lights, @shader, render.transformed)
 
           @surfaces.push(surface)
 

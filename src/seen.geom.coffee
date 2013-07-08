@@ -6,8 +6,8 @@ to prevent unnecessary re-computation.
 ###
 class seen.RenderSurface
   constructor: (@points, @transform, @projection) ->
-    @transformed = @_initTransformationSet()
-    @projected   = @_initTransformationSet()
+    @transformed = @_initRenderData()
+    @projected   = @_initRenderData()
     @_update()
 
   update: (transform, projection) ->
@@ -28,7 +28,7 @@ class seen.RenderSurface
       if not (val == b[i]) then return false
     return true
 
-  _initTransformationSet: ->
+  _initRenderData: ->
     return {
       points     : (p.copy() for p in @points)
       barycenter : seen.P()
@@ -55,15 +55,14 @@ class seen.RenderSurface
     set.v1.set(set.points[points.length - 1])._subtract(set.points[0])
     set.normal.set(set.v0._cross(set.v1)._normalize())
 
-
 class seen.Surface
   cullBackfaces : true
-  fill          : seen.C.gray
+  fill          : new seen.Material(seen.C.gray)
   stroke        : null
 
   constructor: (@points, @painter = seen.Painters.path) ->
 
-  getRenderSurface: (transform, projection) =>
+  updateRenderData: (transform, projection) =>
     if not @render? 
       @render = new seen.RenderSurface(@points, transform, projection)
     else

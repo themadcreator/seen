@@ -156,12 +156,8 @@
 
   })();
 
-  seen.M = function() {
-    return (function(func, args, ctor) {
-      ctor.prototype = func.prototype;
-      var child = new ctor, result = func.apply(child, args);
-      return Object(result) === result ? result : child;
-    })(seen.Matrix, arguments, function(){});
+  seen.M = function(m) {
+    return new seen.Matrix(m);
   };
 
   seen.Matrices = {
@@ -248,7 +244,7 @@
     };
 
     Point.prototype.copy = function() {
-      return new seen.Point(this.x, this.y, this.z, this.w);
+      return new Point(this.x, this.y, this.z, this.w);
     };
 
     Point.prototype.normalize = function() {
@@ -336,12 +332,8 @@
 
   })();
 
-  seen.P = function() {
-    return (function(func, args, ctor) {
-      ctor.prototype = func.prototype;
-      var child = new ctor, result = func.apply(child, args);
-      return Object(result) === result ? result : child;
-    })(seen.Point, arguments, function(){});
+  seen.P = function(x, y, z, w) {
+    return new seen.Point(x, y, z, w);
   };
 
   POINT_CACHE = seen.P();
@@ -355,11 +347,6 @@
 
 }).call(this);
 (function() {
-  var Phong,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
   seen.Color = (function() {
     function Color(r, g, b, a) {
       this.r = r != null ? r : 0;
@@ -379,11 +366,6 @@
 
     Color.prototype.style = function() {
       return "rgba(" + this.r + "," + this.g + "," + this.b + "," + this.a + ")";
-    };
-
-    Color.prototype.clear = function() {
-      this.r = this.g = this.b = 0;
-      return this;
     };
 
     return Color;
@@ -440,6 +422,36 @@
 
   seen.C.gray = seen.C.hex('#888888');
 
+  seen.Material = (function() {
+    Material.prototype.defaults = {
+      color: seen.C.gray,
+      specularColor: seen.C.white,
+      specularExponent: 8,
+      shader: null
+    };
+
+    function Material(color) {
+      this.color = color;
+      seen.Util.defaults(this, {}, this.defaults);
+    }
+
+    Material.prototype.render = function(lights, shader, renderData) {
+      var renderShader, _ref;
+      renderShader = (_ref = this.shader) != null ? _ref : shader;
+      return renderShader.shade(lights, renderData, this);
+    };
+
+    return Material;
+
+  })();
+
+}).call(this);
+(function() {
+  var Ambient, DiffusePhong, Flat, Phong, _ref, _ref1, _ref2, _ref3,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
   seen.Light = (function(_super) {
     __extends(Light, _super);
 
@@ -448,8 +460,7 @@
       seen.Util.defaults(this, opts, {
         point: seen.P(),
         color: seen.C.white,
-        intensity: 0.01,
-        exponent: 8
+        intensity: 0.01
       });
     }
 
@@ -461,48 +472,147 @@
 
   })(seen.Transformable);
 
-  Phong = (function() {
-    function Phong() {}
+  seen.Shader = (function() {
+    function Shader() {}
 
-    Phong.prototype.getFaceColor = function(lights, surface, color) {
-      var Lm, Rm, c, dot, light, specular, _i, _j, _len, _len1, _ref, _ref1;
+    Shader.prototype.shade = function(lights, renderData, material) {};
+
+    return Shader;
+
+  })();
+
+  Phong = (function(_super) {
+    __extends(Phong, _super);
+
+    function Phong() {
+      _ref = Phong.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    Phong.prototype.shade = function(lights, renderData, material) {
+      var Lm, Rm, c, dot, light, specular, _i, _j, _len, _len1, _ref1, _ref2;
       c = new seen.Color();
-      return color;
-      _ref = lights.points;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        light = _ref[_i];
-        Lm = light.point.subtract(surface.barycenter).normalize();
-        dot = Lm.dot(surface.normal);
+      _ref1 = lights.points;
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        light = _ref1[_i];
+        Lm = light.point.subtract(renderData.barycenter).normalize();
+        dot = Lm.dot(renderData.normal);
         if (dot > 0) {
           c.r += light.color.r * dot * light.intensity;
           c.g += light.color.g * dot * light.intensity;
           c.b += light.color.b * dot * light.intensity;
-          Rm = surface.normal.multiply(dot * 2).subtract(Lm);
-          specular = Math.pow(1 + Rm.dot(seen.Points.Z), light.exponent);
+          Rm = renderData.normal.multiply(dot * 2).subtract(Lm);
+          specular = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent);
           c.r += specular * light.intensity;
           c.g += specular * light.intensity;
           c.b += specular * light.intensity;
         }
       }
-      _ref1 = lights.ambients;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        light = _ref1[_j];
+      _ref2 = lights.ambients;
+      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+        light = _ref2[_j];
         c.r += light.color.r * light.intensity;
         c.g += light.color.g * light.intensity;
         c.b += light.color.b * light.intensity;
       }
-      c.r = Math.min(0xFF, color.r * c.r);
-      c.g = Math.min(0xFF, color.g * c.g);
-      c.b = Math.min(0xFF, color.b * c.b);
+      c.r = Math.min(0xFF, material.color.r * c.r);
+      c.g = Math.min(0xFF, material.color.g * c.g);
+      c.b = Math.min(0xFF, material.color.b * c.b);
       return c;
     };
 
     return Phong;
 
-  })();
+  })(seen.Shader);
+
+  DiffusePhong = (function(_super) {
+    __extends(DiffusePhong, _super);
+
+    function DiffusePhong() {
+      _ref1 = DiffusePhong.__super__.constructor.apply(this, arguments);
+      return _ref1;
+    }
+
+    DiffusePhong.prototype.shade = function(lights, renderData, material) {
+      var Lm, c, dot, light, _i, _j, _len, _len1, _ref2, _ref3;
+      c = new seen.Color();
+      _ref2 = lights.points;
+      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+        light = _ref2[_i];
+        Lm = light.point.subtract(renderData.barycenter).normalize();
+        dot = Lm.dot(renderData.normal);
+        if (dot > 0) {
+          c.r += light.color.r * dot * light.intensity;
+          c.g += light.color.g * dot * light.intensity;
+          c.b += light.color.b * dot * light.intensity;
+        }
+      }
+      _ref3 = lights.ambients;
+      for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
+        light = _ref3[_j];
+        c.r += light.color.r * light.intensity;
+        c.g += light.color.g * light.intensity;
+        c.b += light.color.b * light.intensity;
+      }
+      c.r = Math.min(0xFF, material.color.r * c.r);
+      c.g = Math.min(0xFF, material.color.g * c.g);
+      c.b = Math.min(0xFF, material.color.b * c.b);
+      return c;
+    };
+
+    return DiffusePhong;
+
+  })(seen.Shader);
+
+  Ambient = (function(_super) {
+    __extends(Ambient, _super);
+
+    function Ambient() {
+      _ref2 = Ambient.__super__.constructor.apply(this, arguments);
+      return _ref2;
+    }
+
+    Ambient.prototype.shade = function(lights, renderData, material) {
+      var c, light, _i, _len, _ref3;
+      c = new seen.Color();
+      _ref3 = lights.ambients;
+      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+        light = _ref3[_i];
+        c.r += light.color.r * light.intensity;
+        c.g += light.color.g * light.intensity;
+        c.b += light.color.b * light.intensity;
+      }
+      c.r = Math.min(0xFF, material.color.r * c.r);
+      c.g = Math.min(0xFF, material.color.g * c.g);
+      c.b = Math.min(0xFF, material.color.b * c.b);
+      return c;
+    };
+
+    return Ambient;
+
+  })(seen.Shader);
+
+  Flat = (function(_super) {
+    __extends(Flat, _super);
+
+    function Flat() {
+      _ref3 = Flat.__super__.constructor.apply(this, arguments);
+      return _ref3;
+    }
+
+    Flat.prototype.shade = function(lights, renderData, material) {
+      return material.color;
+    };
+
+    return Flat;
+
+  })(seen.Shader);
 
   seen.Shaders = {
-    phong: new Phong()
+    phong: new Phong(),
+    diffuse: new DiffusePhong(),
+    ambient: new Ambient(),
+    flat: new Flat()
   };
 
 }).call(this);
@@ -523,8 +633,8 @@ to prevent unnecessary re-computation.
       this.points = points;
       this.transform = transform;
       this.projection = projection;
-      this.transformed = this._initTransformationSet();
-      this.projected = this._initTransformationSet();
+      this.transformed = this._initRenderData();
+      this.projected = this._initRenderData();
       this._update();
     }
 
@@ -557,7 +667,7 @@ to prevent unnecessary re-computation.
       return true;
     };
 
-    RenderSurface.prototype._initTransformationSet = function() {
+    RenderSurface.prototype._initRenderData = function() {
       var p;
       return {
         points: (function() {
@@ -609,17 +719,17 @@ to prevent unnecessary re-computation.
   seen.Surface = (function() {
     Surface.prototype.cullBackfaces = true;
 
-    Surface.prototype.fill = seen.C.gray;
+    Surface.prototype.fill = new seen.Material(seen.C.gray);
 
     Surface.prototype.stroke = null;
 
     function Surface(points, painter) {
       this.points = points;
       this.painter = painter != null ? painter : seen.Painters.path;
-      this.getRenderSurface = __bind(this.getRenderSurface, this);
+      this.updateRenderData = __bind(this.updateRenderData, this);
     }
 
-    Surface.prototype.getRenderSurface = function(transform, projection) {
+    Surface.prototype.updateRenderData = function(transform, projection) {
       if (this.render == null) {
         this.render = new seen.RenderSurface(this.points, transform, projection);
       } else {
@@ -739,7 +849,7 @@ to prevent unnecessary re-computation.
   seen.Painter = (function() {
     function Painter() {}
 
-    Painter.prototype.paint = function(surface, render, canvas) {};
+    Painter.prototype.paint = function(surface, canvas) {};
 
     return Painter;
 
@@ -753,8 +863,9 @@ to prevent unnecessary re-computation.
       return _ref;
     }
 
-    PathPainter.prototype.paint = function(surface, render, canvas) {
-      var _ref1;
+    PathPainter.prototype.paint = function(surface, canvas) {
+      var render, _ref1;
+      render = surface.render;
       return canvas.path().path(render.projected.points).style({
         fill: render.fill == null ? 'none' : render.fill.hex(),
         stroke: render.stroke == null ? 'none' : render.stroke.hex(),
@@ -775,8 +886,9 @@ to prevent unnecessary re-computation.
       return _ref1;
     }
 
-    TextPainter.prototype.paint = function(surface, render, canvas) {
-      var _ref2;
+    TextPainter.prototype.paint = function(surface, canvas) {
+      var render, _ref2;
+      render = surface.render;
       return canvas.text().text(surface.text).transform(render.transform.multiply(render.projection)).style({
         fill: render.fill == null ? 'none' : render.fill.hex(),
         stroke: render.stroke == null ? 'none' : render.stroke.hex(),
@@ -993,10 +1105,6 @@ to prevent unnecessary re-computation.
 
 }).call(this);
 (function() {
-  var seen, _base;
-
-  seen = (_base = typeof exports !== "undefined" && exports !== null ? exports : this).seen != null ? (_base = typeof exports !== "undefined" && exports !== null ? exports : this).seen : _base.seen = {};
-
   seen.Projections = {
     perspectiveFov: function(fovyInDegrees, front) {
       var tan;
@@ -1087,192 +1195,211 @@ to prevent unnecessary re-computation.
 
 }).call(this);
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var _line, _svg, _svgRaw,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  (function() {
-    var SvgIterativeRenderer, _line, _svg, _svgRaw;
-    _svg = function(name) {
-      return $(_svgRaw(name));
+  _svg = function(name) {
+    return $(_svgRaw(name));
+  };
+
+  _svgRaw = function(name) {
+    return document.createElementNS('http://www.w3.org/2000/svg', name);
+  };
+
+  _line = d3.svg.line().x(function(d) {
+    return d.x;
+  }).y(function(d) {
+    return d.y;
+  });
+
+  seen.Renderer = (function() {
+    function Renderer() {}
+
+    Renderer.prototype.render = function(surfaces) {
+      var surface, _i, _len;
+      this.reset();
+      for (_i = 0, _len = surfaces.length; _i < _len; _i++) {
+        surface = surfaces[_i];
+        surface.painter.paint(surface, this);
+      }
+      return this.hideUnused();
     };
-    _svgRaw = function(name) {
-      return document.createElementNS('http://www.w3.org/2000/svg', name);
+
+    Renderer.prototype.path = function() {};
+
+    Renderer.prototype.text = function() {};
+
+    return Renderer;
+
+  })();
+
+  seen.SvgRenderer = (function(_super) {
+    __extends(SvgRenderer, _super);
+
+    function SvgRenderer() {
+      this._i = 0;
+    }
+
+    SvgRenderer.prototype.addTo = function(layer) {
+      return this._g = layer;
     };
-    _line = d3.svg.line().x(function(d) {
-      return d.x;
-    }).y(function(d) {
-      return d.y;
-    });
-    SvgIterativeRenderer = (function() {
-      function SvgIterativeRenderer(g) {
-        this.g = g;
-        this._i = 0;
-        this._g = this.g[0];
-      }
 
-      SvgIterativeRenderer.prototype.hideUnused = function() {
-        var children, _results;
-        children = this._g.childNodes;
-        _results = [];
-        while (this._i < children.length) {
-          children[this._i].setAttribute('style', 'display: none;');
-          _results.push(this._i++);
-        }
-        return _results;
-      };
-
-      SvgIterativeRenderer.prototype.path = function() {
-        var el;
-        el = this._manifest('path');
-        return {
-          el: el,
-          path: function(points) {
-            el.setAttribute('d', _line(points));
-            return this;
-          },
-          style: function(style) {
-            var key, str, val;
-            str = '';
-            for (key in style) {
-              val = style[key];
-              str += "" + key + ":" + val + ";";
-            }
-            el.setAttribute('style', str);
-            return this;
+    SvgRenderer.prototype.path = function() {
+      var el;
+      el = this._manifest('path');
+      return {
+        el: el,
+        path: function(points) {
+          el.setAttribute('d', _line(points));
+          return this;
+        },
+        style: function(style) {
+          var key, str, val;
+          str = '';
+          for (key in style) {
+            val = style[key];
+            str += "" + key + ":" + val + ";";
           }
-        };
+          el.setAttribute('style', str);
+          return this;
+        }
       };
+    };
 
-      SvgIterativeRenderer.prototype.text = function() {
-        var el;
-        el = this._manifest('text');
-        el.setAttribute('font-family', 'Roboto');
-        return {
-          el: el,
-          text: function(text) {
-            el.textContent = text;
-            return this;
-          },
-          style: function(style) {
-            var key, str, val;
-            str = '';
-            for (key in style) {
-              val = style[key];
-              str += "" + key + ":" + val + ";";
-            }
-            el.setAttribute('style', str);
-            return this;
-          },
-          transform: function(transform) {
-            var m;
-            m = transform.m;
-            el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
-            return this;
+    SvgRenderer.prototype.text = function() {
+      var el;
+      el = this._manifest('text');
+      el.setAttribute('font-family', 'Roboto');
+      return {
+        el: el,
+        text: function(text) {
+          el.textContent = text;
+          return this;
+        },
+        style: function(style) {
+          var key, str, val;
+          str = '';
+          for (key in style) {
+            val = style[key];
+            str += "" + key + ":" + val + ";";
           }
-        };
-      };
-
-      SvgIterativeRenderer.prototype._manifest = function(type) {
-        var children, current, path;
-        children = this._g.childNodes;
-        if (this._i >= children.length) {
-          path = _svgRaw(type);
-          this._g.appendChild(path);
-          this._i++;
-          return path;
-        }
-        current = children[this._i];
-        if (current.tagName === type) {
-          this._i++;
-          return current;
-        } else {
-          path = _svgRaw(type);
-          this._g.replaceChild(path, current);
-          this._i++;
-          return path;
+          el.setAttribute('style', str);
+          return this;
+        },
+        transform: function(transform) {
+          var m;
+          m = transform.m;
+          el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
+          return this;
         }
       };
+    };
 
-      return SvgIterativeRenderer;
+    SvgRenderer.prototype.reset = function() {
+      return this._i = 0;
+    };
 
-    })();
-    seen.SvgCanvas = (function() {
-      SvgCanvas.prototype.width = 500;
-
-      SvgCanvas.prototype.height = 500;
-
-      function SvgCanvas(svg) {
-        this.svg = svg;
-        this.render = __bind(this.render, this);
-        this.layers = {
-          background: _svg('g').addClass('background').appendTo(this.svg),
-          scene: _svg('g').addClass('scene').appendTo(this.svg),
-          overlay: _svg('g').addClass('overlay').appendTo(this.svg)
-        };
+    SvgRenderer.prototype.hideUnused = function() {
+      var children, _results;
+      children = this._g.childNodes;
+      _results = [];
+      while (this._i < children.length) {
+        children[this._i].setAttribute('style', 'display: none;');
+        _results.push(this._i++);
       }
+      return _results;
+    };
 
-      SvgCanvas.prototype.add = function(component) {
-        if (typeof component.addTo === "function") {
-          component.addTo(this);
-        }
-        return this;
-      };
-
-      SvgCanvas.prototype.render = function(surfaces) {
-        var renderer, surface, _i, _len;
-        renderer = new SvgIterativeRenderer(this.layers.scene);
-        for (_i = 0, _len = surfaces.length; _i < _len; _i++) {
-          surface = surfaces[_i];
-          surface.painter.paint(surface, surface.render, renderer);
-        }
-        renderer.hideUnused();
-      };
-
-      return SvgCanvas;
-
-    })();
-    seen.SvgRenderDebug = (function() {
-      function SvgRenderDebug(scene) {
-        this._renderEnd = __bind(this._renderEnd, this);
-        this._renderStart = __bind(this._renderStart, this);
-        this._text = _svg('text').css('text-anchor', 'end').attr('y', 20);
-        this._fps = 30;
-        scene.on('beforeRender.debug', this._renderStart);
-        scene.on('afterRender.debug', this._renderEnd);
+    SvgRenderer.prototype._manifest = function(type) {
+      var children, current, path;
+      children = this._g.childNodes;
+      if (this._i >= children.length) {
+        path = _svgRaw(type);
+        this._g.appendChild(path);
+        this._i++;
+        return path;
       }
+      current = children[this._i];
+      if (current.tagName === type) {
+        this._i++;
+        return current;
+      } else {
+        path = _svgRaw(type);
+        this._g.replaceChild(path, current);
+        this._i++;
+        return path;
+      }
+    };
 
-      SvgRenderDebug.prototype.addTo = function(canvas) {
-        return this._text.attr('x', canvas.width - 10).appendTo(canvas.layers.overlay);
-      };
+    return SvgRenderer;
 
-      SvgRenderDebug.prototype._renderStart = function() {
-        return this._renderStartTime = new Date();
-      };
+  })(seen.Renderer);
 
-      SvgRenderDebug.prototype._renderEnd = function(e) {
-        var frameTime;
-        frameTime = 1000 / (new Date() - this._renderStartTime);
-        if (frameTime !== NaN) {
-          this._fps += (frameTime - this._fps) / 20;
-        }
-        return this._text.text("fps: " + (this._fps.toFixed(1)) + " surfaces: " + e.surfaces.length);
-      };
+  seen.SvgCanvas = (function() {
+    function SvgCanvas(svg) {
+      this.svg = svg;
+      this.layers = {};
+    }
 
-      return SvgRenderDebug;
+    SvgCanvas.prototype.layer = function(name, component) {
+      var layer;
+      layer = this.layers[name] = _svgRaw('g');
+      this.svg.appendChild(layer);
+      if (component != null) {
+        component.addTo(layer);
+      }
+      return this;
+    };
 
-    })();
-    return seen.SvgFillRect = (function() {
-      function SvgFillRect() {}
+    return SvgCanvas;
 
-      SvgFillRect.prototype.addTo = function(canvas) {
-        return _svg('rect').css('fill', '#EEE').attr({
-          width: canvas.width,
-          height: canvas.height
-        }).appendTo(canvas.layers.background);
-      };
+  })();
 
-      return SvgFillRect;
+  seen.SvgRenderDebug = (function() {
+    function SvgRenderDebug(scene) {
+      this._renderEnd = __bind(this._renderEnd, this);
+      this._renderStart = __bind(this._renderStart, this);
+      this._text = _svg('text').css('text-anchor', 'end').attr('y', 20);
+      this._fps = 30;
+      scene.on('beforeRender.debug', this._renderStart);
+      scene.on('afterRender.debug', this._renderEnd);
+    }
 
-    })();
+    SvgRenderDebug.prototype.addTo = function(layer) {
+      return this._text.attr('x', 500 - 10).appendTo(layer);
+    };
+
+    SvgRenderDebug.prototype._renderStart = function() {
+      return this._renderStartTime = new Date();
+    };
+
+    SvgRenderDebug.prototype._renderEnd = function(e) {
+      var frameTime;
+      frameTime = 1000 / (new Date() - this._renderStartTime);
+      if (frameTime !== NaN) {
+        this._fps += (frameTime - this._fps) / 20;
+      }
+      return this._text.text("fps: " + (this._fps.toFixed(1)) + " surfaces: " + e.surfaces.length);
+    };
+
+    return SvgRenderDebug;
+
+  })();
+
+  seen.SvgFillRect = (function() {
+    function SvgFillRect() {}
+
+    SvgFillRect.prototype.addTo = function(layer) {
+      return _svg('rect').css('fill', '#EEE').attr({
+        width: 500,
+        height: 500
+      }).appendTo(layer);
+    };
+
+    return SvgFillRect;
+
   })();
 
 }).call(this);
@@ -1312,7 +1439,7 @@ to prevent unnecessary re-computation.
       var surfaces;
       this.dispatch.beforeRender();
       surfaces = this.renderSurfaces();
-      this.canvas.render(surfaces);
+      this.renderer.render(surfaces);
       this.dispatch.afterRender({
         surfaces: surfaces
       });
@@ -1325,19 +1452,15 @@ to prevent unnecessary re-computation.
       projection = this.projection.multiply(this.viewport);
       this.surfaces.length = 0;
       this.group.eachTransformedShape(function(shape, transform) {
-        var render, surface, _i, _len, _ref, _results;
+        var render, surface, _i, _len, _ref, _ref1, _ref2, _results;
         _ref = shape.surfaces;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           surface = _ref[_i];
-          render = surface.getRenderSurface(transform, projection);
+          render = surface.updateRenderData(transform, projection);
           if (!_this.cullBackfaces || !surface.cullBackfaces || render.projected.normal.z < 0) {
-            if (surface.fill != null) {
-              render.fill = _this.shader.getFaceColor(_this.lights, render.transformed, surface.fill);
-            }
-            if (surface.stroke != null) {
-              render.stroke = surface.stroke;
-            }
+            render.fill = (_ref1 = surface.fill) != null ? _ref1.render(_this.lights, _this.shader, render.transformed) : void 0;
+            render.stroke = (_ref2 = surface.stroke) != null ? _ref2.render(_this.lights, _this.shader, render.transformed) : void 0;
             _results.push(_this.surfaces.push(surface));
           } else {
             _results.push(void 0);

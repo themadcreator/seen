@@ -96,8 +96,7 @@ seen.demoSimpleScene = () ->
 randomColors = (shape) ->
   hue = Math.random()
   for surface in shape.surfaces
-    surface.fill = seen.C.hsl(hue, 0.5, 0.4)
-
+    surface.fill = new seen.Material seen.C.hsl(hue, 0.5, 0.4)
 
 seen.demoSkeletonScene = () ->
   scene = seen.emptyScene()

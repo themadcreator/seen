@@ -1,25 +1,20 @@
-Human-Scale Articulated Skeleton
-Shadow Casting
-Physics
-Animation
-
-3D to Planar 2D transformation projection
-  Image Textures
-
-Alternate Renderers
-  HTML5 Canvas
-  WebGL?
-
-Shapes
-  Triangulated Torus
-
-
 TODO before v1.0
-Materials (specular, diffuse, flat)
-Shaders
+  Quaternion Mouse Rotation
 
-  Tensor-product Mouse Rotation
-  seen.P for point
-  seen.T for transform?
-  seen.C for color
-    move methods to prototype
+TODO Features
+  Shadow Casting
+  Physics
+  Animation
+  Human-Scale Articulated Skeleton
+
+  3D to Planar 2D transformation projection
+    Image Textures
+
+  Alternate Renderers
+    HTML5 Canvas
+
+  Shapes
+    Triangulated Torus
+    Pipes
+    JSON format objects
+

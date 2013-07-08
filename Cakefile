@@ -8,6 +8,7 @@ DISTS = {
     'src/seen.namespace.coffee'
     'src/seen.util.coffee'
     'src/seen.math.coffee'
+    'src/seen.materials.coffee'
     'src/seen.light.coffee'
     'src/seen.geom.coffee'
     'src/seen.painters.coffee'

@@ -23,11 +23,13 @@
       #scene = seen.demoText()
       #scene = seen.demoChart()
 
+      # TODO set size of viewport here
 
-      scene.canvas = new seen.SvgCanvas($('svg.seen-canvas'))
-        #.add(new seen.SvgRenderDebug(scene))
-        .add(new seen.SvgFillRect())
-
+      scene.renderer = new seen.SvgRenderer()
+      canvas = new seen.SvgCanvas($('svg.seen-canvas')[0])
+        .layer('background', new seen.SvgFillRect())
+        .layer('scene', scene.renderer)
+        .layer('foreground', new seen.SvgRenderDebug(scene))
       scene.startRenderLoop()
   </script>
 

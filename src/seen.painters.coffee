@@ -1,10 +1,11 @@
 
 class seen.Painter
-  paint : (surface, render, canvas) ->
+  paint : (surface, canvas) ->
     # Override this
 
 class PathPainter extends seen.Painter
-  paint : (surface, render, canvas) ->
+  paint : (surface, canvas) ->
+    render = surface.render
     canvas.path()
       .path(render.projected.points)
       .style(
@@ -15,7 +16,8 @@ class PathPainter extends seen.Painter
       )
 
 class TextPainter extends seen.Painter
-  paint : (surface, render, canvas) ->
+  paint : (surface, canvas) ->
+    render = surface.render
     canvas.text()
       .text(surface.text)
       .transform(render.transform.multiply render.projection)
