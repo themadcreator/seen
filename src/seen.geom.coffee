@@ -1,9 +1,15 @@
 
-###
-Once initialized, this class will have a constant memory footprint
-down to number primitives. Also, we compare each transform and projection
-to prevent unnecessary re-computation.
-###
+# ## Geometry
+# #### Groups, shapes, surfaces, and render data
+# ***
+
+
+# The `RenderSurface` object contains the transformed and projected points as well as various data
+# needed to render scene shapes.
+#
+# Once initialized, the object will have a constant memory footprint
+# down to `Number` primitives. Also, we compare each transform and projection
+# to prevent unnecessary re-computation.
 class seen.RenderSurface
   constructor: (@points, @transform, @projection) ->
     @transformed = @_initRenderData()
@@ -11,7 +17,7 @@ class seen.RenderSurface
     @_update()
 
   update: (transform, projection) ->
-    if @_arraysEqual(transform.m, @transform.m) and @_arraysEqual(projection.m, @projection.m)
+    if seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m)
       return
     else
       @transform = transform
@@ -22,11 +28,6 @@ class seen.RenderSurface
     @_math(@transformed, @points, @transform, false)
     @_math(@projected, @transformed.points, @projection, true)
 
-  _arraysEqual: (a, b) ->
-    if not a.length == b.length then return false
-    for val, i in a
-      if not (val == b[i]) then return false
-    return true
 
   _initRenderData: ->
     return {
@@ -42,15 +43,16 @@ class seen.RenderSurface
     for p,i in points
       sp = set.points[i]
       sp.set(p).transform(transform)
+      # Applying the clip is what ultimately scales the x and y coordinates in a perpsective projection
       if applyClip then sp._divide(sp.w)
 
-    # Compute barycenter
+    # Compute barycenter, which is used in aligning shapes in the painters algorithm
     set.barycenter.set(seen.Points.ZERO)
     for p in set.points
       set.barycenter._add(p)
     set.barycenter._divide(set.points.length)
 
-    # Compute normal
+    # Compute normal, which is used for backface culling (when enabled)
     set.v0.set(set.points[1])._subtract(set.points[0])
     set.v1.set(set.points[points.length - 1])._subtract(set.points[0])
     set.normal.set(set.v0._cross(set.v1)._normalize())

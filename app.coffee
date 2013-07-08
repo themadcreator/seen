@@ -7,6 +7,7 @@ swig.init {root : path.join(__dirname, 'demo', 'views')}
 
 app = express()
 app.use '/dist', express.static(path.join(__dirname, 'dist'))
+app.use '/docs', express.static(path.join(__dirname, 'docs'))
 app.use '/', express.static(path.join(__dirname, 'demo'))
 
 app.set 'view engine', 'html'

@@ -1,12 +1,23 @@
 TODO before v1.0
   Quaternion Mouse Rotation
   Viewport-aligned projection
+  Non-d3 dispatch
+
+TODO Demos
+  All shapes
+  Picture in Picture
+  front,side,top,iso view
+  Materials parameter sliders
+  Perspective projection diagrams w/ FOV slider
+  Bar Chart
+  Area Chart
 
 TODO Features
   Shadow Casting
   Physics
   Animation
   Human-Scale Articulated Skeleton
+  Shape manipulator control
 
   isometric projection
 

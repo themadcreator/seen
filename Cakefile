@@ -25,28 +25,41 @@ DISTS = {
 
 fs           = require 'fs'
 path         = require 'path'
+{exec}       = require 'child_process'
 UglifyJS     = require 'uglify-js'
 CoffeeScript = require 'coffee-script'
 
-task 'build', 'Build and uglify seen', build = (cb) ->
+task 'build', 'Build and uglify seen', () ->
 
+  # Prepare output path
   if not fs.existsSync(path.join(__dirname, 'dist')) then fs.mkdirSync(path.join(__dirname, 'dist'))
 
   for javascript, sources of DISTS
-    code = ''
-    for source in sources
-      code += CoffeeScript.compile fs.readFileSync(source, 'utf-8')
+    console.log  "Building #{javascript}..."
 
-    fs.writeFileSync path.join(__dirname, 'dist', javascript), code, {flags: 'w'}
+    # Concat all coffeescript together for Docco
+    coffeeCode = sources.map((source) -> fs.readFileSync(source, 'utf-8')).join('\n\n')
+    fs.writeFileSync path.join(__dirname, 'dist', javascript.replace(/\.js$/, '.coffee')), coffeeCode, {flags: 'w'}
+    console.log "Joined."
 
+    # Compile to javascript
+    jsCode = CoffeeScript.compile coffeeCode
+    fs.writeFileSync path.join(__dirname, 'dist', javascript), jsCode, {flags: 'w'}
+    console.log "Compiled."
+
+    # Uglify
     ugly = UglifyJS.minify path.join(__dirname, 'dist', javascript),
       outSourceMap : "#{javascript}.map"
-
     fs.writeFileSync path.join(__dirname, 'dist', javascript.replace(/\.js$/,'.min.js')), ugly.code, {flags: 'w'}
     fs.writeFileSync path.join(__dirname, 'dist', "#{javascript}.map"), ugly.map, {flags: 'w'}
 
-    console.log "Minified #{javascript}"
+    console.log "Minified."
 
-  cb() if typeof cb is 'function'
+
+task 'docs', 'Build seen documentation', (options) ->
+  for javascript, sources of DISTS
+    coffee = path.join(__dirname, 'dist', javascript.replace(/\.js$/, '.coffee'))
+    script = path.join(__dirname, 'node_modules' , 'docco', 'bin', 'docco')
+    exec("#{script}  #{coffee}", (err) -> throw err if err)
 
  

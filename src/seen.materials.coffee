@@ -1,3 +1,7 @@
+# ## Materials
+# #### Colors and surface-material properties used by shaders.
+# ***
+
 
 class seen.Color
   constructor: (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->

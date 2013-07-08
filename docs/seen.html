@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>seen.coffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>seen.coffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>Declaration of seen namespace</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen = (exports ? <span class="keyword">this</span>).seen ?= {}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <h2>Utils</h2>
+<h4>Utility methods</h4>
+<hr>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.Util = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Copies default values. First, overwrite undefined attributes of <code>obj</code> from <code>opts</code>. Second, overwrite undefined attributes of <code>obj</code> from <code>defaults</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  defaults: (obj, opts, defaults) -&gt;
+    <span class="keyword">for</span> prop <span class="keyword">of</span> opts
+      <span class="keyword">if</span> <span class="keyword">not</span> obj[prop]? <span class="keyword">then</span> obj[prop] = opts[prop]
+    <span class="keyword">for</span> prop <span class="keyword">of</span> defaults
+      <span class="keyword">if</span> <span class="keyword">not</span> obj[prop]? <span class="keyword">then</span> obj[prop] = defaults[prop]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Returns <code>true</code> iff the supplied <code>Arrays</code> are the same size and contain the same values.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  arraysEqual: (a, b) -&gt;
+    <span class="keyword">if</span> <span class="keyword">not</span> a.length == b.length <span class="keyword">then</span> <span class="keyword">return</span> <span class="literal">false</span>
+    <span class="keyword">for</span> val, i <span class="keyword">in</span> a
+      <span class="keyword">if</span> <span class="keyword">not</span> (val == b[i]) <span class="keyword">then</span> <span class="keyword">return</span> <span class="literal">false</span>
+    <span class="keyword">return</span> <span class="literal">true</span>
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <h2>Math</h2>
+<h4>Matrices, points, and other mathy stuff</h4>
+<hr>
+<p>Pool object to speed computation and reduce object creation</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>ARRAY_POOL = <span class="keyword">new</span> Array(<span class="number">16</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Definition of identity matrix values</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>IDENTITY = [<span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>,
+            <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>,
+            <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>,
+            <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>The <code>Matrix</code> class stores transformations in the scene. These include:
+(1) Camera Projection and Viewport transformations.
+(2) Transformations of any <code>Transformable</code> type object, such as <code>Shapes</code></p>
+<p><code>Matrix</code> objects have two sets of manipulation methods.
+Normal methods (e.g. <code>translate</code>) are <strong>non-destructive</strong> -- i.e. they return a new object without modifying the existing object.
+Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</strong> -- i.e. they modifying and return the existing object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Matrix</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Accepts a 16-value <code>Array</code>, defaults to the identity matrix.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@m</span> = <span class="literal">null</span>) -&gt;
+    <span class="property">@m</span> ?= IDENTITY.slice()
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Returns a new matrix instances with a copy of the value array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  copy: -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix(<span class="property">@m</span>.slice())</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Desctructively resets the matrix to the identity matrix.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  reset: -&gt;
+    <span class="property">@m</span> = IDENTITY.slice()
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Non-destructively multiply by the Matrix argument, returning a new <code>Matrix</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  multiply: (b) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._multiply(b)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Non-destructively multiply by the 16-value Array argument, returning a new <code>Matrix</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  multiplyM: (m) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._multiplyM(m)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Non-destructively apply a rotation about the X axis, returning a new <code>Matrix</code> object. <code>Theta</code> is measured in Radians</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  rotx: (theta) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._rotx(theta)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Non-destructively apply a rotation about the Y axis, returning a new <code>Matrix</code> object. <code>Theta</code> is measured in Radians</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  roty: (theta) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._roty(theta)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Non-destructively apply a rotation about the Z axis, returning a new <code>Matrix</code> object. <code>Theta</code> is measured in Radians</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  rotz: (theta) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._rotz(theta)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Non-destructively apply a translation, returning a new <code>Matrix</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  translate: (x,y,z) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._translate(x,y,z)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Non-destructively apply a scale, returning a new <code>Matrix</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  scale: (sx,sy,sz) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._scale(sx,sy,sx)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Destructively multiply by the <code>Matrix</code> argument.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _multiply: (b) -&gt;
+    <span class="keyword">return</span> <span class="property">@_multiplyM</span>(b.m)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Destructively multiply by the 16-value <code>Array</code> argument. This method uses the <code>ARRAY_POOL</code>, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _multiplyM: (m) -&gt;
+    c = ARRAY_POOL
+    <span class="keyword">for</span> j <span class="keyword">in</span> [<span class="number">0.</span>.<span class="number">.4</span>]
+      <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>.<span class="number">.16</span>] <span class="keyword">by</span> <span class="number">4</span>
+        c[i + j] = 
+          m[i    ] * <span class="property">@m</span>[     j] + 
+          m[i + <span class="number">1</span>] * <span class="property">@m</span>[ <span class="number">4</span> + j] + 
+          m[i + <span class="number">2</span>] * <span class="property">@m</span>[ <span class="number">8</span> + j] +
+          m[i + <span class="number">3</span>] * <span class="property">@m</span>[<span class="number">12</span> + j]
+    ARRAY_POOL = <span class="property">@m</span>
+    <span class="property">@m</span> = c
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Destructively apply a rotation about the X axis. <code>Theta</code> is measured in Radians</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _rotx: (theta) -&gt; 
+    ct = Math.cos(theta)
+    st = Math.sin(theta)
+    rm = [ <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, ct, -st, <span class="number">0</span>, <span class="number">0</span>, st, ct, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span> ]
+    <span class="keyword">return</span> <span class="property">@_multiplyM</span>(rm)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Destructively apply a rotation about the Y axis. <code>Theta</code> is measured in Radians</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _roty: (theta)  -&gt;
+    ct = Math.cos(theta)
+    st = Math.sin(theta)
+    rm = [ ct, <span class="number">0</span>, st, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, -st, <span class="number">0</span>, ct, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span> ]
+    <span class="keyword">return</span> <span class="property">@_multiplyM</span>(rm)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Destructively apply a rotation about the Z axis. <code>Theta</code> is measured in Radians</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _rotz: (theta) -&gt;
+    ct = Math.cos(theta)
+    st = Math.sin(theta)
+    rm = [ ct, -st, <span class="number">0</span>, <span class="number">0</span>, st, ct, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span> ]
+    <span class="keyword">return</span> <span class="property">@_multiplyM</span>(rm)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Destructively apply a translation. All arguments default to <code>0</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _translate: (x = <span class="number">0</span>, y = <span class="number">0</span>, z = <span class="number">0</span>) -&gt;
+    <span class="property">@m</span>[<span class="number">3</span>]  += x
+    <span class="property">@m</span>[<span class="number">7</span>]  += y
+    <span class="property">@m</span>[<span class="number">11</span>] += z
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Destructively apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, <code>_scale()</code> is equivalent to <code>_scale(1,1,1)</code>, and <code>_scale(1,-1)</code> is equivalent to <code>_scale(1,-1,-1)</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _scale: (sx = <span class="number">1</span>, sy, sz) -&gt;
+    sy     ?= sx
+    sz     ?= sy
+    <span class="property">@m</span>[<span class="number">0</span>]  *= sx
+    <span class="property">@m</span>[<span class="number">5</span>]  *= sy
+    <span class="property">@m</span>[<span class="number">10</span>] *= sz
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>A convenience method for constructing Matrix objects.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.<span class="function"><span class="title">M</span></span> = (m) -&gt; <span class="keyword">new</span> seen.Matrix(m)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>A few useful Matrix objects. Be careful not to apply destructive operations to these objects.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.Matrices = {
+  identity : seen.M()
+  flipX    : seen.M().scale(-<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>)
+  flipY    : seen.M().scale( <span class="number">1</span>,-<span class="number">1</span>, <span class="number">1</span>)
+  flipZ    : seen.M().scale( <span class="number">1</span>, <span class="number">1</span>,-<span class="number">1</span>)
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p><code>Transformable</code> base class extended by <code>Shape</code> and <code>Group</code>.</p>
+<p>The advantages of keeping transforms in <code>Matrix</code> form are (1) lazy computation of point position (2) ability combine hierarchical transformations easily (3) ability to reset transformations to an original state.</p>
+<p>Resetting transformations is especially useful when you want to animate interpolated values. Instead of computing the difference at each animation step, you can compute the global interpolated value for that time step and apply that value directly to a matrix (once it is reset).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Transformable</span></span>
+  constructor: -&gt;
+    <span class="property">@m</span> = <span class="keyword">new</span> seen.Matrix()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Apply a scale. see <code>Matrix._scale</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  scale: (sx, sy, sz) -&gt;
+    <span class="property">@m</span>._scale(sx, sy, sz)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>Apply a translation. see <code>Matrix._translate</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  translate: (x, y, z) -&gt;
+    <span class="property">@m</span>._translate(x,y,z)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Apply a rotation about the X axis in Radians. see <code>Matrix._rotx</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  rotx: (theta) -&gt;
+    <span class="property">@m</span>._rotx(theta)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>Apply a rotation about the Y axis in Radians. see <code>Matrix._roty</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  roty: (theta) -&gt;
+    <span class="property">@m</span>._roty(theta)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Apply a rotation about the Z axis in Radians. see <code>Matrix._rotz</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  rotz: (theta) -&gt;
+    <span class="property">@m</span>._rotz(theta)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Apply a transformation from the supplied 16-value <code>Array</code>. see <code>Matrix._multiplyM</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  matrix: (m) -&gt;
+    <span class="property">@m</span>._multiplyM(m)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Apply a transformation from the supplied <code>Matrix</code>. see <code>Matrix._multiply</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  transform: (m) -&gt;
+    <span class="property">@m</span>._multiply(m)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>Resets the transformation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  reset: () -&gt;
+    <span class="property">@m</span>.reset()
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>The <code>Point</code> object contains x,y,z, and w coordinates. <code>Points</code> support various arithmetic operations with other <code>Points</code>, scalars, or <code>Matrices</code>.</p>
+<p>Similar to the <code>Matrix</code> object. <code>Point</code> objects have <strong>non-destructive</strong> (e.g. <code>add</code>) methods, which return a new <code>Point</code> without modifying the current object, and <strong>destrcutive</strong> (e.g. <code>_add</code>) methods which modify the object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Point</span></span>
+  constructor: (<span class="property">@x</span> = <span class="number">0</span>, <span class="property">@y</span> = <span class="number">0</span>, <span class="property">@z</span> = <span class="number">0</span>, <span class="property">@w</span> = <span class="number">1</span>) -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Apply a transformation from the supplied <code>Matrix</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  transform: (matrix) -&gt;
+    r = POINT_POOL
+    r.x = <span class="property">@x</span> * matrix.m[<span class="number">0</span>] + <span class="property">@y</span> * matrix.m[<span class="number">1</span>] + <span class="property">@z</span> * matrix.m[<span class="number">2</span>] + <span class="property">@w</span> * matrix.m[<span class="number">3</span>]
+    r.y = <span class="property">@x</span> * matrix.m[<span class="number">4</span>] + <span class="property">@y</span> * matrix.m[<span class="number">5</span>] + <span class="property">@z</span> * matrix.m[<span class="number">6</span>] + <span class="property">@w</span> * matrix.m[<span class="number">7</span>]
+    r.z = <span class="property">@x</span> * matrix.m[<span class="number">8</span>] + <span class="property">@y</span> * matrix.m[<span class="number">9</span>] + <span class="property">@z</span> * matrix.m[<span class="number">10</span>] + <span class="property">@w</span> * matrix.m[<span class="number">11</span>]
+    r.w = <span class="property">@x</span> * matrix.m[<span class="number">12</span>] + <span class="property">@y</span> * matrix.m[<span class="number">13</span>] + <span class="property">@z</span> * matrix.m[<span class="number">14</span>] + <span class="property">@w</span> * matrix.m[<span class="number">15</span>]
+  
+    <span class="property">@set</span>(r)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>Copies the values of the supplied <code>Point</code> into this object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  set: (p) -&gt;
+    <span class="property">@x</span> = p.x
+    <span class="property">@y</span> = p.y
+    <span class="property">@z</span> = p.z
+    <span class="property">@w</span> = p.w
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>Creates and returns a new <code>Point</code> with the same values as this object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  copy: () -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> Point(<span class="property">@x</span>, <span class="property">@y</span>, <span class="property">@z</span>, <span class="property">@w</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>Non-destructively scales this <code>Point</code> by its magnitude.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  normalize: () -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._normalize()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>Non-destructively performs parameter-wise addition with the supplied <code>Point</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  add: (q) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._add(q)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p>Non-destructively performs parameter-wise subtraction with the supplied <code>Point</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  subtract: (q) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._subtract(q)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>Non-destructively computes the cross product with the supplied <code>Point</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  cross: (q) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._cross(q)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p>Computes the dot product with the supplied <code>Point</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  dot: (q) -&gt;
+    <span class="keyword">return</span> <span class="property">@x</span> * q.x + <span class="property">@y</span> * q.y + <span class="property">@z</span> * q.z</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>Non-destructively multiplies each parameters by the supplied scalar value.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  multiply: (n) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._multiply(n)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>Non-destructively divides each parameters by the supplied scalar value.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  divide: (n) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._divide(n)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>Destructively multiplies each parameters by the supplied scalar value.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _multiply: (n) -&gt;
+    <span class="property">@x</span> *= n
+    <span class="property">@y</span> *= n
+    <span class="property">@z</span> *= n
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p>Destructively divides each parameters by the supplied scalar value.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _divide: (n) -&gt;
+    <span class="property">@x</span> /= n
+    <span class="property">@y</span> /= n
+    <span class="property">@z</span> /= n
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p>Destructively scales this <code>Point</code> by its magnitude.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _normalize: () -&gt;
+    n = Math.sqrt(<span class="property">@dot</span>(@))
+    <span class="keyword">if</span> n == <span class="number">0</span>
+      <span class="property">@set</span>(Points.Z)
+    <span class="keyword">else</span>
+      <span class="property">@_divide</span>(n)
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <p>Destructively performs parameter-wise addition with the supplied <code>Point</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _add: (q) -&gt;
+    <span class="property">@x</span> += q.x
+    <span class="property">@y</span> += q.y
+    <span class="property">@z</span> += q.z
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p>Destructively performs parameter-wise subtraction with the supplied <code>Point</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _subtract: (q) -&gt;
+    <span class="property">@x</span> -= q.x
+    <span class="property">@y</span> -= q.y
+    <span class="property">@z</span> -= q.z
+    <span class="keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>Destructively computes the cross product with the supplied <code>Point</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _cross: (q) -&gt;
+    r = POINT_POOL
+    r.x = <span class="property">@y</span> * q.z - <span class="property">@z</span> * q.y
+    r.y = <span class="property">@z</span> * q.x - <span class="property">@x</span> * q.z
+    r.z = <span class="property">@x</span> * q.y - <span class="property">@y</span> * q.x
+
+    <span class="property">@set</span>(r)
+    <span class="keyword">return</span> @
+
+  toJSON: () -&gt;
+    <span class="keyword">return</span> [<span class="property">@x</span>, <span class="property">@y</span>, <span class="property">@z</span>, <span class="property">@w</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <p>Convenience method for creating <code>Points</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.<span class="function"><span class="title">P</span></span> = (x,y,z,w) -&gt; <span class="keyword">new</span> seen.Point(x,y,z,w)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>
+              <p>A pool object which prevents us from having to create new <code>Point</code> objects for various calculations, which vastly improves performance.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>POINT_POOL = seen.P()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <p>A few useful <code>Point</code> objects. Be sure that you don&#39;t invoke destructive methods on these objects.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.Points = {
+  X    : seen.P(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>)
+  Y    : seen.P(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>)
+  Z    : seen.P(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>)
+  ZERO : seen.P(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+              </div>
+              <h2>Materials</h2>
+<h4>Colors and surface-material properties used by shaders.</h4>
+<hr>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Color</span></span>
+  constructor: (<span class="property">@r</span> = <span class="number">0</span>, <span class="property">@g</span> = <span class="number">0</span>, <span class="property">@b</span> = <span class="number">0</span>, <span class="property">@a</span> = <span class="number">0xFF</span>) -&gt;
+
+  hex: () -&gt;
+    c = (<span class="property">@r</span> &lt;&lt; <span class="number">16</span> | <span class="property">@g</span> &lt;&lt; <span class="number">8</span> | <span class="property">@b</span>).toString(<span class="number">16</span>)
+    <span class="keyword">while</span> (c.length &lt; <span class="number">6</span>) <span class="keyword">then</span> c = <span class="string">'0'</span> + c
+    <span class="keyword">return</span> <span class="string">'#'</span> + c
+
+  style: () -&gt;
+    <span class="keyword">return</span> <span class="string">"rgba(<span class="subst">#{@r}</span>,<span class="subst">#{@g}</span>,<span class="subst">#{@b}</span>,<span class="subst">#{@a}</span>)"</span>
+
+seen.Colors = {
+  rgb: (r, g, b, a) -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Color(r, g, b, a)
+
+  hex: (hex) -&gt;
+    hex = hex.substring(<span class="number">1</span>) <span class="keyword">if</span> (hex.charAt(<span class="number">0</span>) == <span class="string">'#'</span>)
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Color(
+        parseInt(hex.substring(<span class="number">0</span>, <span class="number">2</span>), <span class="number">16</span>),
+        parseInt(hex.substring(<span class="number">2</span>, <span class="number">4</span>), <span class="number">16</span>),
+        parseInt(hex.substring(<span class="number">4</span>, <span class="number">6</span>), <span class="number">16</span>))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-57">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-57">&#182;</a>
+              </div>
+              <p>h, s, l -&gt; [0.0, 1.0]</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  hsl: (h, s, l) -&gt;
+    r = g = b = <span class="number">0</span>
+    <span class="keyword">if</span> (s == <span class="number">0</span>)
+      r = g = b = l <span class="comment"># achromatic</span>
+    <span class="keyword">else</span> 
+      <span class="function"><span class="title">hue2rgb</span></span> = (p, q, t) -&gt;
+        <span class="keyword">if</span> (t &lt; <span class="number">0</span>) 
+          t += <span class="number">1</span>
+         <span class="keyword">else</span> <span class="keyword">if</span> (t &gt; <span class="number">1</span>) 
+          t -= <span class="number">1</span>
+        
+        <span class="keyword">if</span> (t &lt; <span class="number">1</span> / <span class="number">6</span>) 
+          <span class="keyword">return</span> p + (q - p) * <span class="number">6</span> * t
+        <span class="keyword">else</span> <span class="keyword">if</span> (t &lt; <span class="number">1</span> / <span class="number">2</span>) 
+          <span class="keyword">return</span> q
+        <span class="keyword">else</span> <span class="keyword">if</span> (t &lt; <span class="number">2</span> / <span class="number">3</span>) 
+          <span class="keyword">return</span> p + (q - p) * (<span class="number">2</span> / <span class="number">3</span> - t) * <span class="number">6</span>
+        <span class="keyword">else</span>
+          <span class="keyword">return</span> p
+
+      q = <span class="keyword">if</span> l &lt; <span class="number">0.5</span> <span class="keyword">then</span> l * (<span class="number">1</span> + s) <span class="keyword">else</span> l + s - l * s
+      p = <span class="number">2</span> * l - q
+      r = hue2rgb(p, q, h + <span class="number">1</span> / <span class="number">3</span>)
+      g = hue2rgb(p, q, h)
+      b = hue2rgb(p, q, h - <span class="number">1</span> / <span class="number">3</span>)
+
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Color(r * <span class="number">255</span>, g * <span class="number">255</span>, b * <span class="number">255</span>)
+}
+
+seen.C = seen.Colors
+seen.C.black = seen.C.hex(<span class="string">'#000000'</span>)
+seen.C.white = seen.C.hex(<span class="string">'#FFFFFF'</span>)
+seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Material</span></span>
+  defaults : 
+    color            : seen.C.gray
+    specularColor    : seen.C.white
+    specularExponent : <span class="number">8</span>
+    shader           : <span class="literal">null</span>
+
+  constructor : (<span class="property">@color</span>) -&gt;
+    seen.Util.defaults(@, {}, <span class="property">@defaults</span>)
+
+  render : (lights, shader, renderData) -&gt;
+    renderShader = <span class="property">@shader</span> ? shader
+    <span class="keyword">return</span> renderShader.shade(lights, renderData, @)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-58">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-58">&#182;</a>
+              </div>
+              <h2>Lighting</h2>
+<h4>Lights and various shaders</h4>
+<hr>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Light</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Transformable</span></span>
+  constructor: (opts) -&gt;
+    seen.Util.defaults(@, opts,
+        point     : seen.P()
+        color     : seen.C.white
+        intensity : <span class="number">0.01</span>
+      )
+  
+  transform: (m) =&gt;
+    <span class="property">@point</span>.transform(m)
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderData, material) -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-59">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-59">&#182;</a>
+              </div>
+              <p>Override this</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Phong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderData, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
+      Lm  = light.point.subtract(renderData.barycenter).normalize()
+      dot = Lm.dot(renderData.normal)
+
+      <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-60">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-60">&#182;</a>
+              </div>
+              <p>diffuse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        c.r += light.color.r * dot * light.intensity
+        c.g += light.color.g * dot * light.intensity
+        c.b += light.color.b * dot * light.intensity</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+              </div>
+              <p>specular</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        Rm       = renderData.normal.multiply(dot * <span class="number">2</span>).subtract(Lm)
+        specular = Math.pow(<span class="number">1</span> + Rm.dot(seen.Points.Z), material.specularExponent)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-62">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-62">&#182;</a>
+              </div>
+              <p>TODO specular color from material</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        c.r += specular * light.intensity
+        c.g += specular * light.intensity
+        c.b += specular * light.intensity
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-63">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-63">&#182;</a>
+              </div>
+              <p>ambient</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      c.r += light.color.r * light.intensity
+      c.g += light.color.g * light.intensity
+      c.b += light.color.b * light.intensity
+    
+    c.r = Math.min(<span class="number">0xFF</span>, material.color.r * c.r);
+    c.g = Math.min(<span class="number">0xFF</span>, material.color.g * c.g);
+    c.b = Math.min(<span class="number">0xFF</span>, material.color.b * c.b);
+    <span class="keyword">return</span> c
+
+<span class="class"><span class="keyword">class</span> <span class="title">DiffusePhong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderData, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
+      Lm  = light.point.subtract(renderData.barycenter).normalize()
+      dot = Lm.dot(renderData.normal)
+
+      <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-64">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-64">&#182;</a>
+              </div>
+              <p>diffuse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        c.r += light.color.r * dot * light.intensity
+        c.g += light.color.g * dot * light.intensity
+        c.b += light.color.b * dot * light.intensity
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-65">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-65">&#182;</a>
+              </div>
+              <p>ambient</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      c.r += light.color.r * light.intensity
+      c.g += light.color.g * light.intensity
+      c.b += light.color.b * light.intensity
+    
+    c.r = Math.min(<span class="number">0xFF</span>, material.color.r * c.r);
+    c.g = Math.min(<span class="number">0xFF</span>, material.color.g * c.g);
+    c.b = Math.min(<span class="number">0xFF</span>, material.color.b * c.b);
+    <span class="keyword">return</span> c
+
+<span class="class"><span class="keyword">class</span> <span class="title">Ambient</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderData, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-66">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-66">&#182;</a>
+              </div>
+              <p>ambient</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      c.r += light.color.r * light.intensity
+      c.g += light.color.g * light.intensity
+      c.b += light.color.b * light.intensity
+    
+    c.r = Math.min(<span class="number">0xFF</span>, material.color.r * c.r);
+    c.g = Math.min(<span class="number">0xFF</span>, material.color.g * c.g);
+    c.b = Math.min(<span class="number">0xFF</span>, material.color.b * c.b);
+    <span class="keyword">return</span> c
+
+<span class="class"><span class="keyword">class</span> <span class="title">Flat</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderData, material) -&gt;
+    <span class="keyword">return</span> material.color
+
+seen.Shaders = {
+  phong   : <span class="keyword">new</span> Phong()
+  diffuse : <span class="keyword">new</span> DiffusePhong()
+  ambient : <span class="keyword">new</span> Ambient()
+  flat    : <span class="keyword">new</span> Flat()
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-67">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-67">&#182;</a>
+              </div>
+              <h2>Geometry</h2>
+<h4>Groups, shapes, surfaces, and render data</h4>
+<hr>
+<p>The <code>RenderSurface</code> object contains the transformed and projected points as well as various data
+needed to render scene shapes.</p>
+<p>Once initialized, the object will have a constant memory footprint
+down to <code>Number</code> primitives. Also, we compare each transform and projection
+to prevent unnecessary re-computation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">RenderSurface</span></span>
+  constructor: (<span class="property">@points</span>, <span class="property">@transform</span>, <span class="property">@projection</span>) -&gt;
+    <span class="property">@transformed</span> = <span class="property">@_initRenderData</span>()
+    <span class="property">@projected</span>   = <span class="property">@_initRenderData</span>()
+    <span class="property">@_update</span>()
+
+  update: (transform, projection) -&gt;
+    <span class="keyword">if</span> seen.Util.arraysEqual(transform.m, <span class="property">@transform</span>.m) <span class="keyword">and</span> seen.Util.arraysEqual(projection.m, <span class="property">@projection</span>.m)
+      <span class="keyword">return</span>
+    <span class="keyword">else</span>
+      <span class="property">@transform</span> = transform
+      <span class="property">@projection</span> = projection
+      <span class="property">@_update</span>()
+
+  _update: () -&gt;
+    <span class="property">@_math</span>(<span class="property">@transformed</span>, <span class="property">@points</span>, <span class="property">@transform</span>, <span class="literal">false</span>)
+    <span class="property">@_math</span>(<span class="property">@projected</span>, <span class="property">@transformed</span>.points, <span class="property">@projection</span>, <span class="literal">true</span>)
+
+
+  _initRenderData: -&gt;
+    <span class="keyword">return</span> {
+      points     : (p.copy() <span class="keyword">for</span> p <span class="keyword">in</span> <span class="property">@points</span>)
+      barycenter : seen.P()
+      normal     : seen.P()
+      v0         : seen.P()
+      v1         : seen.P()
+    }
+
+  _math: (set, points, transform, applyClip = <span class="literal">false</span>) -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+              </div>
+              <p>Apply transform to points</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> p,i <span class="keyword">in</span> points
+      sp = set.points[i]
+      sp.set(p).transform(transform)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-69">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-69">&#182;</a>
+              </div>
+              <p>Applying the clip is what ultimately scales the x and y coordinates in a perpsective projection</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> applyClip <span class="keyword">then</span> sp._divide(sp.w)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-70">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-70">&#182;</a>
+              </div>
+              <p>Compute barycenter, which is used in aligning shapes in the painters algorithm</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    set.barycenter.set(seen.Points.ZERO)
+    <span class="keyword">for</span> p <span class="keyword">in</span> set.points
+      set.barycenter._add(p)
+    set.barycenter._divide(set.points.length)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-71">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-71">&#182;</a>
+              </div>
+              <p>Compute normal, which is used for backface culling (when enabled)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    set.v0.set(set.points[<span class="number">1</span>])._subtract(set.points[<span class="number">0</span>])
+    set.v1.set(set.points[points.length - <span class="number">1</span>])._subtract(set.points[<span class="number">0</span>])
+    set.normal.set(set.v0._cross(set.v1)._normalize())
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Surface</span></span>
+  cullBackfaces : <span class="literal">true</span>
+  fill          : <span class="keyword">new</span> seen.Material(seen.C.gray)
+  stroke        : <span class="literal">null</span>
+
+  constructor: (<span class="property">@points</span>, <span class="property">@painter</span> = seen.Painters.path) -&gt;
+
+  updateRenderData: (transform, projection) =&gt;
+    <span class="keyword">if</span> <span class="keyword">not</span> <span class="property">@render</span>? 
+      <span class="property">@render</span> = <span class="keyword">new</span> seen.RenderSurface(<span class="property">@points</span>, transform, projection)
+    <span class="keyword">else</span>
+      <span class="property">@render</span>.update(transform, projection)
+    <span class="keyword">return</span> <span class="property">@render</span>
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Shape</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Transformable</span></span>
+  constructor: (<span class="property">@type</span>, <span class="property">@surfaces</span>) -&gt;
+    <span class="keyword">super</span>()
+
+  eachSurface: (f) -&gt;
+    <span class="property">@surfaces</span>.forEach(f)
+    <span class="keyword">return</span> @
+
+  fill: (fill) -&gt;
+    <span class="property">@eachSurface</span> (s) -&gt; s.fill = fill
+    <span class="keyword">return</span> @
+
+  stroke: (stroke) -&gt;
+    <span class="property">@eachSurface</span> (s) -&gt; s.stroke = stroke
+    <span class="keyword">return</span> @
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Group</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Transformable</span></span>
+  constructor: () -&gt;
+    <span class="keyword">super</span>()
+    <span class="property">@children</span> = []
+
+  add: (child) -&gt;
+    <span class="property">@children</span>.push child
+    <span class="keyword">return</span> @
+
+  append: () -&gt;
+    group = <span class="keyword">new</span> seen.Group
+    <span class="property">@add</span> group
+    <span class="keyword">return</span> group
+
+  eachShape: (f) -&gt;
+    <span class="keyword">for</span> child <span class="keyword">in</span> <span class="property">@children</span>
+      <span class="keyword">if</span> child <span class="keyword">instanceof</span> seen.Shape
+        f.call(@, child)
+      <span class="keyword">if</span> child <span class="keyword">instanceof</span> seen.Group
+        child.eachTransformedShape(f)
+
+  eachTransformedShape: (f, m = <span class="literal">null</span>) -&gt;
+    m ?= <span class="property">@m</span>
+    <span class="keyword">for</span> child <span class="keyword">in</span> <span class="property">@children</span>
+      <span class="keyword">if</span> child <span class="keyword">instanceof</span> seen.Shape
+        f.call(@, child, child.m.multiply(m))
+      <span class="keyword">if</span> child <span class="keyword">instanceof</span> seen.Group
+        child.eachTransformedShape(f, child.m.multiply(m))
+
+
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Painter</span></span>
+  paint : (surface, canvas) -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-72">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-72">&#182;</a>
+              </div>
+              <p>Override this</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">PathPainter</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Painter</span></span>
+  paint : (surface, canvas) -&gt;
+    render = surface.render
+    canvas.path()
+      .path(render.projected.points)
+      .style(
+        fill           : <span class="keyword">if</span> <span class="keyword">not</span> render.fill? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> render.fill.hex()
+        stroke         : <span class="keyword">if</span> <span class="keyword">not</span> render.stroke? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> render.stroke.hex()
+        <span class="string">'fill-opacity'</span> : <span class="keyword">if</span> <span class="keyword">not</span> surface.fill? <span class="keyword">then</span> <span class="number">1.0</span> <span class="keyword">else</span> (surface.fill.a / <span class="number">0xFF</span>)
+        <span class="string">'stroke-width'</span> : surface[<span class="string">'stroke-width'</span>] ? <span class="number">1</span>
+      )
+
+<span class="class"><span class="keyword">class</span> <span class="title">TextPainter</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Painter</span></span>
+  paint : (surface, canvas) -&gt;
+    render = surface.render
+    canvas.text()
+      .text(surface.text)
+      .transform(render.transform.multiply render.projection)
+      .style(
+        fill          : <span class="keyword">if</span> <span class="keyword">not</span> render.fill? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> render.fill.hex()
+        stroke        : <span class="keyword">if</span> <span class="keyword">not</span> render.stroke? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> render.stroke.hex()
+        <span class="string">'text-anchor'</span> : surface.anchor ? <span class="string">'middle'</span>
+      )
+
+seen.Painters = {
+  path : <span class="keyword">new</span> PathPainter()
+  text : <span class="keyword">new</span> TextPainter()
+}
+
+
+
+seen.Shapes = {
+  _cubeCoordinateMap : [
+    [<span class="number">0</span>,<span class="number">1</span>,<span class="number">3</span>,<span class="number">2</span>] <span class="comment"># left</span>
+    [<span class="number">5</span>,<span class="number">4</span>,<span class="number">6</span>,<span class="number">7</span>] <span class="comment"># right</span>
+    [<span class="number">1</span>,<span class="number">0</span>,<span class="number">4</span>,<span class="number">5</span>] <span class="comment"># bottom</span>
+    [<span class="number">2</span>,<span class="number">3</span>,<span class="number">7</span>,<span class="number">6</span>] <span class="comment"># top</span>
+    [<span class="number">3</span>,<span class="number">1</span>,<span class="number">5</span>,<span class="number">7</span>] <span class="comment"># front</span>
+    [<span class="number">0</span>,<span class="number">2</span>,<span class="number">6</span>,<span class="number">4</span>] <span class="comment"># back</span>
+  ]
+
+  _mapPointsToSurfaces: (points, coordinateMap) -&gt;
+    surfaces = []
+    <span class="keyword">for</span> coords <span class="keyword">in</span> coordinateMap
+      spts = (points[c].copy() <span class="keyword">for</span> c <span class="keyword">in</span> coords)
+      surfaces.push(<span class="keyword">new</span> seen.Surface(spts))
+    <span class="keyword">return</span> surfaces
+
+  joints: (n, unitshape) -&gt;
+    unitshape ?= <span class="property">@unitcube</span>
+    g = <span class="keyword">new</span> seen.Group
+    joints = []
+    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..n]
+      joints.push g
+      g = g.append()
+        .translate(-<span class="number">0.5</span>, -<span class="number">1</span>, -<span class="number">0.5</span>)
+        .add(unitshape())
+        .append()
+        .translate(<span class="number">0.5</span>, <span class="number">0</span>, <span class="number">0.5</span>)
+        .append()
+
+    <span class="keyword">return</span> joints
+
+  bipedSkeleton: (unitshape) =&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-73">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-73">&#182;</a>
+              </div>
+              <pre><code>          H
+          |</code></pre>
+<p> FA - E - A - B - A - E - FA
+              |
+              P
+             / \
+             L L
+             | |
+             K K
+             | |
+             C C
+             | |
+             F F</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    unitshape ?= <span class="property">@unitcube</span>
+
+    makeSkeleton = () =&gt;
+      joints = <span class="property">@joints</span>(<span class="number">3</span>, unitshape)
+      <span class="keyword">return</span> {
+        upperBody : joints[<span class="number">0</span>]
+        torso     : joints[<span class="number">1</span>]
+        pelvis    : joints[<span class="number">2</span>]
+      }
+
+    makeArm = () =&gt;
+      joints = <span class="property">@joints</span>(<span class="number">4</span>, unitshape)
+      <span class="keyword">return</span> {
+        shoulder : joints[<span class="number">0</span>]
+        upperArm : joints[<span class="number">1</span>]
+        elbow    : joints[<span class="number">2</span>]
+        foreArm  : joints[<span class="number">3</span>]
+      }
+
+    makeLeg = () =&gt;
+      joints = <span class="property">@joints</span>(<span class="number">4</span>, unitshape)
+      <span class="keyword">return</span> {
+        upperLeg : joints[<span class="number">0</span>]
+        knee     : joints[<span class="number">1</span>]
+        lowerLeg : joints[<span class="number">2</span>]
+        foot     : joints[<span class="number">3</span>]
+      }
+
+    <span class="function"><span class="title">attachSideJoint</span></span> = (rootjoint, joint, x) =&gt;
+      s = rootjoint
+        .append()
+        .translate(x)
+        .append()
+      s.append()
+        .translate(x)
+        .add(joint)
+      <span class="keyword">return</span> s
+
+    skeleton          = makeSkeleton()
+    skeleton.root     = skeleton.upperBody
+    skeleton.leftArm  = makeArm()
+    skeleton.rightArm = makeArm()
+    skeleton.leftLeg  = makeLeg()
+    skeleton.rightLeg = makeLeg()
+
+    skeleton.leftShoulder  = attachSideJoint(skeleton.upperBody, skeleton.leftArm.shoulder, <span class="number">0.5</span>)
+    skeleton.rightShoulder = attachSideJoint(skeleton.upperBody, skeleton.rightArm.shoulder, -<span class="number">0.5</span>)
+    skeleton.leftHip       = attachSideJoint(skeleton.pelvis, skeleton.leftLeg.upperLeg, <span class="number">0.5</span>)
+    skeleton.rightHip      = attachSideJoint(skeleton.pelvis, skeleton.rightLeg.upperLeg, -<span class="number">0.5</span>)
+
+    <span class="keyword">return</span> skeleton
+
+  cube: =&gt;
+    points = [
+      seen.P(-<span class="number">1</span>, -<span class="number">1</span>, -<span class="number">1</span>)
+      seen.P(-<span class="number">1</span>, -<span class="number">1</span>,  <span class="number">1</span>)
+      seen.P(-<span class="number">1</span>,  <span class="number">1</span>, -<span class="number">1</span>)
+      seen.P(-<span class="number">1</span>,  <span class="number">1</span>,  <span class="number">1</span>)
+      seen.P( <span class="number">1</span>, -<span class="number">1</span>, -<span class="number">1</span>)
+      seen.P( <span class="number">1</span>, -<span class="number">1</span>,  <span class="number">1</span>)
+      seen.P( <span class="number">1</span>,  <span class="number">1</span>, -<span class="number">1</span>)
+      seen.P( <span class="number">1</span>,  <span class="number">1</span>,  <span class="number">1</span>)
+    ]
+
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'cube'</span>, seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
+
+  unitcube: =&gt;
+    points = [
+      seen.P(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)
+      seen.P(<span class="number">0</span>, <span class="number">0</span>, <span class="number">1</span>)
+      seen.P(<span class="number">0</span>, <span class="number">1</span>, <span class="number">0</span>)
+      seen.P(<span class="number">0</span>, <span class="number">1</span>, <span class="number">1</span>)
+      seen.P(<span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>)
+      seen.P(<span class="number">1</span>, <span class="number">0</span>, <span class="number">1</span>)
+      seen.P(<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>)
+      seen.P(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>)
+    ]
+
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'unitcube'</span>, seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
+
+
+  rectangle : (point1, point2) =&gt;
+    <span class="function"><span class="title">compose</span></span> = (x, y, z) -&gt;
+      <span class="keyword">return</span> seen.P(
+        x(point1.x, point2.x)
+        y(point1.y, point2.y)
+        z(point1.z, point2.z)
+      )
+
+    points = [
+      compose(Math.min, Math.min, Math.min)
+      compose(Math.min, Math.min, Math.max)
+      compose(Math.min, Math.max, Math.min)
+      compose(Math.min, Math.max, Math.max)
+      compose(Math.max, Math.min, Math.min)
+      compose(Math.max, Math.min, Math.max)
+      compose(Math.max, Math.max, Math.min)
+      compose(Math.max, Math.max, Math.max)
+    ]
+
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'rect'</span>, seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
+
+  tetrahedron: =&gt;
+    points = [
+      seen.P( <span class="number">1</span>,  <span class="number">1</span>,  <span class="number">1</span>)
+      seen.P(-<span class="number">1</span>, -<span class="number">1</span>,  <span class="number">1</span>)
+      seen.P(-<span class="number">1</span>,  <span class="number">1</span>, -<span class="number">1</span>)
+      seen.P( <span class="number">1</span>, -<span class="number">1</span>, -<span class="number">1</span>)]
+
+    coordinateMap = [
+      [<span class="number">0</span>,<span class="number">2</span>,<span class="number">1</span>]
+      [<span class="number">0</span>,<span class="number">1</span>,<span class="number">3</span>]
+      [<span class="number">3</span>,<span class="number">2</span>,<span class="number">0</span>]
+      [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]]
+
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'tetrahedron'</span>, seen.Shapes._mapPointsToSurfaces(points, coordinateMap))
+
+  text: (text) -&gt;
+    surface = <span class="keyword">new</span> seen.Surface([
+      seen.P(<span class="number">0</span>,<span class="number">0</span>,-<span class="number">1</span>)
+      seen.P(<span class="number">0</span>,<span class="number">20</span>,-<span class="number">1</span>)
+      seen.P(<span class="number">20</span>,<span class="number">0</span>,-<span class="number">1</span>)
+    ], seen.Painters.text)
+    surface.text = text
+    surface.cullBackfaces = <span class="literal">false</span>
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'text'</span>, [surface])
+
+  extrude : (points, distance = <span class="number">1</span>) -&gt;
+    surfaces = []
+    front = <span class="keyword">new</span> seen.Surface (p.copy() <span class="keyword">for</span> p <span class="keyword">in</span> points)
+    back  = <span class="keyword">new</span> seen.Surface (p.translate(<span class="number">0</span>,<span class="number">0</span>,distance) <span class="keyword">for</span> p <span class="keyword">in</span> points)
+
+    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">1.</span>..points.length]
+      surfaces.push <span class="keyword">new</span> seen.Surface [
+        front.points[i - <span class="number">1</span>].copy()
+        back.points[i - <span class="number">1</span>].copy()
+        back.points[i].copy()
+        front.points[i].copy()
+      ]
+
+    len = points.length
+    surfaces.push <span class="keyword">new</span> seen.Surface [
+      front.points[len - <span class="number">1</span>].copy()
+      back.points[len - <span class="number">1</span>].copy()
+      back.points[<span class="number">0</span>].copy()
+      front.points[<span class="number">0</span>].copy()
+    ]
+
+    back.points.reverse()
+    surfaces.push front
+    surfaces.push back
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'extrusion'</span>, surfaces)
+
+  arrow : (thickness = <span class="number">1</span>, tailLength = <span class="number">1</span>, tailWidth = <span class="number">1</span>, headLength = <span class="number">1</span>, headPointiness = <span class="number">0</span>) -&gt;
+    htw = tailWidth/<span class="number">2</span>
+    points = [
+      seen.P(<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>)
+      seen.P(headLength + headPointiness, <span class="number">1</span>, <span class="number">0</span>)
+      seen.P(headLength, htw, <span class="number">0</span>)
+      seen.P(headLength + tailLength, htw, <span class="number">0</span>)
+      seen.P(headLength + tailLength, -htw, <span class="number">0</span>)
+      seen.P(headLength, -htw, <span class="number">0</span>)
+      seen.P(headLength + headPointiness, -<span class="number">1</span>, <span class="number">0</span>)
+    ]
+    <span class="keyword">return</span> seen.Shapes.extrude(points, thickness)
+
+  path : (points) -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'path'</span>, [<span class="keyword">new</span> seen.Surface(points)])
+
+  custom: (s) -&gt;
+    surfaces = []
+    <span class="keyword">for</span> f <span class="keyword">in</span> s.surfaces
+      surfaces.push <span class="keyword">new</span> seen.Surface((seen.P(p...) <span class="keyword">for</span> p <span class="keyword">in</span> f))
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'custom'</span>, surfaces)
+}
+
+seen.Projections = {
+  perspectiveFov : (fovyInDegrees = <span class="number">50</span>, front = <span class="number">100</span>) -&gt;
+    tan = front * Math.tan(fovyInDegrees * Math.PI / <span class="number">360.0</span>)
+    <span class="keyword">return</span> seen.Projections.perspective(-tan, tan, -tan, tan, front, <span class="number">2</span>*front)
+
+  orthoExtent : (extent = <span class="number">100</span>) -&gt;
+    <span class="keyword">return</span> seen.Projections.ortho(-extent, extent, -extent, extent, extent, <span class="number">2</span>*extent)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-74">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-74">&#182;</a>
+              </div>
+              <p>Creates a perspective projection matrix assuming camera is at (0,0,0)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  perspective : (left, right, bottom, top, near, far) -&gt;
+    near2 = <span class="number">2</span> * near
+    dx    = right - left
+    dy    = top - bottom
+    dz    = far - near
+
+    m = <span class="keyword">new</span> Array(<span class="number">16</span>)
+    m[<span class="number">0</span>]  = near2 / dx
+    m[<span class="number">1</span>]  = <span class="number">0.0</span>
+    m[<span class="number">2</span>]  = (right + left) / dx
+    m[<span class="number">3</span>]  = <span class="number">0.0</span>
+    
+    m[<span class="number">4</span>]  = <span class="number">0.0</span>
+    m[<span class="number">5</span>]  = near2 / dy
+    m[<span class="number">6</span>]  = (top + bottom) / dy
+    m[<span class="number">7</span>]  = <span class="number">0.0</span>
+    
+    m[<span class="number">8</span>]  = <span class="number">0.0</span>
+    m[<span class="number">9</span>]  = <span class="number">0.0</span>
+    m[<span class="number">10</span>] = -(far + near) / dz
+    m[<span class="number">11</span>] = -(far * near2) / dz
+    
+    m[<span class="number">12</span>] = <span class="number">0.0</span>
+    m[<span class="number">13</span>] = <span class="number">0.0</span>
+    m[<span class="number">14</span>] = -<span class="number">1.0</span>
+    m[<span class="number">15</span>] = <span class="number">0.0</span>
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix(m)
+
+  ortho : (left, right, bottom, top, near, far) -&gt;
+    near2 = <span class="number">2</span> * near
+    dx    = right - left
+    dy    = top - bottom
+    dz    = far - near
+
+    m = <span class="keyword">new</span> Array(<span class="number">16</span>)
+    m[<span class="number">0</span>]  = <span class="number">2</span> / dx
+    m[<span class="number">1</span>]  = <span class="number">0.0</span>
+    m[<span class="number">2</span>]  = <span class="number">0.0</span>
+    m[<span class="number">3</span>]  = (right + left) / dx
+    
+    m[<span class="number">4</span>]  = <span class="number">0.0</span>
+    m[<span class="number">5</span>]  = <span class="number">2</span> / dy
+    m[<span class="number">6</span>]  = <span class="number">0.0</span>
+    m[<span class="number">7</span>]  = -(top + bottom) / dy
+    
+    m[<span class="number">8</span>]  = <span class="number">0.0</span>
+    m[<span class="number">9</span>]  = <span class="number">0.0</span>
+    m[<span class="number">10</span>] = -<span class="number">2</span> / dz
+    m[<span class="number">11</span>] = -(far + near) / dz
+    
+    m[<span class="number">12</span>] = <span class="number">0.0</span>
+    m[<span class="number">13</span>] = <span class="number">0.0</span>
+    m[<span class="number">14</span>] = <span class="number">0.0</span>
+    m[<span class="number">15</span>] = <span class="number">1.0</span>
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix(m)
+}
+
+seen.Viewports = {
+  centerOrigin : (width = <span class="number">500</span>, height = <span class="number">500</span>, x = <span class="number">0</span>, y = <span class="number">0</span>) -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix()
+      .scale(width / <span class="number">2</span>, -height / <span class="number">2</span>)
+      .translate(x + width / <span class="number">2</span>, y + height / <span class="number">2</span>)
+}
+
+
+
+<span class="function"><span class="title">_svg</span></span> = (name) -&gt;
+  <span class="keyword">return</span> document.createElementNS(<span class="string">'http://www.w3.org/2000/svg'</span>, name)
+
+_line = d3.svg.line()
+  .x((d) -&gt; d.x)
+  .y((d) -&gt; d.y)
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Renderer</span></span>
+  render: (surfaces) -&gt;
+    <span class="property">@reset</span>()
+    <span class="keyword">for</span> surface <span class="keyword">in</span> surfaces
+      surface.painter.paint(surface, @)
+    <span class="property">@hideUnused</span>()
+
+  path : -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-75">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-75">&#182;</a>
+              </div>
+              <p>override should return a path renderer</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  text : -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-76">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-76">&#182;</a>
+              </div>
+              <p>override should return a text renderer</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">SvgRenderer</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Renderer</span></span>
+  constructor : () -&gt;
+    <span class="property">@_i</span> = <span class="number">0</span>
+
+  addTo : (layer) -&gt;
+    <span class="property">@_g</span> = layer
+
+  path : () -&gt;
+    el = <span class="property">@_manifest</span>(<span class="string">'path'</span>)
+    <span class="keyword">return</span> {
+      el    : el
+      path  : (points) -&gt;
+        el.setAttribute(<span class="string">'d'</span>, _line(points))
+        <span class="keyword">return</span> @
+      style : (style) -&gt;
+        str = <span class="string">''</span>
+        <span class="keyword">for</span> key,val <span class="keyword">of</span> style
+          str += <span class="string">"<span class="subst">#{key}</span>:<span class="subst">#{val}</span>;"</span>
+        el.setAttribute(<span class="string">'style'</span>, str)
+        <span class="keyword">return</span> @
+    }
+
+  text : () -&gt;
+    el = <span class="property">@_manifest</span>(<span class="string">'text'</span>)
+    el.setAttribute <span class="string">'font-family'</span>, <span class="string">'Roboto'</span>
+    <span class="keyword">return</span> {
+      el        : el
+      text      : (text) -&gt;
+        el.textContent = text
+        <span class="keyword">return</span> @
+      style     : (style) -&gt;
+        str = <span class="string">''</span>
+        <span class="keyword">for</span> key,val <span class="keyword">of</span> style
+          str += <span class="string">"<span class="subst">#{key}</span>:<span class="subst">#{val}</span>;"</span>
+        el.setAttribute(<span class="string">'style'</span>, str)
+        <span class="keyword">return</span> @
+      transform : (transform) -&gt;
+        m = transform.m
+        el.setAttribute(<span class="string">'transform'</span>, <span class="string">"matrix(<span class="subst">#{m[<span class="number">0</span>]}</span> <span class="subst">#{m[<span class="number">4</span>]}</span> <span class="subst">#{m[<span class="number">1</span>]}</span> <span class="subst">#{m[<span class="number">5</span>]}</span> <span class="subst">#{m[<span class="number">3</span>]}</span> <span class="subst">#{m[<span class="number">7</span>]}</span>)"</span>)
+        <span class="keyword">return</span> @
+    }
+
+  reset : -&gt;
+    <span class="property">@_i</span> = <span class="number">0</span>
+
+  hideUnused : -&gt;
+    children = <span class="property">@_g</span>.childNodes
+    <span class="keyword">while</span> (<span class="property">@_i</span> &lt; children.length)
+      children[<span class="property">@_i</span>].setAttribute(<span class="string">'style'</span>, <span class="string">'display: none;'</span>)
+      <span class="property">@_i</span>++
+
+  _manifest : (type) -&gt;
+    children = <span class="property">@_g</span>.childNodes
+    <span class="keyword">if</span> <span class="property">@_i</span> &gt;= children.length
+      path = _svg(type)
+      <span class="property">@_g</span>.appendChild(path)
+      <span class="property">@_i</span>++
+      <span class="keyword">return</span> path
+
+    current = children[<span class="property">@_i</span>]
+    <span class="keyword">if</span> current.tagName <span class="keyword">is</span> type
+      <span class="property">@_i</span>++
+      <span class="keyword">return</span> current
+    <span class="keyword">else</span>
+      path = _svg(type)
+      <span class="property">@_g</span>.replaceChild(path, current)
+      <span class="property">@_i</span>++
+      <span class="keyword">return</span> path
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">SvgCanvas</span></span>
+  constructor: (<span class="property">@svg</span>) -&gt;
+    <span class="property">@layers</span> = {}
+
+  layer : (name, component) -&gt;
+    layer = <span class="property">@layers</span>[name] = _svg(<span class="string">'g'</span>)
+    <span class="property">@svg</span>.appendChild(layer)
+    <span class="keyword">if</span> component?
+      component.addTo layer
+    <span class="keyword">return</span> @
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">SvgRenderDebug</span></span>
+  constructor: (scene) -&gt;
+    <span class="property">@_text</span> = _svg(<span class="string">'text'</span>)
+    <span class="property">@_text</span>.setAttribute(<span class="string">'style'</span>, <span class="string">'text-anchor:end;'</span>)
+    <span class="property">@_text</span>.setAttribute(<span class="string">'x'</span>, <span class="number">500</span> - <span class="number">10</span>)
+    <span class="property">@_text</span>.setAttribute(<span class="string">'y'</span>, <span class="string">'20'</span>)
+
+    <span class="property">@_fps</span> = <span class="number">30</span>
+    scene.<span class="literal">on</span> <span class="string">'beforeRender.debug'</span>, <span class="property">@_renderStart</span>
+    scene.<span class="literal">on</span> <span class="string">'afterRender.debug'</span>, <span class="property">@_renderEnd</span>
+
+  addTo: (layer) -&gt;
+    layer.appendChild(<span class="property">@_text</span>)
+
+  _renderStart: =&gt;
+    <span class="property">@_renderStartTime</span> = <span class="keyword">new</span> Date()
+
+  _renderEnd: (e) =&gt;
+    frameTime = <span class="number">1000</span> / (<span class="keyword">new</span> Date() - <span class="property">@_renderStartTime</span>)
+    <span class="keyword">if</span> frameTime != NaN <span class="keyword">then</span> <span class="property">@_fps</span> += (frameTime - <span class="property">@_fps</span>) / <span class="number">20</span>
+    <span class="property">@_text</span>.textContent = <span class="string">"fps: <span class="subst">#{@_fps.toFixed(<span class="number">1</span>)}</span> surfaces: <span class="subst">#{e.surfaces.length}</span>"</span>
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">SvgFillRect</span></span>
+  addTo: (layer) -&gt;
+    rect = _svg(<span class="string">'rect'</span>)
+    rect.setAttribute(<span class="string">'fill'</span>, <span class="string">'#EEE'</span>)
+    rect.setAttribute(<span class="string">'width'</span>, <span class="number">500</span>)
+    rect.setAttribute(<span class="string">'height'</span>, <span class="number">500</span>)
+    layer.appendChild(rect)
+
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Scene</span></span>
+  defaults:
+    cullBackfaces : <span class="literal">true</span>
+    projection    : seen.Projections.perspective(-<span class="number">100</span>, <span class="number">100</span>, -<span class="number">100</span>, <span class="number">100</span>, <span class="number">100</span>, <span class="number">300</span>)
+    viewport      : seen.Viewports.centerOrigin(<span class="number">500</span>, <span class="number">500</span>)
+
+  constructor: (options) -&gt;
+    seen.Util.defaults(@, options, <span class="property">@defaults</span>)
+
+    <span class="property">@dispatch</span> = d3.dispatch(<span class="string">'beforeRender'</span>, <span class="string">'afterRender'</span>)
+    d3.rebind(@, <span class="property">@dispatch</span>, [<span class="string">'on'</span>])
+
+    <span class="property">@group</span>  = <span class="keyword">new</span> seen.Group()
+    <span class="property">@shader</span> = seen.Shaders.phong
+    <span class="property">@lights</span> =
+      points   : []
+      ambients : []
+    <span class="property">@surfaces</span> = []
+
+  startRenderLoop: (msecDelay = <span class="number">30</span>) -&gt;
+    setInterval(<span class="property">@render</span>, msecDelay)
+
+  render: () =&gt;
+    <span class="property">@dispatch</span>.beforeRender()
+    surfaces = <span class="property">@renderSurfaces</span>()
+    <span class="property">@renderer</span>.render(surfaces)
+    <span class="property">@dispatch</span>.afterRender(surfaces : surfaces)
+    <span class="keyword">return</span> @
+
+  renderSurfaces: () =&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-77">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-77">&#182;</a>
+              </div>
+              <p>compute projection matrix</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    projection = <span class="property">@projection</span>.multiply(<span class="property">@viewport</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-78">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-78">&#182;</a>
+              </div>
+              <p>clear renderable surfaces array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="property">@surfaces</span>.length = <span class="number">0</span>
+    <span class="property">@group</span>.eachTransformedShape (shape, transform) =&gt;
+      <span class="keyword">for</span> surface <span class="keyword">in</span> shape.surfaces</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-79">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-79">&#182;</a>
+              </div>
+              <p>compute transformed and projected geometry</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        render = surface.updateRenderData(transform, projection)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-80">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-80">&#182;</a>
+              </div>
+              <p>test for culling</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">if</span> (<span class="keyword">not</span> <span class="property">@cullBackfaces</span> <span class="keyword">or</span> <span class="keyword">not</span> surface.cullBackfaces <span class="keyword">or</span> render.projected.normal.z &lt; <span class="number">0</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-81">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-81">&#182;</a>
+              </div>
+              <p>apply material shading</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          render.fill   = surface.fill?.render(<span class="property">@lights</span>, <span class="property">@shader</span>, render.transformed)
+          render.stroke = surface.stroke?.render(<span class="property">@lights</span>, <span class="property">@shader</span>, render.transformed)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-82">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-82">&#182;</a>
+              </div>
+              <p>add surface to renderable surfaces array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="property">@surfaces</span>.push(surface)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-83">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-83">&#182;</a>
+              </div>
+              <p>sort for painter&#39;s algorithm</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="property">@surfaces</span>.sort (a, b) -&gt;
+      <span class="keyword">return</span>  b.render.projected.barycenter.z - a.render.projected.barycenter.z
+
+    <span class="keyword">return</span> <span class="property">@surfaces</span></pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

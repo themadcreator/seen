@@ -1,10 +1,12 @@
 (function() {
-  var seen, _base;
+  var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, POINT_POOL, PathPainter, Phong, TextPainter, seen, _base, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _svg,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    _this = this;
 
   seen = (_base = typeof exports !== "undefined" && exports !== null ? exports : this).seen != null ? (_base = typeof exports !== "undefined" && exports !== null ? exports : this).seen : _base.seen = {};
 
-}).call(this);
-(function() {
   seen.Util = {
     defaults: function(obj, opts, defaults) {
       var prop, _results;
@@ -22,14 +24,23 @@
         }
       }
       return _results;
+    },
+    arraysEqual: function(a, b) {
+      var i, val, _i, _len;
+      if (!a.length === b.length) {
+        return false;
+      }
+      for (i = _i = 0, _len = a.length; _i < _len; i = ++_i) {
+        val = a[i];
+        if (!(val === b[i])) {
+          return false;
+        }
+      }
+      return true;
     }
   };
 
-}).call(this);
-(function() {
-  var ARRAY_CACHE, IDENTITY, POINT_CACHE;
-
-  ARRAY_CACHE = new Array(16);
+  ARRAY_POOL = new Array(16);
 
   IDENTITY = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0];
 
@@ -51,19 +62,47 @@
       return this;
     };
 
+    Matrix.prototype.multiply = function(b) {
+      return this.copy()._multiply(b);
+    };
+
+    Matrix.prototype.multiplyM = function(m) {
+      return this.copy()._multiplyM(m);
+    };
+
+    Matrix.prototype.rotx = function(theta) {
+      return this.copy()._rotx(theta);
+    };
+
+    Matrix.prototype.roty = function(theta) {
+      return this.copy()._roty(theta);
+    };
+
+    Matrix.prototype.rotz = function(theta) {
+      return this.copy()._rotz(theta);
+    };
+
+    Matrix.prototype.translate = function(x, y, z) {
+      return this.copy()._translate(x, y, z);
+    };
+
+    Matrix.prototype.scale = function(sx, sy, sz) {
+      return this.copy()._scale(sx, sy, sx);
+    };
+
     Matrix.prototype._multiply = function(b) {
       return this._multiplyM(b.m);
     };
 
     Matrix.prototype._multiplyM = function(m) {
       var c, i, j, _i, _j;
-      c = ARRAY_CACHE;
+      c = ARRAY_POOL;
       for (j = _i = 0; _i < 4; j = ++_i) {
         for (i = _j = 0; _j < 16; i = _j += 4) {
           c[i + j] = m[i] * this.m[j] + m[i + 1] * this.m[4 + j] + m[i + 2] * this.m[8 + j] + m[i + 3] * this.m[12 + j];
         }
       }
-      ARRAY_CACHE = this.m;
+      ARRAY_POOL = this.m;
       this.m = c;
       return this;
     };
@@ -124,34 +163,6 @@
       return this;
     };
 
-    Matrix.prototype.multiply = function(b) {
-      return this.copy()._multiply(b);
-    };
-
-    Matrix.prototype.multiplyM = function(m) {
-      return this.copy()._multiplyM(m);
-    };
-
-    Matrix.prototype.rotx = function(theta) {
-      return this.copy()._rotx(theta);
-    };
-
-    Matrix.prototype.roty = function(theta) {
-      return this.copy()._roty(theta);
-    };
-
-    Matrix.prototype.rotz = function(theta) {
-      return this.copy()._rotz(theta);
-    };
-
-    Matrix.prototype.translate = function(x, y, z) {
-      return this.copy()._translate(x, y, z);
-    };
-
-    Matrix.prototype.scale = function(sx, sy, sz) {
-      return this.copy()._scale(sx, sy, sx);
-    };
-
     return Matrix;
 
   })();
@@ -162,9 +173,9 @@
 
   seen.Matrices = {
     identity: seen.M(),
-    flipX: seen.M()._scale(-1, 1, 1),
-    flipY: seen.M()._scale(1, -1, 1),
-    flipZ: seen.M()._scale(1, 1, -1)
+    flipX: seen.M().scale(-1, 1, 1),
+    flipY: seen.M().scale(1, -1, 1),
+    flipZ: seen.M().scale(1, 1, -1)
   };
 
   seen.Transformable = (function() {
@@ -226,7 +237,7 @@
 
     Point.prototype.transform = function(matrix) {
       var r;
-      r = POINT_CACHE;
+      r = POINT_POOL;
       r.x = this.x * matrix.m[0] + this.y * matrix.m[1] + this.z * matrix.m[2] + this.w * matrix.m[3];
       r.y = this.x * matrix.m[4] + this.y * matrix.m[5] + this.z * matrix.m[6] + this.w * matrix.m[7];
       r.z = this.x * matrix.m[8] + this.y * matrix.m[9] + this.z * matrix.m[10] + this.w * matrix.m[11];
@@ -316,7 +327,7 @@
 
     Point.prototype._cross = function(q) {
       var r;
-      r = POINT_CACHE;
+      r = POINT_POOL;
       r.x = this.y * q.z - this.z * q.y;
       r.y = this.z * q.x - this.x * q.z;
       r.z = this.x * q.y - this.y * q.x;
@@ -336,7 +347,7 @@
     return new seen.Point(x, y, z, w);
   };
 
-  POINT_CACHE = seen.P();
+  POINT_POOL = seen.P();
 
   seen.Points = {
     X: seen.P(1, 0, 0),
@@ -345,8 +356,6 @@
     ZERO: seen.P(0, 0, 0)
   };
 
-}).call(this);
-(function() {
   seen.Color = (function() {
     function Color(r, g, b, a) {
       this.r = r != null ? r : 0;
@@ -444,13 +453,6 @@
     return Material;
 
   })();
-
-}).call(this);
-(function() {
-  var Ambient, DiffusePhong, Flat, Phong, _ref, _ref1, _ref2, _ref3,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   seen.Light = (function(_super) {
     __extends(Light, _super);
@@ -615,19 +617,6 @@
     flat: new Flat()
   };
 
-}).call(this);
-/*
-Once initialized, this class will have a constant memory footprint
-down to number primitives. Also, we compare each transform and projection
-to prevent unnecessary re-computation.
-*/
-
-
-(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
   seen.RenderSurface = (function() {
     function RenderSurface(points, transform, projection) {
       this.points = points;
@@ -639,7 +628,7 @@ to prevent unnecessary re-computation.
     }
 
     RenderSurface.prototype.update = function(transform, projection) {
-      if (this._arraysEqual(transform.m, this.transform.m) && this._arraysEqual(projection.m, this.projection.m)) {
+      if (seen.Util.arraysEqual(transform.m, this.transform.m) && seen.Util.arraysEqual(projection.m, this.projection.m)) {
 
       } else {
         this.transform = transform;
@@ -653,29 +642,15 @@ to prevent unnecessary re-computation.
       return this._math(this.projected, this.transformed.points, this.projection, true);
     };
 
-    RenderSurface.prototype._arraysEqual = function(a, b) {
-      var i, val, _i, _len;
-      if (!a.length === b.length) {
-        return false;
-      }
-      for (i = _i = 0, _len = a.length; _i < _len; i = ++_i) {
-        val = a[i];
-        if (!(val === b[i])) {
-          return false;
-        }
-      }
-      return true;
-    };
-
     RenderSurface.prototype._initRenderData = function() {
       var p;
       return {
         points: (function() {
-          var _i, _len, _ref, _results;
-          _ref = this.points;
+          var _i, _len, _ref4, _results;
+          _ref4 = this.points;
           _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            p = _ref[_i];
+          for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+            p = _ref4[_i];
             _results.push(p.copy());
           }
           return _results;
@@ -688,7 +663,7 @@ to prevent unnecessary re-computation.
     };
 
     RenderSurface.prototype._math = function(set, points, transform, applyClip) {
-      var i, p, sp, _i, _j, _len, _len1, _ref;
+      var i, p, sp, _i, _j, _len, _len1, _ref4;
       if (applyClip == null) {
         applyClip = false;
       }
@@ -701,9 +676,9 @@ to prevent unnecessary re-computation.
         }
       }
       set.barycenter.set(seen.Points.ZERO);
-      _ref = set.points;
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        p = _ref[_j];
+      _ref4 = set.points;
+      for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
+        p = _ref4[_j];
         set.barycenter._add(p);
       }
       set.barycenter._divide(set.points.length);
@@ -795,11 +770,11 @@ to prevent unnecessary re-computation.
     };
 
     Group.prototype.eachShape = function(f) {
-      var child, _i, _len, _ref, _results;
-      _ref = this.children;
+      var child, _i, _len, _ref4, _results;
+      _ref4 = this.children;
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        child = _ref[_i];
+      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+        child = _ref4[_i];
         if (child instanceof seen.Shape) {
           f.call(this, child);
         }
@@ -813,17 +788,17 @@ to prevent unnecessary re-computation.
     };
 
     Group.prototype.eachTransformedShape = function(f, m) {
-      var child, _i, _len, _ref, _results;
+      var child, _i, _len, _ref4, _results;
       if (m == null) {
         m = null;
       }
       if (m == null) {
         m = this.m;
       }
-      _ref = this.children;
+      _ref4 = this.children;
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        child = _ref[_i];
+      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+        child = _ref4[_i];
         if (child instanceof seen.Shape) {
           f.call(this, child, child.m.multiply(m));
         }
@@ -840,12 +815,6 @@ to prevent unnecessary re-computation.
 
   })(seen.Transformable);
 
-}).call(this);
-(function() {
-  var PathPainter, TextPainter, _ref, _ref1,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
   seen.Painter = (function() {
     function Painter() {}
 
@@ -859,18 +828,18 @@ to prevent unnecessary re-computation.
     __extends(PathPainter, _super);
 
     function PathPainter() {
-      _ref = PathPainter.__super__.constructor.apply(this, arguments);
-      return _ref;
+      _ref4 = PathPainter.__super__.constructor.apply(this, arguments);
+      return _ref4;
     }
 
     PathPainter.prototype.paint = function(surface, canvas) {
-      var render, _ref1;
+      var render, _ref5;
       render = surface.render;
       return canvas.path().path(render.projected.points).style({
         fill: render.fill == null ? 'none' : render.fill.hex(),
         stroke: render.stroke == null ? 'none' : render.stroke.hex(),
         'fill-opacity': surface.fill == null ? 1.0 : surface.fill.a / 0xFF,
-        'stroke-width': (_ref1 = surface['stroke-width']) != null ? _ref1 : 1
+        'stroke-width': (_ref5 = surface['stroke-width']) != null ? _ref5 : 1
       });
     };
 
@@ -882,17 +851,17 @@ to prevent unnecessary re-computation.
     __extends(TextPainter, _super);
 
     function TextPainter() {
-      _ref1 = TextPainter.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      _ref5 = TextPainter.__super__.constructor.apply(this, arguments);
+      return _ref5;
     }
 
     TextPainter.prototype.paint = function(surface, canvas) {
-      var render, _ref2;
+      var render, _ref6;
       render = surface.render;
       return canvas.text().text(surface.text).transform(render.transform.multiply(render.projection)).style({
         fill: render.fill == null ? 'none' : render.fill.hex(),
         stroke: render.stroke == null ? 'none' : render.stroke.hex(),
-        'text-anchor': (_ref2 = surface.anchor) != null ? _ref2 : 'middle'
+        'text-anchor': (_ref6 = surface.anchor) != null ? _ref6 : 'middle'
       });
     };
 
@@ -904,10 +873,6 @@ to prevent unnecessary re-computation.
     path: new PathPainter(),
     text: new TextPainter()
   };
-
-}).call(this);
-(function() {
-  var _this = this;
 
   seen.Shapes = {
     _cubeCoordinateMap: [[0, 1, 3, 2], [5, 4, 6, 7], [1, 0, 4, 5], [2, 3, 7, 6], [3, 1, 5, 7], [0, 2, 6, 4]],
@@ -1026,7 +991,7 @@ to prevent unnecessary re-computation.
       return new seen.Shape('text', [surface]);
     },
     extrude: function(points, distance) {
-      var back, front, i, len, p, surfaces, _i, _ref;
+      var back, front, i, len, p, surfaces, _i, _ref6;
       if (distance == null) {
         distance = 1;
       }
@@ -1049,7 +1014,7 @@ to prevent unnecessary re-computation.
         }
         return _results;
       })());
-      for (i = _i = 1, _ref = points.length; 1 <= _ref ? _i < _ref : _i > _ref; i = 1 <= _ref ? ++_i : --_i) {
+      for (i = _i = 1, _ref6 = points.length; 1 <= _ref6 ? _i < _ref6 : _i > _ref6; i = 1 <= _ref6 ? ++_i : --_i) {
         surfaces.push(new seen.Surface([front.points[i - 1].copy(), back.points[i - 1].copy(), back.points[i].copy(), front.points[i].copy()]));
       }
       len = points.length;
@@ -1084,11 +1049,11 @@ to prevent unnecessary re-computation.
       return new seen.Shape('path', [new seen.Surface(points)]);
     },
     custom: function(s) {
-      var f, p, surfaces, _i, _len, _ref;
+      var f, p, surfaces, _i, _len, _ref6;
       surfaces = [];
-      _ref = s.surfaces;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        f = _ref[_i];
+      _ref6 = s.surfaces;
+      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+        f = _ref6[_i];
         surfaces.push(new seen.Surface((function() {
           var _j, _len1, _results;
           _results = [];
@@ -1103,8 +1068,6 @@ to prevent unnecessary re-computation.
     }
   };
 
-}).call(this);
-(function() {
   seen.Projections = {
     perspectiveFov: function(fovyInDegrees, front) {
       var tan;
@@ -1192,13 +1155,6 @@ to prevent unnecessary re-computation.
       return new seen.Matrix().scale(width / 2, -height / 2).translate(x + width / 2, y + height / 2);
     }
   };
-
-}).call(this);
-(function() {
-  var _line, _svg,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   _svg = function(name) {
     return document.createElementNS('http://www.w3.org/2000/svg', name);
@@ -1403,10 +1359,6 @@ to prevent unnecessary re-computation.
 
   })();
 
-}).call(this);
-(function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
   seen.Scene = (function() {
     Scene.prototype.defaults = {
       cullBackfaces: true,
@@ -1453,15 +1405,15 @@ to prevent unnecessary re-computation.
       projection = this.projection.multiply(this.viewport);
       this.surfaces.length = 0;
       this.group.eachTransformedShape(function(shape, transform) {
-        var render, surface, _i, _len, _ref, _ref1, _ref2, _results;
-        _ref = shape.surfaces;
+        var render, surface, _i, _len, _ref6, _ref7, _ref8, _results;
+        _ref6 = shape.surfaces;
         _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          surface = _ref[_i];
+        for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+          surface = _ref6[_i];
           render = surface.updateRenderData(transform, projection);
           if (!_this.cullBackfaces || !surface.cullBackfaces || render.projected.normal.z < 0) {
-            render.fill = (_ref1 = surface.fill) != null ? _ref1.render(_this.lights, _this.shader, render.transformed) : void 0;
-            render.stroke = (_ref2 = surface.stroke) != null ? _ref2.render(_this.lights, _this.shader, render.transformed) : void 0;
+            render.fill = (_ref7 = surface.fill) != null ? _ref7.render(_this.lights, _this.shader, render.transformed) : void 0;
+            render.stroke = (_ref8 = surface.stroke) != null ? _ref8.render(_this.lights, _this.shader, render.transformed) : void 0;
             _results.push(_this.surfaces.push(surface));
           } else {
             _results.push(void 0);

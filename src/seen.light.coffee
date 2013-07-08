@@ -1,3 +1,7 @@
+# ## Lighting
+# #### Lights and various shaders
+# ***
+
 class seen.Light extends seen.Transformable
   constructor: (opts) ->
     seen.Util.defaults(@, opts,

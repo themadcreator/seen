@@ -4,7 +4,7 @@
   "version"     : "0.0.1",
   "private"     : true,
   "scripts": {
-    "prepublish" : "cake build",
+    "prepublish" : "cake build docs",
     "start"      : "./node_modules/.bin/node-dev app.coffee"
   },
   "dependencies": {
@@ -14,6 +14,7 @@
     "uglify-js"     : "*",
     "coffee-script" : "*",
     "path"          : "*",
-    "node-dev"      : "*"
+    "node-dev"      : "*",
+    "docco"         : "*"
   }
 }
