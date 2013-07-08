@@ -96,4 +96,3 @@ seen.Shaders = {
   ambient : new Ambient()
   flat    : new Flat()
 }
-

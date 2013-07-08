@@ -1195,16 +1195,12 @@ to prevent unnecessary re-computation.
 
 }).call(this);
 (function() {
-  var _line, _svg, _svgRaw,
+  var _line, _svg,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   _svg = function(name) {
-    return $(_svgRaw(name));
-  };
-
-  _svgRaw = function(name) {
     return document.createElementNS('http://www.w3.org/2000/svg', name);
   };
 
@@ -1316,7 +1312,7 @@ to prevent unnecessary re-computation.
       var children, current, path;
       children = this._g.childNodes;
       if (this._i >= children.length) {
-        path = _svgRaw(type);
+        path = _svg(type);
         this._g.appendChild(path);
         this._i++;
         return path;
@@ -1326,7 +1322,7 @@ to prevent unnecessary re-computation.
         this._i++;
         return current;
       } else {
-        path = _svgRaw(type);
+        path = _svg(type);
         this._g.replaceChild(path, current);
         this._i++;
         return path;
@@ -1345,7 +1341,7 @@ to prevent unnecessary re-computation.
 
     SvgCanvas.prototype.layer = function(name, component) {
       var layer;
-      layer = this.layers[name] = _svgRaw('g');
+      layer = this.layers[name] = _svg('g');
       this.svg.appendChild(layer);
       if (component != null) {
         component.addTo(layer);
@@ -1361,14 +1357,17 @@ to prevent unnecessary re-computation.
     function SvgRenderDebug(scene) {
       this._renderEnd = __bind(this._renderEnd, this);
       this._renderStart = __bind(this._renderStart, this);
-      this._text = _svg('text').css('text-anchor', 'end').attr('y', 20);
+      this._text = _svg('text');
+      this._text.setAttribute('style', 'text-anchor:end;');
+      this._text.setAttribute('x', 500 - 10);
+      this._text.setAttribute('y', '20');
       this._fps = 30;
       scene.on('beforeRender.debug', this._renderStart);
       scene.on('afterRender.debug', this._renderEnd);
     }
 
     SvgRenderDebug.prototype.addTo = function(layer) {
-      return this._text.attr('x', 500 - 10).appendTo(layer);
+      return layer.appendChild(this._text);
     };
 
     SvgRenderDebug.prototype._renderStart = function() {
@@ -1381,7 +1380,7 @@ to prevent unnecessary re-computation.
       if (frameTime !== NaN) {
         this._fps += (frameTime - this._fps) / 20;
       }
-      return this._text.text("fps: " + (this._fps.toFixed(1)) + " surfaces: " + e.surfaces.length);
+      return this._text.textContent = "fps: " + (this._fps.toFixed(1)) + " surfaces: " + e.surfaces.length;
     };
 
     return SvgRenderDebug;
@@ -1392,10 +1391,12 @@ to prevent unnecessary re-computation.
     function SvgFillRect() {}
 
     SvgFillRect.prototype.addTo = function(layer) {
-      return _svg('rect').css('fill', '#EEE').attr({
-        width: 500,
-        height: 500
-      }).appendTo(layer);
+      var rect;
+      rect = _svg('rect');
+      rect.setAttribute('fill', '#EEE');
+      rect.setAttribute('width', 500);
+      rect.setAttribute('height', 500);
+      return layer.appendChild(rect);
     };
 
     return SvgFillRect;

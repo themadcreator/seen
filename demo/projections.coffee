@@ -1,4 +1,3 @@
-seen = (exports ? this).seen ?= {}
 
 seen.perpective100x100 = () ->
   scene = new seen.Scene

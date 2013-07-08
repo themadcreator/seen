@@ -1,5 +1,6 @@
 TODO before v1.0
   Quaternion Mouse Rotation
+  Viewport-aligned projection
 
 TODO Features
   Shadow Casting
@@ -7,7 +8,9 @@ TODO Features
   Animation
   Human-Scale Articulated Skeleton
 
-  3D to Planar 2D transformation projection
+  isometric projection
+
+  3D ortho to 2D affine projection
     Image Textures
 
   Alternate Renderers

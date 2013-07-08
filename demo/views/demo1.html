@@ -1,0 +1,14 @@
+{% extends 'demo-template.html' %}
+
+{% block demo %}
+<script type="text/coffeescript" src="/demo.coffee"></script>
+<script type="text/coffeescript">
+  scene = seen.demoScene()
+  scene.renderer = new seen.SvgRenderer()
+  canvas = new seen.SvgCanvas(document.getElementById('seen-canvas'))
+    .layer('background', new seen.SvgFillRect())
+    .layer('scene', scene.renderer)
+    .layer('foreground', new seen.SvgRenderDebug(scene))
+  scene.startRenderLoop()
+</script>
+{% endblock %}

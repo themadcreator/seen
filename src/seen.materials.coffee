@@ -69,5 +69,3 @@ class seen.Material
   render : (lights, shader, renderData) ->
     renderShader = @shader ? shader
     return renderShader.shade(lights, renderData, @)
-
-

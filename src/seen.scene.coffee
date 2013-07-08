@@ -28,19 +28,23 @@ class seen.Scene
     return @
 
   renderSurfaces: () =>
-    # compute tranformation matrix
+    # compute projection matrix
     projection = @projection.multiply(@viewport)
 
-    # project surface geometry and shade
+    # clear renderable surfaces array
     @surfaces.length = 0
     @group.eachTransformedShape (shape, transform) =>
       for surface in shape.surfaces
+        # compute transformed and projected geometry
         render = surface.updateRenderData(transform, projection)
         
+        # test for culling
         if (not @cullBackfaces or not surface.cullBackfaces or render.projected.normal.z < 0)
+          # apply material shading
           render.fill   = surface.fill?.render(@lights, @shader, render.transformed)
           render.stroke = surface.stroke?.render(@lights, @shader, render.transformed)
 
+          # add surface to renderable surfaces array
           @surfaces.push(surface)
 
     # sort for painter's algorithm

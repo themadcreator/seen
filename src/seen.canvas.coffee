@@ -1,8 +1,5 @@
 
 _svg = (name) ->
-  return $(_svgRaw(name))
-
-_svgRaw = (name) ->
   return document.createElementNS('http://www.w3.org/2000/svg', name)
 
 _line = d3.svg.line()
@@ -76,7 +73,7 @@ class seen.SvgRenderer extends seen.Renderer
   _manifest : (type) ->
     children = @_g.childNodes
     if @_i >= children.length
-      path = _svgRaw(type)
+      path = _svg(type)
       @_g.appendChild(path)
       @_i++
       return path
@@ -86,7 +83,7 @@ class seen.SvgRenderer extends seen.Renderer
       @_i++
       return current
     else
-      path = _svgRaw(type)
+      path = _svg(type)
       @_g.replaceChild(path, current)
       @_i++
       return path
@@ -96,7 +93,7 @@ class seen.SvgCanvas
     @layers = {}
 
   layer : (name, component) ->
-    layer = @layers[name] = _svgRaw('g')
+    layer = @layers[name] = _svg('g')
     @svg.appendChild(layer)
     if component?
       component.addTo layer
@@ -105,16 +102,16 @@ class seen.SvgCanvas
 class seen.SvgRenderDebug
   constructor: (scene) ->
     @_text = _svg('text')
-      .css('text-anchor', 'end')
-      .attr('y', 20)
+    @_text.setAttribute('style', 'text-anchor:end;')
+    @_text.setAttribute('x', 500 - 10)
+    @_text.setAttribute('y', '20')
+
     @_fps = 30
     scene.on 'beforeRender.debug', @_renderStart
     scene.on 'afterRender.debug', @_renderEnd
 
   addTo: (layer) ->
-    @_text
-      .attr('x', 500 - 10)
-      .appendTo(layer)
+    layer.appendChild(@_text)
 
   _renderStart: =>
     @_renderStartTime = new Date()
@@ -122,12 +119,12 @@ class seen.SvgRenderDebug
   _renderEnd: (e) =>
     frameTime = 1000 / (new Date() - @_renderStartTime)
     if frameTime != NaN then @_fps += (frameTime - @_fps) / 20
-    @_text.text("fps: #{@_fps.toFixed(1)} surfaces: #{e.surfaces.length}")
+    @_text.textContent = "fps: #{@_fps.toFixed(1)} surfaces: #{e.surfaces.length}"
 
 class seen.SvgFillRect
   addTo: (layer) ->
-    _svg('rect')
-      .css('fill', '#EEE').attr(
-        width  : 500
-        height : 500
-      ).appendTo(layer)
+    rect = _svg('rect')
+    rect.setAttribute('fill', '#EEE')
+    rect.setAttribute('width', 500)
+    rect.setAttribute('height', 500)
+    layer.appendChild(rect)
