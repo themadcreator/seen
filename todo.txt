@@ -13,6 +13,8 @@ TODO Demos
   Area Chart
 
 TODO Features
+  Scene sharing across canvases -
+    this requires each canvas has their own copy of the renderdata
   Shadow Casting
   Physics
   Animation

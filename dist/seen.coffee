@@ -332,6 +332,54 @@ seen.Points = {
 class seen.Color
   constructor: (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->
 
+  copy: () ->
+    return new seen.Color(@r, @g, @b, @a)
+
+  scale: (n) ->
+    return @copy()._scale(n)
+
+  offset: (n) ->
+    return @copy()._offset(c)
+
+  clamp: (min, max) ->
+    return @copy()._clamp(min, max)
+
+  addChannels: (c) ->
+    return @copy()._addChannels(c)
+
+  multiplyChannels: (c) ->
+    return @copy()._multiplyChannels(c)
+
+  _scale: (n) ->
+    @r *= n
+    @g *= n
+    @b *= n
+    return @
+
+  _offset: (n) ->
+    @r += n
+    @g += n
+    @b += n
+    return @
+
+  _clamp: (min, max) ->
+    @r = Math.min(max, Math.max(min, @r))
+    @g = Math.min(max, Math.max(min, @g))
+    @b = Math.min(max, Math.max(min, @b))
+    return @
+
+  _addChannels: (c) ->
+    @r += c.r
+    @g += c.g
+    @b += c.b
+    return @
+
+  _multiplyChannels: (c) ->
+    @r *= c.r
+    @g *= c.g
+    @b *= c.b
+    return @
+
   hex: () ->
     c = (@r << 16 | @g << 8 | @b).toString(16)
     while (c.length < 6) then c = '0' + c
@@ -339,6 +387,7 @@ class seen.Color
 
   style: () ->
     return "rgba(#{@r},#{@g},#{@b},#{@a})"
+
 
 seen.Colors = {
   rgb: (r, g, b, a) ->
@@ -405,6 +454,7 @@ class seen.Material
 # #### Lights and various shaders
 # ***
 
+# This model object holds the attributes and transformation of a light source.
 class seen.Light extends seen.Transformable
   constructor: (opts) ->
     seen.Util.defaults(@, opts,
@@ -416,11 +466,21 @@ class seen.Light extends seen.Transformable
   transform: (m) =>
     @point.transform(m)
 
+# The `Shader` class is the base class for all shader objects.
 class seen.Shader
+  # Every `Shader` implementation must override the `shade` method.
+  # 
+  # `lights` is an object containing the ambient, point, and directional light sources.
+  # `renderData` is an instance of `RenderSurface` and contains the transformed and projected surface data.
+  # `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.
   shade: (lights, renderData, material) ->
     # Override this
 
+# The `Phong` shader implements the Phong shading model with a diffuse, specular, and ambient term.
+#
+# See https://en.wikipedia.org/wiki/Phong_reflection_model for more information
 class Phong extends seen.Shader
+  # see `Shader.shade`
   shade: (lights, renderData, material) ->
     c = new seen.Color()
 
@@ -428,32 +488,27 @@ class Phong extends seen.Shader
       Lm  = light.point.subtract(renderData.barycenter).normalize()
       dot = Lm.dot(renderData.normal)
 
+      # diffuse and specular
       if (dot > 0)
-        # diffuse
-        c.r += light.color.r * dot * light.intensity
-        c.g += light.color.g * dot * light.intensity
-        c.b += light.color.b * dot * light.intensity
+        c._addChannels(light.color.scale(dot*light.intensity))
 
-        # specular
-        Rm       = renderData.normal.multiply(dot * 2).subtract(Lm)
-        specular = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent)
-        # TODO specular color from material
-        c.r += specular * light.intensity
-        c.g += specular * light.intensity
-        c.b += specular * light.intensity
+        Rm                = renderData.normal.multiply(dot * 2).subtract(Lm)
+        specularIntensity = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent)
+        # TODO scale by specular color from material if available
+        # specularColor     = seen.C.white #material.specularColor ? seen.C.white
+        # c._addChannels(specularColor.scale(specularIntensity * light.intensity))
+        c._offset(specularIntensity * light.intensity)
 
     for light in lights.ambients
       # ambient
-      c.r += light.color.r * light.intensity
-      c.g += light.color.g * light.intensity
-      c.b += light.color.b * light.intensity
-    
-    c.r = Math.min(0xFF, material.color.r * c.r);
-    c.g = Math.min(0xFF, material.color.g * c.g);
-    c.b = Math.min(0xFF, material.color.b * c.b);
+      c._addChannels(light.color.scale(light.intensity))
+
+    c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
 
+# The `DiffusePhong` shader implements the Phong shading model with a diffuse and ambient term (no specular).
 class DiffusePhong extends seen.Shader
+  # see `Shader.shade`
   shade: (lights, renderData, material) ->
     c = new seen.Color()
 
@@ -461,39 +516,33 @@ class DiffusePhong extends seen.Shader
       Lm  = light.point.subtract(renderData.barycenter).normalize()
       dot = Lm.dot(renderData.normal)
 
+      # diffuse
       if (dot > 0)
-        # diffuse
-        c.r += light.color.r * dot * light.intensity
-        c.g += light.color.g * dot * light.intensity
-        c.b += light.color.b * dot * light.intensity
+        c._addChannels(light.color.scale(dot*light.intensity))
 
+    # ambient
     for light in lights.ambients
-      # ambient
-      c.r += light.color.r * light.intensity
-      c.g += light.color.g * light.intensity
-      c.b += light.color.b * light.intensity
-    
-    c.r = Math.min(0xFF, material.color.r * c.r);
-    c.g = Math.min(0xFF, material.color.g * c.g);
-    c.b = Math.min(0xFF, material.color.b * c.b);
+      c._addChannels(light.color.scale(light.intensity))
+
+    c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
 
+# The `Ambient` shader colors surfaces from ambient light only.
 class Ambient extends seen.Shader
+  # see `Shader.shade`
   shade: (lights, renderData, material) ->
     c = new seen.Color()
 
+    # ambient
     for light in lights.ambients
-      # ambient
-      c.r += light.color.r * light.intensity
-      c.g += light.color.g * light.intensity
-      c.b += light.color.b * light.intensity
-    
-    c.r = Math.min(0xFF, material.color.r * c.r);
-    c.g = Math.min(0xFF, material.color.g * c.g);
-    c.b = Math.min(0xFF, material.color.b * c.b);
+      c._addChannels(light.color.scale(light.intensity))
+
+    c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
 
+# The `Flat` shader colors surfaces with the material color, disregarding all light sources.
 class Flat extends seen.Shader
+  # see `Shader.shade`
   shade: (lights, renderData, material) ->
     return material.color
 

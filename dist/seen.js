@@ -364,6 +364,65 @@
       this.a = a != null ? a : 0xFF;
     }
 
+    Color.prototype.copy = function() {
+      return new seen.Color(this.r, this.g, this.b, this.a);
+    };
+
+    Color.prototype.scale = function(n) {
+      return this.copy()._scale(n);
+    };
+
+    Color.prototype.offset = function(n) {
+      return this.copy()._offset(c);
+    };
+
+    Color.prototype.clamp = function(min, max) {
+      return this.copy()._clamp(min, max);
+    };
+
+    Color.prototype.addChannels = function(c) {
+      return this.copy()._addChannels(c);
+    };
+
+    Color.prototype.multiplyChannels = function(c) {
+      return this.copy()._multiplyChannels(c);
+    };
+
+    Color.prototype._scale = function(n) {
+      this.r *= n;
+      this.g *= n;
+      this.b *= n;
+      return this;
+    };
+
+    Color.prototype._offset = function(n) {
+      this.r += n;
+      this.g += n;
+      this.b += n;
+      return this;
+    };
+
+    Color.prototype._clamp = function(min, max) {
+      this.r = Math.min(max, Math.max(min, this.r));
+      this.g = Math.min(max, Math.max(min, this.g));
+      this.b = Math.min(max, Math.max(min, this.b));
+      return this;
+    };
+
+    Color.prototype._addChannels = function(c) {
+      this.r += c.r;
+      this.g += c.g;
+      this.b += c.b;
+      return this;
+    };
+
+    Color.prototype._multiplyChannels = function(c) {
+      this.r *= c.r;
+      this.g *= c.g;
+      this.b *= c.b;
+      return this;
+    };
+
     Color.prototype.hex = function() {
       var c;
       c = (this.r << 16 | this.g << 8 | this.b).toString(16);
@@ -492,7 +551,7 @@
     }
 
     Phong.prototype.shade = function(lights, renderData, material) {
-      var Lm, Rm, c, dot, light, specular, _i, _j, _len, _len1, _ref1, _ref2;
+      var Lm, Rm, c, dot, light, specularIntensity, _i, _j, _len, _len1, _ref1, _ref2;
       c = new seen.Color();
       _ref1 = lights.points;
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
@@ -500,26 +559,18 @@
         Lm = light.point.subtract(renderData.barycenter).normalize();
         dot = Lm.dot(renderData.normal);
         if (dot > 0) {
-          c.r += light.color.r * dot * light.intensity;
-          c.g += light.color.g * dot * light.intensity;
-          c.b += light.color.b * dot * light.intensity;
+          c._addChannels(light.color.scale(dot * light.intensity));
           Rm = renderData.normal.multiply(dot * 2).subtract(Lm);
-          specular = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent);
-          c.r += specular * light.intensity;
-          c.g += specular * light.intensity;
-          c.b += specular * light.intensity;
+          specularIntensity = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent);
+          c._offset(specularIntensity * light.intensity);
         }
       }
       _ref2 = lights.ambients;
       for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
         light = _ref2[_j];
-        c.r += light.color.r * light.intensity;
-        c.g += light.color.g * light.intensity;
-        c.b += light.color.b * light.intensity;
+        c._addChannels(light.color.scale(light.intensity));
       }
-      c.r = Math.min(0xFF, material.color.r * c.r);
-      c.g = Math.min(0xFF, material.color.g * c.g);
-      c.b = Math.min(0xFF, material.color.b * c.b);
+      c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
     };
 
@@ -544,21 +595,15 @@
         Lm = light.point.subtract(renderData.barycenter).normalize();
         dot = Lm.dot(renderData.normal);
         if (dot > 0) {
-          c.r += light.color.r * dot * light.intensity;
-          c.g += light.color.g * dot * light.intensity;
-          c.b += light.color.b * dot * light.intensity;
+          c._addChannels(light.color.scale(dot * light.intensity));
         }
       }
       _ref3 = lights.ambients;
       for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
         light = _ref3[_j];
-        c.r += light.color.r * light.intensity;
-        c.g += light.color.g * light.intensity;
-        c.b += light.color.b * light.intensity;
+        c._addChannels(light.color.scale(light.intensity));
       }
-      c.r = Math.min(0xFF, material.color.r * c.r);
-      c.g = Math.min(0xFF, material.color.g * c.g);
-      c.b = Math.min(0xFF, material.color.b * c.b);
+      c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
     };
 
@@ -580,13 +625,9 @@
       _ref3 = lights.ambients;
       for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
         light = _ref3[_i];
-        c.r += light.color.r * light.intensity;
-        c.g += light.color.g * light.intensity;
-        c.b += light.color.b * light.intensity;
+        c._addChannels(light.color.scale(light.intensity));
       }
-      c.r = Math.min(0xFF, material.color.r * c.r);
-      c.g = Math.min(0xFF, material.color.g * c.g);
-      c.b = Math.min(0xFF, material.color.b * c.b);
+      c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
     };
 

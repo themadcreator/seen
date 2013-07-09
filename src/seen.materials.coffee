@@ -6,6 +6,54 @@
 class seen.Color
   constructor: (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->
 
+  copy: () ->
+    return new seen.Color(@r, @g, @b, @a)
+
+  scale: (n) ->
+    return @copy()._scale(n)
+
+  offset: (n) ->
+    return @copy()._offset(c)
+
+  clamp: (min, max) ->
+    return @copy()._clamp(min, max)
+
+  addChannels: (c) ->
+    return @copy()._addChannels(c)
+
+  multiplyChannels: (c) ->
+    return @copy()._multiplyChannels(c)
+
+  _scale: (n) ->
+    @r *= n
+    @g *= n
+    @b *= n
+    return @
+
+  _offset: (n) ->
+    @r += n
+    @g += n
+    @b += n
+    return @
+
+  _clamp: (min, max) ->
+    @r = Math.min(max, Math.max(min, @r))
+    @g = Math.min(max, Math.max(min, @g))
+    @b = Math.min(max, Math.max(min, @b))
+    return @
+
+  _addChannels: (c) ->
+    @r += c.r
+    @g += c.g
+    @b += c.b
+    return @
+
+  _multiplyChannels: (c) ->
+    @r *= c.r
+    @g *= c.g
+    @b *= c.b
+    return @
+
   hex: () ->
     c = (@r << 16 | @g << 8 | @b).toString(16)
     while (c.length < 6) then c = '0' + c
@@ -13,6 +61,7 @@ class seen.Color
 
   style: () ->
     return "rgba(#{@r},#{@g},#{@b},#{@a})"
+
 
 seen.Colors = {
   rgb: (r, g, b, a) ->

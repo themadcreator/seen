@@ -1014,6 +1014,54 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
             <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Color</span></span>
   constructor: (<span class="property">@r</span> = <span class="number">0</span>, <span class="property">@g</span> = <span class="number">0</span>, <span class="property">@b</span> = <span class="number">0</span>, <span class="property">@a</span> = <span class="number">0xFF</span>) -&gt;
 
+  copy: () -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Color(<span class="property">@r</span>, <span class="property">@g</span>, <span class="property">@b</span>, <span class="property">@a</span>)
+
+  scale: (n) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._scale(n)
+
+  offset: (n) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._offset(c)
+
+  clamp: (min, max) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._clamp(min, max)
+
+  addChannels: (c) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._addChannels(c)
+
+  multiplyChannels: (c) -&gt;
+    <span class="keyword">return</span> <span class="property">@copy</span>()._multiplyChannels(c)
+
+  _scale: (n) -&gt;
+    <span class="property">@r</span> *= n
+    <span class="property">@g</span> *= n
+    <span class="property">@b</span> *= n
+    <span class="keyword">return</span> @
+
+  _offset: (n) -&gt;
+    <span class="property">@r</span> += n
+    <span class="property">@g</span> += n
+    <span class="property">@b</span> += n
+    <span class="keyword">return</span> @
+
+  _clamp: (min, max) -&gt;
+    <span class="property">@r</span> = Math.min(max, Math.max(min, <span class="property">@r</span>))
+    <span class="property">@g</span> = Math.min(max, Math.max(min, <span class="property">@g</span>))
+    <span class="property">@b</span> = Math.min(max, Math.max(min, <span class="property">@b</span>))
+    <span class="keyword">return</span> @
+
+  _addChannels: (c) -&gt;
+    <span class="property">@r</span> += c.r
+    <span class="property">@g</span> += c.g
+    <span class="property">@b</span> += c.b
+    <span class="keyword">return</span> @
+
+  _multiplyChannels: (c) -&gt;
+    <span class="property">@r</span> *= c.r
+    <span class="property">@g</span> *= c.g
+    <span class="property">@b</span> *= c.b
+    <span class="keyword">return</span> @
+
   hex: () -&gt;
     c = (<span class="property">@r</span> &lt;&lt; <span class="number">16</span> | <span class="property">@g</span> &lt;&lt; <span class="number">8</span> | <span class="property">@b</span>).toString(<span class="number">16</span>)
     <span class="keyword">while</span> (c.length &lt; <span class="number">6</span>) <span class="keyword">then</span> c = <span class="string">'0'</span> + c
@@ -1021,6 +1069,7 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
 
   style: () -&gt;
     <span class="keyword">return</span> <span class="string">"rgba(<span class="subst">#{@r}</span>,<span class="subst">#{@g}</span>,<span class="subst">#{@b}</span>,<span class="subst">#{@a}</span>)"</span>
+
 
 seen.Colors = {
   rgb: (r, g, b, a) -&gt;
@@ -1106,6 +1155,7 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
               <h2>Lighting</h2>
 <h4>Lights and various shaders</h4>
 <hr>
+<p>This model object holds the attributes and transformation of a light source.</p>
 
             </div>
             
@@ -1118,10 +1168,7 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
       )
   
   transform: (m) =&gt;
-    <span class="property">@point</span>.transform(m)
-
-<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
-  shade: (lights, renderData, material) -&gt;</pre></div></div>
+    <span class="property">@point</span>.transform(m)</pre></div></div>
             
         </li>
         
@@ -1132,19 +1179,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
-              <p>Override this</p>
+              <p>The <code>Shader</code> class is the base class for all shader objects.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Phong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
-  shade: (lights, renderData, material) -&gt;
-    c = <span class="keyword">new</span> seen.Color()
-
-    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
-      Lm  = light.point.subtract(renderData.barycenter).normalize()
-      dot = Lm.dot(renderData.normal)
-
-      <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
             
         </li>
         
@@ -1155,13 +1194,14 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
-              <p>diffuse</p>
+              <p>Every <code>Shader</code> implementation must override the <code>shade</code> method.</p>
+<p><code>lights</code> is an object containing the ambient, point, and directional light sources.
+<code>renderData</code> is an instance of <code>RenderSurface</code> and contains the transformed and projected surface data.
+<code>material</code> is an instance of <code>Material</code> and contains the color and other attributes for determining how light reflects off the surface.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        c.r += light.color.r * dot * light.intensity
-        c.g += light.color.g * dot * light.intensity
-        c.b += light.color.b * dot * light.intensity</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;</pre></div></div>
             
         </li>
         
@@ -1172,12 +1212,13 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-61">&#182;</a>
               </div>
-              <p>specular</p>
+              <p>Override this</p>
+<p>The <code>Phong</code> shader implements the Phong shading model with a diffuse, specular, and ambient term.</p>
+<p>See <a href="https://en.wikipedia.org/wiki/Phong_reflection_model">https://en.wikipedia.org/wiki/Phong_reflection_model</a> for more information</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        Rm       = renderData.normal.multiply(dot * <span class="number">2</span>).subtract(Lm)
-        specular = Math.pow(<span class="number">1</span> + Rm.dot(seen.Points.Z), material.specularExponent)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Phong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
             
         </li>
         
@@ -1188,15 +1229,16 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
-              <p>TODO specular color from material</p>
+              <p>see <code>Shader.shade</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        c.r += specular * light.intensity
-        c.g += specular * light.intensity
-        c.b += specular * light.intensity
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()
 
-    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients</pre></div></div>
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
+      Lm  = light.point.subtract(renderData.barycenter).normalize()
+      dot = Lm.dot(renderData.normal)</pre></div></div>
             
         </li>
         
@@ -1207,28 +1249,15 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
-              <p>ambient</p>
+              <p>diffuse and specular</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      c.r += light.color.r * light.intensity
-      c.g += light.color.g * light.intensity
-      c.b += light.color.b * light.intensity
-    
-    c.r = Math.min(<span class="number">0xFF</span>, material.color.r * c.r);
-    c.g = Math.min(<span class="number">0xFF</span>, material.color.g * c.g);
-    c.b = Math.min(<span class="number">0xFF</span>, material.color.b * c.b);
-    <span class="keyword">return</span> c
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)
+        c._addChannels(light.color.scale(dot*light.intensity))
 
-<span class="class"><span class="keyword">class</span> <span class="title">DiffusePhong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
-  shade: (lights, renderData, material) -&gt;
-    c = <span class="keyword">new</span> seen.Color()
-
-    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
-      Lm  = light.point.subtract(renderData.barycenter).normalize()
-      dot = Lm.dot(renderData.normal)
-
-      <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
+        Rm                = renderData.normal.multiply(dot * <span class="number">2</span>).subtract(Lm)
+        specularIntensity = Math.pow(<span class="number">1</span> + Rm.dot(seen.Points.Z), material.specularExponent)</pre></div></div>
             
         </li>
         
@@ -1239,13 +1268,13 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-64">&#182;</a>
               </div>
-              <p>diffuse</p>
+              <p>TODO scale by specular color from material if available
+specularColor     = seen.C.white #material.specularColor ? seen.C.white
+c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        c.r += light.color.r * dot * light.intensity
-        c.g += light.color.g * dot * light.intensity
-        c.b += light.color.b * dot * light.intensity
+            <div class="content"><div class='highlight'><pre>        c._offset(specularIntensity * light.intensity)
 
     <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients</pre></div></div>
             
@@ -1262,20 +1291,10 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      c.r += light.color.r * light.intensity
-      c.g += light.color.g * light.intensity
-      c.b += light.color.b * light.intensity
-    
-    c.r = Math.min(<span class="number">0xFF</span>, material.color.r * c.r);
-    c.g = Math.min(<span class="number">0xFF</span>, material.color.g * c.g);
-    c.b = Math.min(<span class="number">0xFF</span>, material.color.b * c.b);
-    <span class="keyword">return</span> c
+            <div class="content"><div class='highlight'><pre>      c._addChannels(light.color.scale(light.intensity))
 
-<span class="class"><span class="keyword">class</span> <span class="title">Ambient</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
-  shade: (lights, renderData, material) -&gt;
-    c = <span class="keyword">new</span> seen.Color()
-
-    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients</pre></div></div>
+    c._multiplyChannels(material.color)._clamp(<span class="number">0</span>, <span class="number">0xFF</span>)
+    <span class="keyword">return</span> c</pre></div></div>
             
         </li>
         
@@ -1286,21 +1305,146 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
+              <p>The <code>DiffusePhong</code> shader implements the Phong shading model with a diffuse and ambient term (no specular).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">DiffusePhong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-67">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-67">&#182;</a>
+              </div>
+              <p>see <code>Shader.shade</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
+      Lm  = light.point.subtract(renderData.barycenter).normalize()
+      dot = Lm.dot(renderData.normal)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+              </div>
+              <p>diffuse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)
+        c._addChannels(light.color.scale(dot*light.intensity))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-69">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-69">&#182;</a>
+              </div>
               <p>ambient</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      c.r += light.color.r * light.intensity
-      c.g += light.color.g * light.intensity
-      c.b += light.color.b * light.intensity
-    
-    c.r = Math.min(<span class="number">0xFF</span>, material.color.r * c.r);
-    c.g = Math.min(<span class="number">0xFF</span>, material.color.g * c.g);
-    c.b = Math.min(<span class="number">0xFF</span>, material.color.b * c.b);
-    <span class="keyword">return</span> c
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients
+      c._addChannels(light.color.scale(light.intensity))
 
-<span class="class"><span class="keyword">class</span> <span class="title">Flat</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
-  shade: (lights, renderData, material) -&gt;
+    c._multiplyChannels(material.color)._clamp(<span class="number">0</span>, <span class="number">0xFF</span>)
+    <span class="keyword">return</span> c</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-70">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-70">&#182;</a>
+              </div>
+              <p>The <code>Ambient</code> shader colors surfaces from ambient light only.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Ambient</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-71">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-71">&#182;</a>
+              </div>
+              <p>see <code>Shader.shade</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-72">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-72">&#182;</a>
+              </div>
+              <p>ambient</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients
+      c._addChannels(light.color.scale(light.intensity))
+
+    c._multiplyChannels(material.color)._clamp(<span class="number">0</span>, <span class="number">0xFF</span>)
+    <span class="keyword">return</span> c</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-73">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-73">&#182;</a>
+              </div>
+              <p>The <code>Flat</code> shader colors surfaces with the material color, disregarding all light sources.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Flat</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-74">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-74">&#182;</a>
+              </div>
+              <p>see <code>Shader.shade</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;
     <span class="keyword">return</span> material.color
 
 seen.Shaders = {
@@ -1313,11 +1457,11 @@ seen.Shaders = {
         </li>
         
         
-        <li id="section-67">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-67">&#182;</a>
+                <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
               <h2>Geometry</h2>
 <h4>Groups, shapes, surfaces, and render data</h4>
@@ -1363,11 +1507,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-68">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
               <p>Apply transform to points</p>
 
@@ -1380,11 +1524,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
               <p>Applying the clip is what ultimately scales the x and y coordinates in a perpsective projection</p>
 
@@ -1395,11 +1539,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-70">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
+                <a class="pilcrow" href="#section-78">&#182;</a>
               </div>
               <p>Compute barycenter, which is used in aligning shapes in the painters algorithm</p>
 
@@ -1413,11 +1557,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-71">
+        <li id="section-79">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
+                <a class="pilcrow" href="#section-79">&#182;</a>
               </div>
               <p>Compute normal, which is used for backface culling (when enabled)</p>
 
@@ -1494,11 +1638,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-72">
+        <li id="section-80">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-72">&#182;</a>
+                <a class="pilcrow" href="#section-80">&#182;</a>
               </div>
               <p>Override this</p>
 
@@ -1572,11 +1716,11 @@ seen.Shapes = {
         </li>
         
         
-        <li id="section-73">
+        <li id="section-81">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-73">&#182;</a>
+                <a class="pilcrow" href="#section-81">&#182;</a>
               </div>
               <pre><code>          H
           |</code></pre>
@@ -1781,11 +1925,11 @@ seen.Projections = {
         </li>
         
         
-        <li id="section-74">
+        <li id="section-82">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-74">&#182;</a>
+                <a class="pilcrow" href="#section-82">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix assuming camera is at (0,0,0)</p>
 
@@ -1876,11 +2020,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-75">
+        <li id="section-83">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-75">&#182;</a>
+                <a class="pilcrow" href="#section-83">&#182;</a>
               </div>
               <p>override should return a path renderer</p>
 
@@ -1891,11 +2035,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-76">
+        <li id="section-84">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-76">&#182;</a>
+                <a class="pilcrow" href="#section-84">&#182;</a>
               </div>
               <p>override should return a text renderer</p>
 
@@ -2046,11 +2190,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-77">
+        <li id="section-85">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-77">&#182;</a>
+                <a class="pilcrow" href="#section-85">&#182;</a>
               </div>
               <p>compute projection matrix</p>
 
@@ -2061,11 +2205,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-78">
+        <li id="section-86">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-78">&#182;</a>
+                <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
               <p>clear renderable surfaces array</p>
 
@@ -2078,11 +2222,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-79">
+        <li id="section-87">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-79">&#182;</a>
+                <a class="pilcrow" href="#section-87">&#182;</a>
               </div>
               <p>compute transformed and projected geometry</p>
 
@@ -2093,11 +2237,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-80">
+        <li id="section-88">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-80">&#182;</a>
+                <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
               <p>test for culling</p>
 
@@ -2108,11 +2252,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-81">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-81">&#182;</a>
+                <a class="pilcrow" href="#section-89">&#182;</a>
               </div>
               <p>apply material shading</p>
 
@@ -2124,11 +2268,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-82">
+        <li id="section-90">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-82">&#182;</a>
+                <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
               <p>add surface to renderable surfaces array</p>
 
@@ -2139,11 +2283,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-83">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-83">&#182;</a>
+                <a class="pilcrow" href="#section-91">&#182;</a>
               </div>
               <p>sort for painter&#39;s algorithm</p>
 
