@@ -1,6 +1,7 @@
 # ## Lighting
 # #### Lights and various shaders
-# ***
+# ------------------
+
 
 # This model object holds the attributes and transformation of a light source.
 class seen.Light extends seen.Transformable

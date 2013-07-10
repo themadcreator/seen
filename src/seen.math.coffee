@@ -1,8 +1,7 @@
 
 # ## Math
 # #### Matrices, points, and other mathy stuff
-# ***
-
+# ------------------
 
 # Pool object to speed computation and reduce object creation
 ARRAY_POOL = new Array(16)

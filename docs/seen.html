@@ -27,11 +27,8 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>Declaration of seen namespace</p>
-
+              
             </div>
-            
-            <div class="content"><div class='highlight'><pre>seen = (exports ? <span class="keyword">this</span>).seen ?= {}</pre></div></div>
             
         </li>
         
@@ -39,16 +36,33 @@
         <li id="section-2">
             <div class="annotation">
               
-              <div class="pilwrap for-h2">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <h2>Utils</h2>
-<h4>Utility methods</h4>
+              <p>MIT License</p>
+<p>  Copyright (c) 2013 github/themadcreator</p>
+<p>  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation
+  files (the &quot;Software&quot;), to deal in the Software without
+  restriction, including without limitation the rights to use,
+  copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following
+  conditions:</p>
+<p>  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.</p>
+<p>  THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+  OTHER DEALINGS IN THE SOFTWARE.</p>
+<h2>Init</h2>
 <hr>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>seen.Util = {</pre></div></div>
             
         </li>
         
@@ -58,6 +72,50 @@
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Declaration of seen namespace</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen = (exports ? <span class="keyword">this</span>).seen ?= {}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <h2>Utils</h2>
+<h4>Utility methods</h4>
+<hr>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.Util = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Copies default values. First, overwrite undefined attributes of <code>obj</code> from <code>opts</code>. Second, overwrite undefined attributes of <code>obj</code> from <code>defaults</code>.</p>
 
@@ -72,11 +130,11 @@
         </li>
         
         
-        <li id="section-4">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Returns <code>true</code> iff the supplied <code>Arrays</code> are the same size and contain the same values.</p>
 
@@ -92,16 +150,28 @@
         </li>
         
         
-        <li id="section-5">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <h2>Math</h2>
 <h4>Matrices, points, and other mathy stuff</h4>
 <hr>
-<p>Pool object to speed computation and reduce object creation</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Pool object to speed computation and reduce object creation</p>
 
             </div>
             
@@ -110,11 +180,11 @@
         </li>
         
         
-        <li id="section-6">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Definition of identity matrix values</p>
 
@@ -128,11 +198,11 @@
         </li>
         
         
-        <li id="section-7">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>The <code>Matrix</code> class stores transformations in the scene. These include:
 (1) Camera Projection and Viewport transformations.
@@ -148,11 +218,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-8">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>Accepts a 16-value <code>Array</code>, defaults to the identity matrix.</p>
 
@@ -165,11 +235,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-9">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Returns a new matrix instances with a copy of the value array</p>
 
@@ -181,11 +251,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-10">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>Desctructively resets the matrix to the identity matrix.</p>
 
@@ -198,11 +268,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-11">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>Non-destructively multiply by the Matrix argument, returning a new <code>Matrix</code> object.</p>
 
@@ -214,11 +284,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-12">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>Non-destructively multiply by the 16-value Array argument, returning a new <code>Matrix</code> object.</p>
 
@@ -230,11 +300,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-13">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>Non-destructively apply a rotation about the X axis, returning a new <code>Matrix</code> object. <code>Theta</code> is measured in Radians</p>
 
@@ -246,11 +316,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-14">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>Non-destructively apply a rotation about the Y axis, returning a new <code>Matrix</code> object. <code>Theta</code> is measured in Radians</p>
 
@@ -262,11 +332,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-15">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <p>Non-destructively apply a rotation about the Z axis, returning a new <code>Matrix</code> object. <code>Theta</code> is measured in Radians</p>
 
@@ -278,11 +348,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-16">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-20">&#182;</a>
               </div>
               <p>Non-destructively apply a translation, returning a new <code>Matrix</code> object.</p>
 
@@ -294,11 +364,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-17">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>Non-destructively apply a scale, returning a new <code>Matrix</code> object.</p>
 
@@ -310,11 +380,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-18">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               <p>Destructively multiply by the <code>Matrix</code> argument.</p>
 
@@ -326,11 +396,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-19">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>Destructively multiply by the 16-value <code>Array</code> argument. This method uses the <code>ARRAY_POOL</code>, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.</p>
 
@@ -352,11 +422,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-20">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p>Destructively apply a rotation about the X axis. <code>Theta</code> is measured in Radians</p>
 
@@ -371,11 +441,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-21">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>Destructively apply a rotation about the Y axis. <code>Theta</code> is measured in Radians</p>
 
@@ -390,11 +460,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-22">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               <p>Destructively apply a rotation about the Z axis. <code>Theta</code> is measured in Radians</p>
 
@@ -409,11 +479,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-23">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>Destructively apply a translation. All arguments default to <code>0</code></p>
 
@@ -428,11 +498,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-24">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               <p>Destructively apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, <code>_scale()</code> is equivalent to <code>_scale(1,1,1)</code>, and <code>_scale(1,-1)</code> is equivalent to <code>_scale(1,-1,-1)</code></p>
 
@@ -449,11 +519,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-25">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>A convenience method for constructing Matrix objects.</p>
 
@@ -464,11 +534,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-26">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               <p>A few useful Matrix objects. Be careful not to apply destructive operations to these objects.</p>
 
@@ -484,11 +554,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-27">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p><code>Transformable</code> base class extended by <code>Shape</code> and <code>Group</code>.</p>
 <p>The advantages of keeping transforms in <code>Matrix</code> form are (1) lazy computation of point position (2) ability combine hierarchical transformations easily (3) ability to reset transformations to an original state.</p>
@@ -503,11 +573,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-28">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               <p>Apply a scale. see <code>Matrix._scale</code></p>
 
@@ -520,11 +590,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-29">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>Apply a translation. see <code>Matrix._translate</code></p>
 
@@ -537,11 +607,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-30">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Apply a rotation about the X axis in Radians. see <code>Matrix._rotx</code></p>
 
@@ -554,11 +624,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-31">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Apply a rotation about the Y axis in Radians. see <code>Matrix._roty</code></p>
 
@@ -571,11 +641,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-32">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <p>Apply a rotation about the Z axis in Radians. see <code>Matrix._rotz</code></p>
 
@@ -588,11 +658,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-33">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
               <p>Apply a transformation from the supplied 16-value <code>Array</code>. see <code>Matrix._multiplyM</code></p>
 
@@ -605,11 +675,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-34">
+        <li id="section-38">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-38">&#182;</a>
               </div>
               <p>Apply a transformation from the supplied <code>Matrix</code>. see <code>Matrix._multiply</code></p>
 
@@ -622,11 +692,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-35">
+        <li id="section-39">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-39">&#182;</a>
               </div>
               <p>Resets the transformation.</p>
 
@@ -639,11 +709,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-36">
+        <li id="section-40">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-36">&#182;</a>
+                <a class="pilcrow" href="#section-40">&#182;</a>
               </div>
               <p>The <code>Point</code> object contains x,y,z, and w coordinates. <code>Points</code> support various arithmetic operations with other <code>Points</code>, scalars, or <code>Matrices</code>.</p>
 <p>Similar to the <code>Matrix</code> object. <code>Point</code> objects have <strong>non-destructive</strong> (e.g. <code>add</code>) methods, which return a new <code>Point</code> without modifying the current object, and <strong>destrcutive</strong> (e.g. <code>_add</code>) methods which modify the object.</p>
@@ -656,11 +726,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-37">
+        <li id="section-41">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-37">&#182;</a>
+                <a class="pilcrow" href="#section-41">&#182;</a>
               </div>
               <p>Apply a transformation from the supplied <code>Matrix</code>.</p>
 
@@ -679,11 +749,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-38">
+        <li id="section-42">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-38">&#182;</a>
+                <a class="pilcrow" href="#section-42">&#182;</a>
               </div>
               <p>Copies the values of the supplied <code>Point</code> into this object.</p>
 
@@ -699,11 +769,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-39">
+        <li id="section-43">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-39">&#182;</a>
+                <a class="pilcrow" href="#section-43">&#182;</a>
               </div>
               <p>Creates and returns a new <code>Point</code> with the same values as this object.</p>
 
@@ -715,11 +785,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-40">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-40">&#182;</a>
+                <a class="pilcrow" href="#section-44">&#182;</a>
               </div>
               <p>Non-destructively scales this <code>Point</code> by its magnitude.</p>
 
@@ -731,11 +801,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-41">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-41">&#182;</a>
+                <a class="pilcrow" href="#section-45">&#182;</a>
               </div>
               <p>Non-destructively performs parameter-wise addition with the supplied <code>Point</code>.</p>
 
@@ -747,11 +817,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-42">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-42">&#182;</a>
+                <a class="pilcrow" href="#section-46">&#182;</a>
               </div>
               <p>Non-destructively performs parameter-wise subtraction with the supplied <code>Point</code>.</p>
 
@@ -763,11 +833,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-43">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-43">&#182;</a>
+                <a class="pilcrow" href="#section-47">&#182;</a>
               </div>
               <p>Non-destructively computes the cross product with the supplied <code>Point</code>.</p>
 
@@ -779,11 +849,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-44">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-44">&#182;</a>
+                <a class="pilcrow" href="#section-48">&#182;</a>
               </div>
               <p>Computes the dot product with the supplied <code>Point</code>.</p>
 
@@ -795,11 +865,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-45">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-45">&#182;</a>
+                <a class="pilcrow" href="#section-49">&#182;</a>
               </div>
               <p>Non-destructively multiplies each parameters by the supplied scalar value.</p>
 
@@ -811,11 +881,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-46">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-46">&#182;</a>
+                <a class="pilcrow" href="#section-50">&#182;</a>
               </div>
               <p>Non-destructively divides each parameters by the supplied scalar value.</p>
 
@@ -827,11 +897,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-47">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-47">&#182;</a>
+                <a class="pilcrow" href="#section-51">&#182;</a>
               </div>
               <p>Destructively multiplies each parameters by the supplied scalar value.</p>
 
@@ -846,11 +916,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-48">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-48">&#182;</a>
+                <a class="pilcrow" href="#section-52">&#182;</a>
               </div>
               <p>Destructively divides each parameters by the supplied scalar value.</p>
 
@@ -865,11 +935,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-49">
+        <li id="section-53">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-49">&#182;</a>
+                <a class="pilcrow" href="#section-53">&#182;</a>
               </div>
               <p>Destructively scales this <code>Point</code> by its magnitude.</p>
 
@@ -886,11 +956,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-50">
+        <li id="section-54">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-50">&#182;</a>
+                <a class="pilcrow" href="#section-54">&#182;</a>
               </div>
               <p>Destructively performs parameter-wise addition with the supplied <code>Point</code>.</p>
 
@@ -905,11 +975,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-51">
+        <li id="section-55">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-51">&#182;</a>
+                <a class="pilcrow" href="#section-55">&#182;</a>
               </div>
               <p>Destructively performs parameter-wise subtraction with the supplied <code>Point</code>.</p>
 
@@ -924,11 +994,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-52">
+        <li id="section-56">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-52">&#182;</a>
+                <a class="pilcrow" href="#section-56">&#182;</a>
               </div>
               <p>Destructively computes the cross product with the supplied <code>Point</code>.</p>
 
@@ -949,11 +1019,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-53">
+        <li id="section-57">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-53">&#182;</a>
+                <a class="pilcrow" href="#section-57">&#182;</a>
               </div>
               <p>Convenience method for creating <code>Points</code>.</p>
 
@@ -964,11 +1034,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-54">
+        <li id="section-58">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-54">&#182;</a>
+                <a class="pilcrow" href="#section-58">&#182;</a>
               </div>
               <p>A pool object which prevents us from having to create new <code>Point</code> objects for various calculations, which vastly improves performance.</p>
 
@@ -979,11 +1049,11 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-55">
+        <li id="section-59">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-55">&#182;</a>
+                <a class="pilcrow" href="#section-59">&#182;</a>
               </div>
               <p>A few useful <code>Point</code> objects. Be sure that you don&#39;t invoke destructive methods on these objects.</p>
 
@@ -999,16 +1069,28 @@ Underscored methods (e.g. <code>_translate</code>) are <strong>destructive</stro
         </li>
         
         
-        <li id="section-56">
+        <li id="section-60">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-56">&#182;</a>
+                <a class="pilcrow" href="#section-60">&#182;</a>
               </div>
               <h2>Materials</h2>
 <h4>Colors and surface-material properties used by shaders.</h4>
 <hr>
 
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+              </div>
+              
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Color</span></span>
@@ -1085,11 +1167,11 @@ seen.Colors = {
         </li>
         
         
-        <li id="section-57">
+        <li id="section-62">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-57">&#182;</a>
+                <a class="pilcrow" href="#section-62">&#182;</a>
               </div>
               <p>h, s, l -&gt; [0.0, 1.0]</p>
 
@@ -1146,16 +1228,28 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
         </li>
         
         
-        <li id="section-58">
+        <li id="section-63">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-58">&#182;</a>
+                <a class="pilcrow" href="#section-63">&#182;</a>
               </div>
               <h2>Lighting</h2>
 <h4>Lights and various shaders</h4>
 <hr>
-<p>This model object holds the attributes and transformation of a light source.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-64">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-64">&#182;</a>
+              </div>
+              <p>This model object holds the attributes and transformation of a light source.</p>
 
             </div>
             
@@ -1173,11 +1267,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
         </li>
         
         
-        <li id="section-59">
+        <li id="section-65">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-59">&#182;</a>
+                <a class="pilcrow" href="#section-65">&#182;</a>
               </div>
               <p>The <code>Shader</code> class is the base class for all shader objects.</p>
 
@@ -1188,11 +1282,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
         </li>
         
         
-        <li id="section-60">
+        <li id="section-66">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-60">&#182;</a>
+                <a class="pilcrow" href="#section-66">&#182;</a>
               </div>
               <p>Every <code>Shader</code> implementation must override the <code>shade</code> method.</p>
 <p><code>lights</code> is an object containing the ambient, point, and directional light sources.
@@ -1206,11 +1300,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
         </li>
         
         
-        <li id="section-61">
+        <li id="section-67">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-61">&#182;</a>
+                <a class="pilcrow" href="#section-67">&#182;</a>
               </div>
               <p>Override this</p>
 <p>The <code>Phong</code> shader implements the Phong shading model with a diffuse, specular, and ambient term.</p>
@@ -1223,11 +1317,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
         </li>
         
         
-        <li id="section-62">
+        <li id="section-68">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-62">&#182;</a>
+                <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
               <p>see <code>Shader.shade</code></p>
 
@@ -1243,11 +1337,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
         </li>
         
         
-        <li id="section-63">
+        <li id="section-69">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-63">&#182;</a>
+                <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
               <p>diffuse and specular</p>
 
@@ -1262,11 +1356,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)
         </li>
         
         
-        <li id="section-64">
+        <li id="section-70">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-64">&#182;</a>
+                <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
               <p>TODO scale by specular color from material if available
 specularColor     = seen.C.white #material.specularColor ? seen.C.white
@@ -1281,11 +1375,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-65">
+        <li id="section-71">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-65">&#182;</a>
+                <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
               <p>ambient</p>
 
@@ -1299,11 +1393,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-66">
+        <li id="section-72">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-66">&#182;</a>
+                <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
               <p>The <code>DiffusePhong</code> shader implements the Phong shading model with a diffuse and ambient term (no specular).</p>
 
@@ -1314,11 +1408,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-67">
+        <li id="section-73">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-67">&#182;</a>
+                <a class="pilcrow" href="#section-73">&#182;</a>
               </div>
               <p>see <code>Shader.shade</code></p>
 
@@ -1334,11 +1428,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-68">
+        <li id="section-74">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-68">&#182;</a>
+                <a class="pilcrow" href="#section-74">&#182;</a>
               </div>
               <p>diffuse</p>
 
@@ -1350,11 +1444,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-69">
+        <li id="section-75">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-69">&#182;</a>
+                <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
               <p>ambient</p>
 
@@ -1369,11 +1463,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-70">
+        <li id="section-76">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-70">&#182;</a>
+                <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
               <p>The <code>Ambient</code> shader colors surfaces from ambient light only.</p>
 
@@ -1384,11 +1478,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-71">
+        <li id="section-77">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-71">&#182;</a>
+                <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
               <p>see <code>Shader.shade</code></p>
 
@@ -1400,11 +1494,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-72">
+        <li id="section-78">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-72">&#182;</a>
+                <a class="pilcrow" href="#section-78">&#182;</a>
               </div>
               <p>ambient</p>
 
@@ -1419,11 +1513,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-73">
+        <li id="section-79">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-73">&#182;</a>
+                <a class="pilcrow" href="#section-79">&#182;</a>
               </div>
               <p>The <code>Flat</code> shader colors surfaces with the material color, disregarding all light sources.</p>
 
@@ -1434,11 +1528,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-74">
+        <li id="section-80">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-74">&#182;</a>
+                <a class="pilcrow" href="#section-80">&#182;</a>
               </div>
               <p>see <code>Shader.shade</code></p>
 
@@ -1457,16 +1551,28 @@ seen.Shaders = {
         </li>
         
         
-        <li id="section-75">
+        <li id="section-81">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-75">&#182;</a>
+                <a class="pilcrow" href="#section-81">&#182;</a>
               </div>
               <h2>Geometry</h2>
 <h4>Groups, shapes, surfaces, and render data</h4>
 <hr>
-<p>The <code>RenderSurface</code> object contains the transformed and projected points as well as various data
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-82">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-82">&#182;</a>
+              </div>
+              <p>The <code>RenderSurface</code> object contains the transformed and projected points as well as various data
 needed to render scene shapes.</p>
 <p>Once initialized, the object will have a constant memory footprint
 down to <code>Number</code> primitives. Also, we compare each transform and projection
@@ -1507,11 +1613,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-76">
+        <li id="section-83">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-76">&#182;</a>
+                <a class="pilcrow" href="#section-83">&#182;</a>
               </div>
               <p>Apply transform to points</p>
 
@@ -1524,11 +1630,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-77">
+        <li id="section-84">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-77">&#182;</a>
+                <a class="pilcrow" href="#section-84">&#182;</a>
               </div>
               <p>Applying the clip is what ultimately scales the x and y coordinates in a perpsective projection</p>
 
@@ -1539,11 +1645,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-78">
+        <li id="section-85">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-78">&#182;</a>
+                <a class="pilcrow" href="#section-85">&#182;</a>
               </div>
               <p>Compute barycenter, which is used in aligning shapes in the painters algorithm</p>
 
@@ -1557,11 +1663,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-79">
+        <li id="section-86">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-79">&#182;</a>
+                <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
               <p>Compute normal, which is used for backface culling (when enabled)</p>
 
@@ -1628,21 +1734,45 @@ to prevent unnecessary re-computation.</p>
       <span class="keyword">if</span> child <span class="keyword">instanceof</span> seen.Shape
         f.call(@, child, child.m.multiply(m))
       <span class="keyword">if</span> child <span class="keyword">instanceof</span> seen.Group
-        child.eachTransformedShape(f, child.m.multiply(m))
+        child.eachTransformedShape(f, child.m.multiply(m))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-87">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-87">&#182;</a>
+              </div>
+              <h2>Painters</h2>
+<hr>
 
-
-
-<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Painter</span></span>
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-88">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-88">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Painter</span></span>
   paint : (surface, canvas) -&gt;</pre></div></div>
             
         </li>
         
         
-        <li id="section-80">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-80">&#182;</a>
+                <a class="pilcrow" href="#section-89">&#182;</a>
               </div>
               <p>Override this</p>
 
@@ -1675,11 +1805,35 @@ to prevent unnecessary re-computation.</p>
 seen.Painters = {
   path : <span class="keyword">new</span> PathPainter()
   text : <span class="keyword">new</span> TextPainter()
-}
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-90">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-90">&#182;</a>
+              </div>
+              <h2>Shapes!</h2>
+<hr>
 
-
-
-seen.Shapes = {
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-91">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-91">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.Shapes = {
   _cubeCoordinateMap : [
     [<span class="number">0</span>,<span class="number">1</span>,<span class="number">3</span>,<span class="number">2</span>] <span class="comment"># left</span>
     [<span class="number">5</span>,<span class="number">4</span>,<span class="number">6</span>,<span class="number">7</span>] <span class="comment"># right</span>
@@ -1716,11 +1870,11 @@ seen.Shapes = {
         </li>
         
         
-        <li id="section-81">
+        <li id="section-92">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-81">&#182;</a>
+                <a class="pilcrow" href="#section-92">&#182;</a>
               </div>
               <pre><code>          H
           |</code></pre>
@@ -1912,9 +2066,36 @@ seen.Shapes = {
     <span class="keyword">for</span> f <span class="keyword">in</span> s.surfaces
       surfaces.push <span class="keyword">new</span> seen.Surface((seen.P(p...) <span class="keyword">for</span> p <span class="keyword">in</span> f))
     <span class="keyword">return</span> <span class="keyword">new</span> seen.Shape(<span class="string">'custom'</span>, surfaces)
-}
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-93">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-93">&#182;</a>
+              </div>
+              <h2>Projections</h2>
+<h4>Projections and viewport tranformations.</h4>
+<hr>
 
-seen.Projections = {
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-94">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-94">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.Projections = {
   perspectiveFov : (fovyInDegrees = <span class="number">50</span>, front = <span class="number">100</span>) -&gt;
     tan = front * Math.tan(fovyInDegrees * Math.PI / <span class="number">360.0</span>)
     <span class="keyword">return</span> seen.Projections.perspective(-tan, tan, -tan, tan, front, <span class="number">2</span>*front)
@@ -1925,11 +2106,11 @@ seen.Projections = {
         </li>
         
         
-        <li id="section-82">
+        <li id="section-95">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-82">&#182;</a>
+                <a class="pilcrow" href="#section-95">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix assuming camera is at (0,0,0)</p>
 
@@ -2020,11 +2201,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-83">
+        <li id="section-96">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-83">&#182;</a>
+                <a class="pilcrow" href="#section-96">&#182;</a>
               </div>
               <p>override should return a path renderer</p>
 
@@ -2035,11 +2216,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-84">
+        <li id="section-97">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-84">&#182;</a>
+                <a class="pilcrow" href="#section-97">&#182;</a>
               </div>
               <p>override should return a text renderer</p>
 
@@ -2153,10 +2334,35 @@ _line = d3.svg.line()
     rect.setAttribute(<span class="string">'fill'</span>, <span class="string">'#EEE'</span>)
     rect.setAttribute(<span class="string">'width'</span>, <span class="number">500</span>)
     rect.setAttribute(<span class="string">'height'</span>, <span class="number">500</span>)
-    layer.appendChild(rect)
+    layer.appendChild(rect)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-98">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-98">&#182;</a>
+              </div>
+              <h2>The Scene</h2>
+<hr>
 
-
-<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Scene</span></span>
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-99">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-99">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Scene</span></span>
   defaults:
     cullBackfaces : <span class="literal">true</span>
     projection    : seen.Projections.perspective(-<span class="number">100</span>, <span class="number">100</span>, -<span class="number">100</span>, <span class="number">100</span>, <span class="number">100</span>, <span class="number">300</span>)
@@ -2190,11 +2396,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-85">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-85">&#182;</a>
+                <a class="pilcrow" href="#section-100">&#182;</a>
               </div>
               <p>compute projection matrix</p>
 
@@ -2205,11 +2411,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-86">
+        <li id="section-101">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-86">&#182;</a>
+                <a class="pilcrow" href="#section-101">&#182;</a>
               </div>
               <p>clear renderable surfaces array</p>
 
@@ -2222,11 +2428,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-87">
+        <li id="section-102">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-87">&#182;</a>
+                <a class="pilcrow" href="#section-102">&#182;</a>
               </div>
               <p>compute transformed and projected geometry</p>
 
@@ -2237,11 +2443,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-88">
+        <li id="section-103">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-88">&#182;</a>
+                <a class="pilcrow" href="#section-103">&#182;</a>
               </div>
               <p>test for culling</p>
 
@@ -2252,11 +2458,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-89">
+        <li id="section-104">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-89">&#182;</a>
+                <a class="pilcrow" href="#section-104">&#182;</a>
               </div>
               <p>apply material shading</p>
 
@@ -2268,11 +2474,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-90">
+        <li id="section-105">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-90">&#182;</a>
+                <a class="pilcrow" href="#section-105">&#182;</a>
               </div>
               <p>add surface to renderable surfaces array</p>
 
@@ -2283,11 +2489,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-91">
+        <li id="section-106">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-91">&#182;</a>
+                <a class="pilcrow" href="#section-106">&#182;</a>
               </div>
               <p>sort for painter&#39;s algorithm</p>
 

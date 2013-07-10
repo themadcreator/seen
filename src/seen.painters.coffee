@@ -1,4 +1,7 @@
 
+# ## Painters
+# ------------------
+
 class seen.Painter
   paint : (surface, canvas) ->
     # Override this

@@ -1,8 +1,4 @@
 
-
-# TODO - actually add to top of minified... 
-LICENSE = "/* Copyright github/TheMadCreator #{new Date().getFullYear()} */\n\n"
-
 DISTS = {
   'seen.js' : [
     'src/seen.namespace.coffee'
@@ -34,11 +30,15 @@ task 'build', 'Build and uglify seen', () ->
   # Prepare output path
   if not fs.existsSync(path.join(__dirname, 'dist')) then fs.mkdirSync(path.join(__dirname, 'dist'))
 
+  license = fs.readFileSync(path.join(__dirname, 'LICENSE.md'), 'utf-8')
+  license = license.split('\n').join('\n# ')
+
   for javascript, sources of DISTS
     console.log  "Building #{javascript}..."
 
     # Concat all coffeescript together for Docco
     coffeeCode = sources.map((source) -> fs.readFileSync(source, 'utf-8')).join('\n\n')
+    coffeeCode = "\n\n#{license}\n\n" + coffeeCode
     fs.writeFileSync path.join(__dirname, 'dist', javascript.replace(/\.js$/, '.coffee')), coffeeCode, {flags: 'w'}
     console.log "Joined."
 
@@ -58,8 +58,11 @@ task 'build', 'Build and uglify seen', () ->
 
 task 'docs', 'Build seen documentation', (options) ->
   for javascript, sources of DISTS
-    coffee = path.join(__dirname, 'dist', javascript.replace(/\.js$/, '.coffee'))
-    script = path.join(__dirname, 'node_modules' , 'docco', 'bin', 'docco')
+    coffee = path.join('dist', javascript.replace(/\.js$/, '.coffee'))
+    #script = path.join('node_modules' , 'codo', 'bin', 'codo')
+    script = path.join('node_modules' , 'docco', 'bin', 'docco')
     exec("#{script}  #{coffee}", (err) -> throw err if err)
+    console.log "Documented."
+
 
  

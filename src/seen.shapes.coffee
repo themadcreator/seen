@@ -1,3 +1,5 @@
+# ## Shapes!
+# ------------------
 
 seen.Shapes = {
   _cubeCoordinateMap : [

@@ -1,3 +1,6 @@
+# ## The Scene
+# ------------------
+
 class seen.Scene
   defaults:
     cullBackfaces : true

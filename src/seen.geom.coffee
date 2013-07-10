@@ -1,7 +1,8 @@
 
 # ## Geometry
 # #### Groups, shapes, surfaces, and render data
-# ***
+# ------------------
+
 
 
 # The `RenderSurface` object contains the transformed and projected points as well as various data

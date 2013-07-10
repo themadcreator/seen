@@ -1,9 +1,41 @@
+
+
+# MIT License
+# 
+#   Copyright (c) 2013 github/themadcreator
+# 
+#   Permission is hereby granted, free of charge, to any person
+#   obtaining a copy of this software and associated documentation
+#   files (the "Software"), to deal in the Software without
+#   restriction, including without limitation the rights to use,
+#   copy, modify, merge, publish, distribute, sublicense, and/or sell
+#   copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following
+#   conditions:
+# 
+#   The above copyright notice and this permission notice shall be
+#   included in all copies or substantial portions of the Software.
+# 
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+#   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+#   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+#   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+#   HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+#   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+#   OTHER DEALINGS IN THE SOFTWARE.
+# 
+
+
+# ## Init
+# ------------------
+
 # Declaration of seen namespace
 seen = (exports ? this).seen ?= {}
 
 # ## Utils
 # #### Utility methods
-# ***
+# ------------------
 
 seen.Util = {
   # Copies default values. First, overwrite undefined attributes of `obj` from `opts`. Second, overwrite undefined attributes of `obj` from `defaults`.
@@ -24,8 +56,7 @@ seen.Util = {
 
 # ## Math
 # #### Matrices, points, and other mathy stuff
-# ***
-
+# ------------------
 
 # Pool object to speed computation and reduce object creation
 ARRAY_POOL = new Array(16)
@@ -326,8 +357,7 @@ seen.Points = {
 
 # ## Materials
 # #### Colors and surface-material properties used by shaders.
-# ***
-
+# ------------------
 
 class seen.Color
   constructor: (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->
@@ -452,7 +482,8 @@ class seen.Material
 
 # ## Lighting
 # #### Lights and various shaders
-# ***
+# ------------------
+
 
 # This model object holds the attributes and transformation of a light source.
 class seen.Light extends seen.Transformable
@@ -557,7 +588,8 @@ seen.Shaders = {
 
 # ## Geometry
 # #### Groups, shapes, surfaces, and render data
-# ***
+# ------------------
+
 
 
 # The `RenderSurface` object contains the transformed and projected points as well as various data
@@ -674,6 +706,9 @@ class seen.Group extends seen.Transformable
 
 
 
+# ## Painters
+# ------------------
+
 class seen.Painter
   paint : (surface, canvas) ->
     # Override this
@@ -708,6 +743,8 @@ seen.Painters = {
 }
 
 
+# ## Shapes!
+# ------------------
 
 seen.Shapes = {
   _cubeCoordinateMap : [
@@ -933,6 +970,10 @@ seen.Shapes = {
     return new seen.Shape('custom', surfaces)
 }
 
+# ## Projections
+# #### Projections and viewport tranformations.
+# ------------------
+
 seen.Projections = {
   perspectiveFov : (fovyInDegrees = 50, front = 100) ->
     tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0)
@@ -1138,6 +1179,9 @@ class seen.SvgFillRect
     rect.setAttribute('height', 500)
     layer.appendChild(rect)
 
+
+# ## The Scene
+# ------------------
 
 class seen.Scene
   defaults:

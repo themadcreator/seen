@@ -1,6 +1,6 @@
 # ## Utils
 # #### Utility methods
-# ***
+# ------------------
 
 seen.Util = {
   # Copies default values. First, overwrite undefined attributes of `obj` from `opts`. Second, overwrite undefined attributes of `obj` from `defaults`.
