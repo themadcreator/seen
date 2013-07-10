@@ -2,6 +2,8 @@
 # #### Utility methods
 # ------------------
 
+NEXT_UNIQUE_ID = 1
+
 seen.Util = {
   # Copies default values. First, overwrite undefined attributes of `obj` from `opts`. Second, overwrite undefined attributes of `obj` from `defaults`.
   defaults: (obj, opts, defaults) ->
@@ -16,4 +18,8 @@ seen.Util = {
     for val, i in a
       if not (val == b[i]) then return false
     return true
+
+  # Returns an ID which is unique to this instance of the library
+  uniqueId: () ->
+    return NEXT_UNIQUE_ID++
 }

@@ -1,6 +1,6 @@
 
 
-# MIT License
+# ## MIT License
 # 
 #   Copyright (c) 2013 github/themadcreator
 # 
@@ -28,14 +28,17 @@
 
 
 # ## Init
+# #### Module definition
 # ------------------
 
-# Declaration of seen namespace
-seen = (exports ? this).seen ?= {}
+# Declare and attach seen namespace
+seen = (exports ? this).seen = {}
 
 # ## Utils
 # #### Utility methods
 # ------------------
+
+NEXT_UNIQUE_ID = 1
 
 seen.Util = {
   # Copies default values. First, overwrite undefined attributes of `obj` from `opts`. Second, overwrite undefined attributes of `obj` from `defaults`.
@@ -51,6 +54,10 @@ seen.Util = {
     for val, i in a
       if not (val == b[i]) then return false
     return true
+
+  # Returns an ID which is unique to this instance of the library
+  uniqueId: () ->
+    return NEXT_UNIQUE_ID++
 }
 
 
@@ -356,12 +363,14 @@ seen.Points = {
 
 
 # ## Materials
-# #### Colors and surface-material properties used by shaders.
+# #### Colors and surface material properties used by shaders.
 # ------------------
 
+# `Color` objects store RGB and Alpha values from 0 to 255.
 class seen.Color
   constructor: (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->
 
+  # Returns a new `Color` object with the same rgb and alpha values as the current object
   copy: () ->
     return new seen.Color(@r, @g, @b, @a)
 
@@ -380,49 +389,60 @@ class seen.Color
   multiplyChannels: (c) ->
     return @copy()._multiplyChannels(c)
 
+  # Scales the rgb channels by the supplied scalar value.
   _scale: (n) ->
     @r *= n
     @g *= n
     @b *= n
     return @
 
+  # Offsets each rgb channel by the supplied scalar value.
   _offset: (n) ->
     @r += n
     @g += n
     @b += n
     return @
 
-  _clamp: (min, max) ->
+  # Clamps each rgb channel to the supplied minimum and maximum scalar values.
+  _clamp: (min = 0, max = 0xFF) ->
     @r = Math.min(max, Math.max(min, @r))
     @g = Math.min(max, Math.max(min, @g))
     @b = Math.min(max, Math.max(min, @b))
     return @
 
+  # Adds the channels of the current `Color` with each respective channel from the supplied `Color` object.
   _addChannels: (c) ->
     @r += c.r
     @g += c.g
     @b += c.b
     return @
 
+  # Multiplies the channels of the current `Color` with each respective channel from the supplied `Color` object.
   _multiplyChannels: (c) ->
     @r *= c.r
     @g *= c.g
     @b *= c.b
     return @
 
+  # Converts the `Color` into a hex string of the form "#RRGGBB".
   hex: () ->
     c = (@r << 16 | @g << 8 | @b).toString(16)
     while (c.length < 6) then c = '0' + c
     return '#' + c
 
+  # Converts the `Color` into a CSS-style string of the form "rgba(RR, GG, BB, AA)"
   style: () ->
     return "rgba(#{@r},#{@g},#{@b},#{@a})"
 
 
 seen.Colors = {
+  # Creates a new `Color` using the supplied rgb and alpha values.
+  #
+  # Each value must be in the range [0, 255] or, equivalently, [0x00, 0xFF].
   rgb: (r, g, b, a) ->
     return new seen.Color(r, g, b, a)
 
+  # Creates a new `Color` using the supplied hex string of the form "#RRGGBB".
   hex: (hex) ->
     hex = hex.substring(1) if (hex.charAt(0) == '#')
     return new seen.Color(
@@ -430,11 +450,14 @@ seen.Colors = {
         parseInt(hex.substring(2, 4), 16),
         parseInt(hex.substring(4, 6), 16))
 
-  # h, s, l -> [0.0, 1.0]
+  # Creates a new `Color` using the supplied hue, saturation, and lightness (HSL) values.
+  #
+  # Each value must be in the range [0.0, 1.0].
   hsl: (h, s, l) ->
     r = g = b = 0
     if (s == 0)
-      r = g = b = l # achromatic
+      # When saturation is 0, the color is "achromatic" or "grayscale".
+      r = g = b = l 
     else 
       hue2rgb = (p, q, t) ->
         if (t < 0) 
@@ -460,21 +483,32 @@ seen.Colors = {
     return new seen.Color(r * 255, g * 255, b * 255)
 }
 
+# Shorten name of `Colors` object for convenience.
 seen.C = seen.Colors
+
+# A few `Color`s are supplied for convenience.
 seen.C.black = seen.C.hex('#000000')
 seen.C.white = seen.C.hex('#FFFFFF')
 seen.C.gray  = seen.C.hex('#888888')
 
+# `Material` objects hold the attributes that desribe the color and finish of a surface.
 class seen.Material
   defaults : 
+    # The base color of the material
     color            : seen.C.gray
+    # The `metallic` attribute determines how the specular highlights are calculated. Normally, specular highlights are the color of the light source. If metallic is true, specular highlight colors are determined from the `specularColor` attribute.
+    metallic         : false
+    # The color used for specular highlights when `metallic` is true
     specularColor    : seen.C.white
+    # The `specularExponent` determines how "shiny" the material is. A low exponent will create a low-intesity, diffuse specular shine. A high exponent will create an intense, point-like specular shine.
     specularExponent : 8
+    # A `Shader` object may be supplied to override the shader used for this material. For example, if you want to apply a flat color to text or other shapes, set this value to `seen.Shaders.Flat`.
     shader           : null
 
   constructor : (@color) ->
     seen.Util.defaults(@, {}, @defaults)
 
+  # Apply the shader's shading to this material, with the option to override the shader with the material's shader (if defined).
   render : (lights, shader, renderData) ->
     renderShader = @shader ? shader
     return renderShader.shade(lights, renderData, @)
@@ -493,6 +527,9 @@ class seen.Light extends seen.Transformable
         color     : seen.C.white
         intensity : 0.01
       )
+
+  render : ->
+    @colorIntensity = @color.scale(@intensity)
   
   transform: (m) =>
     @point.transform(m)
@@ -521,7 +558,7 @@ class Phong extends seen.Shader
 
       # diffuse and specular
       if (dot > 0)
-        c._addChannels(light.color.scale(dot*light.intensity))
+        c._addChannels(light.colorIntensity.scale(dot))
 
         Rm                = renderData.normal.multiply(dot * 2).subtract(Lm)
         specularIntensity = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent)
@@ -532,7 +569,7 @@ class Phong extends seen.Shader
 
     for light in lights.ambients
       # ambient
-      c._addChannels(light.color.scale(light.intensity))
+      c._addChannels(light.colorIntensity)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -549,11 +586,11 @@ class DiffusePhong extends seen.Shader
 
       # diffuse
       if (dot > 0)
-        c._addChannels(light.color.scale(dot*light.intensity))
+        c._addChannels(light.colorIntensity.scale(dot))
 
     # ambient
     for light in lights.ambients
-      c._addChannels(light.color.scale(light.intensity))
+      c._addChannels(light.colorIntensity)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -566,7 +603,7 @@ class Ambient extends seen.Shader
 
     # ambient
     for light in lights.ambients
-      c._addChannels(light.color.scale(light.intensity))
+      c._addChannels(light.colorIntensity)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -589,8 +626,6 @@ seen.Shaders = {
 # ## Geometry
 # #### Groups, shapes, surfaces, and render data
 # ------------------
-
-
 
 # The `RenderSurface` object contains the transformed and projected points as well as various data
 # needed to render scene shapes.
@@ -615,7 +650,6 @@ class seen.RenderSurface
   _update: () ->
     @_math(@transformed, @points, @transform, false)
     @_math(@projected, @transformed.points, @projection, true)
-
 
   _initRenderData: ->
     return {
@@ -650,14 +684,10 @@ class seen.Surface
   fill          : new seen.Material(seen.C.gray)
   stroke        : null
 
+  # TODO change to options constructor with defaults
   constructor: (@points, @painter = seen.Painters.path) ->
+    @id = 's' + seen.Util.uniqueId()
 
-  updateRenderData: (transform, projection) =>
-    if not @render? 
-      @render = new seen.RenderSurface(@points, transform, projection)
-    else
-      @render.update(transform, projection)
-    return @render
 
 class seen.Shape extends seen.Transformable
   constructor: (@type, @surfaces) ->
@@ -1201,28 +1231,34 @@ class seen.Scene
       points   : []
       ambients : []
     @surfaces = []
+    @renderModelCache = {}
 
   startRenderLoop: (msecDelay = 30) ->
     setInterval(@render, msecDelay)
 
   render: () =>
     @dispatch.beforeRender()
-    surfaces = @renderSurfaces()
+    surfaces = @_renderSurfaces()
     @renderer.render(surfaces)
     @dispatch.afterRender(surfaces : surfaces)
     return @
-
-  renderSurfaces: () =>
+ 
+  _renderSurfaces: () =>
     # compute projection matrix
     projection = @projection.multiply(@viewport)
+
+    # precompute light data
+    for key, lights of @lights
+      for light in lights
+        light.render()
 
     # clear renderable surfaces array
     @surfaces.length = 0
     @group.eachTransformedShape (shape, transform) =>
       for surface in shape.surfaces
         # compute transformed and projected geometry
-        render = surface.updateRenderData(transform, projection)
-        
+        render = surface.render = @_renderSurface(surface, transform, projection)
+
         # test for culling
         if (not @cullBackfaces or not surface.cullBackfaces or render.projected.normal.z < 0)
           # apply material shading
@@ -1237,4 +1273,12 @@ class seen.Scene
       return  b.render.projected.barycenter.z - a.render.projected.barycenter.z
 
     return @surfaces
+
+  _renderSurface : (surface, transform, projection) ->
+    renderModel = @renderModelCache[surface.id]
+    if not renderModel?
+      renderModel = @renderModelCache[surface.id] = new seen.RenderSurface(surface.points, transform, projection)
+    else
+      renderModel.update(transform, projection)
+    return renderModel
 

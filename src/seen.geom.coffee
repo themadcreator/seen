@@ -3,8 +3,6 @@
 # #### Groups, shapes, surfaces, and render data
 # ------------------
 
-
-
 # The `RenderSurface` object contains the transformed and projected points as well as various data
 # needed to render scene shapes.
 #
@@ -28,7 +26,6 @@ class seen.RenderSurface
   _update: () ->
     @_math(@transformed, @points, @transform, false)
     @_math(@projected, @transformed.points, @projection, true)
-
 
   _initRenderData: ->
     return {
@@ -63,14 +60,9 @@ class seen.Surface
   fill          : new seen.Material(seen.C.gray)
   stroke        : null
 
+  # TODO change to options constructor with defaults
   constructor: (@points, @painter = seen.Painters.path) ->
-
-  updateRenderData: (transform, projection) =>
-    if not @render? 
-      @render = new seen.RenderSurface(@points, transform, projection)
-    else
-      @render.update(transform, projection)
-    return @render
+    @id = 's' + seen.Util.uniqueId()
 
 class seen.Shape extends seen.Transformable
   constructor: (@type, @surfaces) ->

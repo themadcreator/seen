@@ -38,7 +38,7 @@ task 'build', 'Build and uglify seen', () ->
 
     # Concat all coffeescript together for Docco
     coffeeCode = sources.map((source) -> fs.readFileSync(source, 'utf-8')).join('\n\n')
-    coffeeCode = "\n\n#{license}\n\n" + coffeeCode
+    coffeeCode = "\n\n# #{license}\n\n" + coffeeCode
     fs.writeFileSync path.join(__dirname, 'dist', javascript.replace(/\.js$/, '.coffee')), coffeeCode, {flags: 'w'}
     console.log "Joined."
 

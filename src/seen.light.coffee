@@ -11,6 +11,9 @@ class seen.Light extends seen.Transformable
         color     : seen.C.white
         intensity : 0.01
       )
+
+  render : ->
+    @colorIntensity = @color.scale(@intensity)
   
   transform: (m) =>
     @point.transform(m)
@@ -39,7 +42,7 @@ class Phong extends seen.Shader
 
       # diffuse and specular
       if (dot > 0)
-        c._addChannels(light.color.scale(dot*light.intensity))
+        c._addChannels(light.colorIntensity.scale(dot))
 
         Rm                = renderData.normal.multiply(dot * 2).subtract(Lm)
         specularIntensity = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent)
@@ -50,7 +53,7 @@ class Phong extends seen.Shader
 
     for light in lights.ambients
       # ambient
-      c._addChannels(light.color.scale(light.intensity))
+      c._addChannels(light.colorIntensity)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -67,11 +70,11 @@ class DiffusePhong extends seen.Shader
 
       # diffuse
       if (dot > 0)
-        c._addChannels(light.color.scale(dot*light.intensity))
+        c._addChannels(light.colorIntensity.scale(dot))
 
     # ambient
     for light in lights.ambients
-      c._addChannels(light.color.scale(light.intensity))
+      c._addChannels(light.colorIntensity)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -84,7 +87,7 @@ class Ambient extends seen.Shader
 
     # ambient
     for light in lights.ambients
-      c._addChannels(light.color.scale(light.intensity))
+      c._addChannels(light.colorIntensity)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c

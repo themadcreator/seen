@@ -1,11 +1,13 @@
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, POINT_POOL, PathPainter, Phong, TextPainter, seen, _base, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _svg,
+  var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     _this = this;
 
-  seen = (_base = typeof exports !== "undefined" && exports !== null ? exports : this).seen != null ? (_base = typeof exports !== "undefined" && exports !== null ? exports : this).seen : _base.seen = {};
+  seen = (typeof exports !== "undefined" && exports !== null ? exports : this).seen = {};
+
+  NEXT_UNIQUE_ID = 1;
 
   seen.Util = {
     defaults: function(obj, opts, defaults) {
@@ -37,6 +39,9 @@
         }
       }
       return true;
+    },
+    uniqueId: function() {
+      return NEXT_UNIQUE_ID++;
     }
   };
 
@@ -403,6 +408,12 @@
     };
 
     Color.prototype._clamp = function(min, max) {
+      if (min == null) {
+        min = 0;
+      }
+      if (max == null) {
+        max = 0xFF;
+      }
       this.r = Math.min(max, Math.max(min, this.r));
       this.g = Math.min(max, Math.max(min, this.g));
       this.b = Math.min(max, Math.max(min, this.b));
@@ -493,6 +504,7 @@
   seen.Material = (function() {
     Material.prototype.defaults = {
       color: seen.C.gray,
+      metallic: false,
       specularColor: seen.C.white,
       specularExponent: 8,
       shader: null
@@ -524,6 +536,10 @@
         intensity: 0.01
       });
     }
+
+    Light.prototype.render = function() {
+      return this.colorIntensity = this.color.scale(this.intensity);
+    };
 
     Light.prototype.transform = function(m) {
       return this.point.transform(m);
@@ -559,7 +575,7 @@
         Lm = light.point.subtract(renderData.barycenter).normalize();
         dot = Lm.dot(renderData.normal);
         if (dot > 0) {
-          c._addChannels(light.color.scale(dot * light.intensity));
+          c._addChannels(light.colorIntensity.scale(dot));
           Rm = renderData.normal.multiply(dot * 2).subtract(Lm);
           specularIntensity = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent);
           c._offset(specularIntensity * light.intensity);
@@ -568,7 +584,7 @@
       _ref2 = lights.ambients;
       for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
         light = _ref2[_j];
-        c._addChannels(light.color.scale(light.intensity));
+        c._addChannels(light.colorIntensity);
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -595,13 +611,13 @@
         Lm = light.point.subtract(renderData.barycenter).normalize();
         dot = Lm.dot(renderData.normal);
         if (dot > 0) {
-          c._addChannels(light.color.scale(dot * light.intensity));
+          c._addChannels(light.colorIntensity.scale(dot));
         }
       }
       _ref3 = lights.ambients;
       for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
         light = _ref3[_j];
-        c._addChannels(light.color.scale(light.intensity));
+        c._addChannels(light.colorIntensity);
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -625,7 +641,7 @@
       _ref3 = lights.ambients;
       for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
         light = _ref3[_i];
-        c._addChannels(light.color.scale(light.intensity));
+        c._addChannels(light.colorIntensity);
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -742,17 +758,8 @@
     function Surface(points, painter) {
       this.points = points;
       this.painter = painter != null ? painter : seen.Painters.path;
-      this.updateRenderData = __bind(this.updateRenderData, this);
+      this.id = 's' + seen.Util.uniqueId();
     }
-
-    Surface.prototype.updateRenderData = function(transform, projection) {
-      if (this.render == null) {
-        this.render = new seen.RenderSurface(this.points, transform, projection);
-      } else {
-        this.render.update(transform, projection);
-      }
-      return this.render;
-    };
 
     return Surface;
 
@@ -1408,7 +1415,7 @@
     };
 
     function Scene(options) {
-      this.renderSurfaces = __bind(this.renderSurfaces, this);
+      this._renderSurfaces = __bind(this._renderSurfaces, this);
       this.render = __bind(this.render, this);
       seen.Util.defaults(this, options, this.defaults);
       this.dispatch = d3.dispatch('beforeRender', 'afterRender');
@@ -1420,6 +1427,7 @@
         ambients: []
       };
       this.surfaces = [];
+      this.renderModelCache = {};
     }
 
     Scene.prototype.startRenderLoop = function(msecDelay) {
@@ -1432,7 +1440,7 @@
     Scene.prototype.render = function() {
       var surfaces;
       this.dispatch.beforeRender();
-      surfaces = this.renderSurfaces();
+      surfaces = this._renderSurfaces();
       this.renderer.render(surfaces);
       this.dispatch.afterRender({
         surfaces: surfaces
@@ -1440,21 +1448,29 @@
       return this;
     };
 
-    Scene.prototype.renderSurfaces = function() {
-      var projection,
+    Scene.prototype._renderSurfaces = function() {
+      var key, light, lights, projection, _i, _len, _ref6,
         _this = this;
       projection = this.projection.multiply(this.viewport);
+      _ref6 = this.lights;
+      for (key in _ref6) {
+        lights = _ref6[key];
+        for (_i = 0, _len = lights.length; _i < _len; _i++) {
+          light = lights[_i];
+          light.render();
+        }
+      }
       this.surfaces.length = 0;
       this.group.eachTransformedShape(function(shape, transform) {
-        var render, surface, _i, _len, _ref6, _ref7, _ref8, _results;
-        _ref6 = shape.surfaces;
+        var render, surface, _j, _len1, _ref7, _ref8, _ref9, _results;
+        _ref7 = shape.surfaces;
         _results = [];
-        for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
-          surface = _ref6[_i];
-          render = surface.updateRenderData(transform, projection);
+        for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
+          surface = _ref7[_j];
+          render = surface.render = _this._renderSurface(surface, transform, projection);
           if (!_this.cullBackfaces || !surface.cullBackfaces || render.projected.normal.z < 0) {
-            render.fill = (_ref7 = surface.fill) != null ? _ref7.render(_this.lights, _this.shader, render.transformed) : void 0;
-            render.stroke = (_ref8 = surface.stroke) != null ? _ref8.render(_this.lights, _this.shader, render.transformed) : void 0;
+            render.fill = (_ref8 = surface.fill) != null ? _ref8.render(_this.lights, _this.shader, render.transformed) : void 0;
+            render.stroke = (_ref9 = surface.stroke) != null ? _ref9.render(_this.lights, _this.shader, render.transformed) : void 0;
             _results.push(_this.surfaces.push(surface));
           } else {
             _results.push(void 0);
@@ -1466,6 +1482,17 @@
         return b.render.projected.barycenter.z - a.render.projected.barycenter.z;
       });
       return this.surfaces;
+    };
+
+    Scene.prototype._renderSurface = function(surface, transform, projection) {
+      var renderModel;
+      renderModel = this.renderModelCache[surface.id];
+      if (renderModel == null) {
+        renderModel = this.renderModelCache[surface.id] = new seen.RenderSurface(surface.points, transform, projection);
+      } else {
+        renderModel.update(transform, projection);
+      }
+      return renderModel;
     };
 
     return Scene;

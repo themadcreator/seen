@@ -1,6 +1,7 @@
 
 # ## Init
+# #### Module definition
 # ------------------
 
-# Declaration of seen namespace
-seen = (exports ? this).seen ?= {}
+# Declare and attach seen namespace
+seen = (exports ? this).seen = {}

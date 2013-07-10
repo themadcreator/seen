@@ -19,28 +19,34 @@ class seen.Scene
       points   : []
       ambients : []
     @surfaces = []
+    @renderModelCache = {}
 
   startRenderLoop: (msecDelay = 30) ->
     setInterval(@render, msecDelay)
 
   render: () =>
     @dispatch.beforeRender()
-    surfaces = @renderSurfaces()
+    surfaces = @_renderSurfaces()
     @renderer.render(surfaces)
     @dispatch.afterRender(surfaces : surfaces)
     return @
-
-  renderSurfaces: () =>
+ 
+  _renderSurfaces: () =>
     # compute projection matrix
     projection = @projection.multiply(@viewport)
+
+    # precompute light data
+    for key, lights of @lights
+      for light in lights
+        light.render()
 
     # clear renderable surfaces array
     @surfaces.length = 0
     @group.eachTransformedShape (shape, transform) =>
       for surface in shape.surfaces
         # compute transformed and projected geometry
-        render = surface.updateRenderData(transform, projection)
-        
+        render = surface.render = @_renderSurface(surface, transform, projection)
+
         # test for culling
         if (not @cullBackfaces or not surface.cullBackfaces or render.projected.normal.z < 0)
           # apply material shading
@@ -55,4 +61,12 @@ class seen.Scene
       return  b.render.projected.barycenter.z - a.render.projected.barycenter.z
 
     return @surfaces
+
+  _renderSurface : (surface, transform, projection) ->
+    renderModel = @renderModelCache[surface.id]
+    if not renderModel?
+      renderModel = @renderModelCache[surface.id] = new seen.RenderSurface(surface.points, transform, projection)
+    else
+      renderModel.update(transform, projection)
+    return renderModel
 
