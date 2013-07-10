@@ -1991,7 +1991,6 @@ to prevent unnecessary re-computation.</p>
             <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@points</span>, <span class="property">@painter</span> = seen.Painters.path) -&gt;
     <span class="property">@id</span> = <span class="string">'s'</span> + seen.Util.uniqueId()
 
-
 <span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Shape</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Transformable</span></span>
   constructor: (<span class="property">@type</span>, <span class="property">@surfaces</span>) -&gt;
     <span class="keyword">super</span>()
@@ -2117,7 +2116,8 @@ seen.Painters = {
               <div class="pilwrap for-h2">
                 <a class="pilcrow" href="#section-112">&#182;</a>
               </div>
-              <h2>Shapes!</h2>
+              <h2>Shapes</h2>
+<h4>Shape primitives and shape-making methods</h4>
 <hr>
 
             </div>
@@ -2150,100 +2150,6 @@ seen.Painters = {
       spts = (points[c].copy() <span class="keyword">for</span> c <span class="keyword">in</span> coords)
       surfaces.push(<span class="keyword">new</span> seen.Surface(spts))
     <span class="keyword">return</span> surfaces
-
-  joints: (n, unitshape) -&gt;
-    unitshape ?= <span class="property">@unitcube</span>
-    g = <span class="keyword">new</span> seen.Group
-    joints = []
-    <span class="keyword">for</span> i <span class="keyword">in</span> [<span class="number">0.</span>..n]
-      joints.push g
-      g = g.append()
-        .translate(-<span class="number">0.5</span>, -<span class="number">1</span>, -<span class="number">0.5</span>)
-        .add(unitshape())
-        .append()
-        .translate(<span class="number">0.5</span>, <span class="number">0</span>, <span class="number">0.5</span>)
-        .append()
-
-    <span class="keyword">return</span> joints
-
-  bipedSkeleton: (unitshape) =&gt;</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-114">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-114">&#182;</a>
-              </div>
-              <pre><code>          H
-          |</code></pre>
-<p> FA - E - A - B - A - E - FA
-              |
-              P
-             / \
-             L L
-             | |
-             K K
-             | |
-             C C
-             | |
-             F F</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    unitshape ?= <span class="property">@unitcube</span>
-
-    makeSkeleton = () =&gt;
-      joints = <span class="property">@joints</span>(<span class="number">3</span>, unitshape)
-      <span class="keyword">return</span> {
-        upperBody : joints[<span class="number">0</span>]
-        torso     : joints[<span class="number">1</span>]
-        pelvis    : joints[<span class="number">2</span>]
-      }
-
-    makeArm = () =&gt;
-      joints = <span class="property">@joints</span>(<span class="number">4</span>, unitshape)
-      <span class="keyword">return</span> {
-        shoulder : joints[<span class="number">0</span>]
-        upperArm : joints[<span class="number">1</span>]
-        elbow    : joints[<span class="number">2</span>]
-        foreArm  : joints[<span class="number">3</span>]
-      }
-
-    makeLeg = () =&gt;
-      joints = <span class="property">@joints</span>(<span class="number">4</span>, unitshape)
-      <span class="keyword">return</span> {
-        upperLeg : joints[<span class="number">0</span>]
-        knee     : joints[<span class="number">1</span>]
-        lowerLeg : joints[<span class="number">2</span>]
-        foot     : joints[<span class="number">3</span>]
-      }
-
-    <span class="function"><span class="title">attachSideJoint</span></span> = (rootjoint, joint, x) =&gt;
-      s = rootjoint
-        .append()
-        .translate(x)
-        .append()
-      s.append()
-        .translate(x)
-        .add(joint)
-      <span class="keyword">return</span> s
-
-    skeleton          = makeSkeleton()
-    skeleton.root     = skeleton.upperBody
-    skeleton.leftArm  = makeArm()
-    skeleton.rightArm = makeArm()
-    skeleton.leftLeg  = makeLeg()
-    skeleton.rightLeg = makeLeg()
-
-    skeleton.leftShoulder  = attachSideJoint(skeleton.upperBody, skeleton.leftArm.shoulder, <span class="number">0.5</span>)
-    skeleton.rightShoulder = attachSideJoint(skeleton.upperBody, skeleton.rightArm.shoulder, -<span class="number">0.5</span>)
-    skeleton.leftHip       = attachSideJoint(skeleton.pelvis, skeleton.leftLeg.upperLeg, <span class="number">0.5</span>)
-    skeleton.rightHip      = attachSideJoint(skeleton.pelvis, skeleton.rightLeg.upperLeg, -<span class="number">0.5</span>)
-
-    <span class="keyword">return</span> skeleton
 
   cube: =&gt;
     points = [
@@ -2372,11 +2278,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-115">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-115">&#182;</a>
+                <a class="pilcrow" href="#section-114">&#182;</a>
               </div>
               <h2>Projections</h2>
 <h4>Projections and viewport tranformations.</h4>
@@ -2387,11 +2293,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-116">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-116">&#182;</a>
+                <a class="pilcrow" href="#section-115">&#182;</a>
               </div>
               
             </div>
@@ -2407,11 +2313,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-117">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-117">&#182;</a>
+                <a class="pilcrow" href="#section-116">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix assuming camera is at (0,0,0)</p>
 
@@ -2502,11 +2408,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-118">
+        <li id="section-117">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-118">&#182;</a>
+                <a class="pilcrow" href="#section-117">&#182;</a>
               </div>
               <p>override should return a path renderer</p>
 
@@ -2517,11 +2423,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-119">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-119">&#182;</a>
+                <a class="pilcrow" href="#section-118">&#182;</a>
               </div>
               <p>override should return a text renderer</p>
 
@@ -2640,11 +2546,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-120">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-120">&#182;</a>
+                <a class="pilcrow" href="#section-119">&#182;</a>
               </div>
               <h2>The Scene</h2>
 <hr>
@@ -2654,11 +2560,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-121">
+        <li id="section-120">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-121">&#182;</a>
+                <a class="pilcrow" href="#section-120">&#182;</a>
               </div>
               
             </div>
@@ -2698,11 +2604,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-122">
+        <li id="section-121">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-122">&#182;</a>
+                <a class="pilcrow" href="#section-121">&#182;</a>
               </div>
               <p>compute projection matrix</p>
 
@@ -2713,11 +2619,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-123">
+        <li id="section-122">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-123">&#182;</a>
+                <a class="pilcrow" href="#section-122">&#182;</a>
               </div>
               <p>precompute light data</p>
 
@@ -2730,11 +2636,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-124">
+        <li id="section-123">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-124">&#182;</a>
+                <a class="pilcrow" href="#section-123">&#182;</a>
               </div>
               <p>clear renderable surfaces array</p>
 
@@ -2747,11 +2653,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-125">
+        <li id="section-124">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-125">&#182;</a>
+                <a class="pilcrow" href="#section-124">&#182;</a>
               </div>
               <p>compute transformed and projected geometry</p>
 
@@ -2762,11 +2668,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-126">
+        <li id="section-125">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-126">&#182;</a>
+                <a class="pilcrow" href="#section-125">&#182;</a>
               </div>
               <p>test for culling</p>
 
@@ -2777,11 +2683,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-127">
+        <li id="section-126">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-127">&#182;</a>
+                <a class="pilcrow" href="#section-126">&#182;</a>
               </div>
               <p>apply material shading</p>
 
@@ -2793,11 +2699,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-128">
+        <li id="section-127">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-128">&#182;</a>
+                <a class="pilcrow" href="#section-127">&#182;</a>
               </div>
               <p>add surface to renderable surfaces array</p>
 
@@ -2808,11 +2714,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-129">
+        <li id="section-128">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-129">&#182;</a>
+                <a class="pilcrow" href="#section-128">&#182;</a>
               </div>
               <p>sort for painter&#39;s algorithm</p>
 

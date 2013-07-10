@@ -1,17 +1,17 @@
 
 DISTS = {
   'seen.js' : [
-    'src/seen.namespace.coffee'
-    'src/seen.util.coffee'
-    'src/seen.math.coffee'
-    'src/seen.materials.coffee'
-    'src/seen.light.coffee'
-    'src/seen.geom.coffee'
-    'src/seen.painters.coffee'
-    'src/seen.shapes.coffee'
-    'src/seen.camera.coffee'
-    'src/seen.canvas.coffee'
-    'src/seen.scene.coffee'
+    'src/namespace.coffee'
+    'src/util.coffee'
+    'src/math.coffee'
+    'src/materials.coffee'
+    'src/light.coffee'
+    'src/geom.coffee'
+    'src/painters.coffee'
+    'src/shapes/primitives.coffee'
+    'src/camera.coffee'
+    'src/canvas.coffee'
+    'src/scene.coffee'
   ]
 }
 
