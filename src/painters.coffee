@@ -3,31 +3,29 @@
 # ------------------
 
 class seen.Painter
-  paint : (surface, canvas) ->
+  paint : (renderObject, canvas) ->
     # Override this
 
 class PathPainter extends seen.Painter
-  paint : (surface, canvas) ->
-    render = surface.render
+  paint : (renderObject, canvas) ->
     canvas.path()
-      .path(render.projected.points)
+      .path(renderObject.renderModel.projected.points)
       .style(
-        fill           : if not render.fill? then 'none' else render.fill.hex()
-        stroke         : if not render.stroke? then 'none' else render.stroke.hex()
-        'fill-opacity' : if not surface.fill? then 1.0 else (surface.fill.a / 0xFF)
-        'stroke-width' : surface['stroke-width'] ? 1
+        fill           : if not renderObject.renderModel.fill? then 'none' else renderObject.renderModel.fill.hex()
+        stroke         : if not renderObject.renderModel.stroke? then 'none' else renderObject.renderModel.stroke.hex()
+        'fill-opacity' : if not renderObject.surface.fill? then 1.0 else (renderObject.surface.fill.a / 0xFF)
+        'stroke-width' : renderObject.surface['stroke-width'] ? 1
       )
 
 class TextPainter extends seen.Painter
   paint : (surface, canvas) ->
-    render = surface.render
     canvas.text()
-      .text(surface.text)
-      .transform(render.transform.multiply render.projection)
+      .text(renderObject.surface.text)
+      .transform(renderObject.renderModel.transform.multiply renderObject.renderModel.projection)
       .style(
-        fill          : if not render.fill? then 'none' else render.fill.hex()
-        stroke        : if not render.stroke? then 'none' else render.stroke.hex()
-        'text-anchor' : surface.anchor ? 'middle'
+        fill          : if not renderObject.renderModel.fill? then 'none' else renderObject.renderModel.fill.hex()
+        stroke        : if not renderObject.renderModel.stroke? then 'none' else renderObject.renderModel.stroke.hex()
+        'text-anchor' : renderObject.surface.anchor ? 'middle'
       )
 
 seen.Painters = {

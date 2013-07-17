@@ -1,5 +1,5 @@
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _svg,
+  var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -528,13 +528,16 @@
   seen.Light = (function(_super) {
     __extends(Light, _super);
 
+    Light.prototype.defaults = {
+      point: seen.P(),
+      color: seen.C.white,
+      intensity: 0.01,
+      normal: seen.P(1, -1, -1).normalize()
+    };
+
     function Light(opts) {
       this.transform = __bind(this.transform, this);
-      seen.Util.defaults(this, opts, {
-        point: seen.P(),
-        color: seen.C.white,
-        intensity: 0.01
-      });
+      seen.Util.defaults(this, opts, this.defaults);
     }
 
     Light.prototype.render = function() {
@@ -552,11 +555,35 @@
   seen.Shader = (function() {
     function Shader() {}
 
-    Shader.prototype.shade = function(lights, renderData, material) {};
+    Shader.prototype.shade = function(lights, renderModel, material) {};
 
     return Shader;
 
   })();
+
+  seen.ShaderUtils = {
+    applyDiffuse: function(c, light, lightNormal, surfaceNormal, material) {
+      var dot;
+      dot = lightNormal.dot(surfaceNormal);
+      if (dot > 0) {
+        return c._addChannels(light.colorIntensity.scale(dot));
+      }
+    },
+    applyDiffuseAndSpecular: function(c, light, lightNormal, surfaceNormal, material) {
+      var dot, eyeNormal, reflectionNormal, specularIntensity;
+      dot = lightNormal.dot(surfaceNormal);
+      if (dot > 0) {
+        c._addChannels(light.colorIntensity.scale(dot));
+        eyeNormal = seen.Points.Z;
+        reflectionNormal = surfaceNormal.multiply(dot * 2).subtract(lightNormal);
+        specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent);
+        return c._offset(specularIntensity * light.intensity);
+      }
+    },
+    applyAmbient: function(c, light) {
+      return c._addChannels(light.colorIntensity);
+    }
+  };
 
   Phong = (function(_super) {
     __extends(Phong, _super);
@@ -566,25 +593,24 @@
       return _ref;
     }
 
-    Phong.prototype.shade = function(lights, renderData, material) {
-      var Lm, Rm, c, dot, light, specularIntensity, _i, _j, _len, _len1, _ref1, _ref2;
+    Phong.prototype.shade = function(lights, renderModel, material) {
+      var c, light, lightNormal, _i, _j, _k, _len, _len1, _len2, _ref1, _ref2, _ref3;
       c = new seen.Color();
       _ref1 = lights.points;
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
         light = _ref1[_i];
-        Lm = light.point.subtract(renderData.barycenter).normalize();
-        dot = Lm.dot(renderData.normal);
-        if (dot > 0) {
-          c._addChannels(light.colorIntensity.scale(dot));
-          Rm = renderData.normal.multiply(dot * 2).subtract(Lm);
-          specularIntensity = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent);
-          c._offset(specularIntensity * light.intensity);
-        }
+        lightNormal = light.point.subtract(renderModel.barycenter).normalize();
+        seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material);
       }
-      _ref2 = lights.ambients;
+      _ref2 = lights.directionals;
       for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
         light = _ref2[_j];
-        c._addChannels(light.colorIntensity);
+        seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material);
+      }
+      _ref3 = lights.ambients;
+      for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
+        light = _ref3[_k];
+        seen.ShaderUtils.applyAmbient(c, light);
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -602,22 +628,24 @@
       return _ref1;
     }
 
-    DiffusePhong.prototype.shade = function(lights, renderData, material) {
-      var Lm, c, dot, light, _i, _j, _len, _len1, _ref2, _ref3;
+    DiffusePhong.prototype.shade = function(lights, renderModel, material) {
+      var c, light, lightNormal, _i, _j, _k, _len, _len1, _len2, _ref2, _ref3, _ref4;
       c = new seen.Color();
       _ref2 = lights.points;
       for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
         light = _ref2[_i];
-        Lm = light.point.subtract(renderData.barycenter).normalize();
-        dot = Lm.dot(renderData.normal);
-        if (dot > 0) {
-          c._addChannels(light.colorIntensity.scale(dot));
-        }
+        lightNormal = light.point.subtract(renderModel.barycenter).normalize();
+        seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material);
       }
-      _ref3 = lights.ambients;
+      _ref3 = lights.directionals;
       for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
         light = _ref3[_j];
-        c._addChannels(light.colorIntensity);
+        seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material);
+      }
+      _ref4 = lights.ambients;
+      for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
+        light = _ref4[_k];
+        seen.ShaderUtils.applyAmbient(c, light);
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -635,13 +663,13 @@
       return _ref2;
     }
 
-    Ambient.prototype.shade = function(lights, renderData, material) {
+    Ambient.prototype.shade = function(lights, renderModel, material) {
       var c, light, _i, _len, _ref3;
       c = new seen.Color();
       _ref3 = lights.ambients;
       for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
         light = _ref3[_i];
-        c._addChannels(light.colorIntensity);
+        seen.ShaderUtils.applyAmbient(c, light);
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -659,7 +687,7 @@
       return _ref3;
     }
 
-    Flat.prototype.shade = function(lights, renderData, material) {
+    Flat.prototype.shade = function(lights, renderModel, material) {
       return material.color;
     };
 
@@ -674,8 +702,33 @@
     flat: new Flat()
   };
 
-  seen.RenderSurface = (function() {
-    function RenderSurface(points, transform, projection) {
+  seen.Renderer = (function() {
+    function Renderer(scene) {
+      this.scene = scene;
+      this.render = __bind(this.render, this);
+      this.scene.on('render.renderer', this.render);
+    }
+
+    Renderer.prototype.render = function(renderObjects) {
+      var renderObject, _i, _len;
+      this.reset();
+      for (_i = 0, _len = renderObjects.length; _i < _len; _i++) {
+        renderObject = renderObjects[_i];
+        renderObject.surface.painter.paint(renderObject, this);
+      }
+      return this.hideUnused();
+    };
+
+    Renderer.prototype.path = function() {};
+
+    Renderer.prototype.text = function() {};
+
+    return Renderer;
+
+  })();
+
+  seen.RenderModel = (function() {
+    function RenderModel(points, transform, projection) {
       this.points = points;
       this.transform = transform;
       this.projection = projection;
@@ -684,7 +737,7 @@
       this._update();
     }
 
-    RenderSurface.prototype.update = function(transform, projection) {
+    RenderModel.prototype.update = function(transform, projection) {
       if (seen.Util.arraysEqual(transform.m, this.transform.m) && seen.Util.arraysEqual(projection.m, this.projection.m)) {
 
       } else {
@@ -694,12 +747,12 @@
       }
     };
 
-    RenderSurface.prototype._update = function() {
+    RenderModel.prototype._update = function() {
       this._math(this.transformed, this.points, this.transform, false);
       return this._math(this.projected, this.transformed.points, this.projection, true);
     };
 
-    RenderSurface.prototype._initRenderData = function() {
+    RenderModel.prototype._initRenderData = function() {
       var p;
       return {
         points: (function() {
@@ -719,7 +772,7 @@
       };
     };
 
-    RenderSurface.prototype._math = function(set, points, transform, applyClip) {
+    RenderModel.prototype._math = function(set, points, transform, applyClip) {
       var i, p, sp, _i, _j, _len, _len1, _ref4;
       if (applyClip == null) {
         applyClip = false;
@@ -744,7 +797,7 @@
       return set.normal.set(set.v0._cross(set.v1)._normalize());
     };
 
-    return RenderSurface;
+    return RenderModel;
 
   })();
 
@@ -866,7 +919,7 @@
   seen.Painter = (function() {
     function Painter() {}
 
-    Painter.prototype.paint = function(surface, canvas) {};
+    Painter.prototype.paint = function(renderObject, canvas) {};
 
     return Painter;
 
@@ -880,14 +933,13 @@
       return _ref4;
     }
 
-    PathPainter.prototype.paint = function(surface, canvas) {
-      var render, _ref5;
-      render = surface.render;
-      return canvas.path().path(render.projected.points).style({
-        fill: render.fill == null ? 'none' : render.fill.hex(),
-        stroke: render.stroke == null ? 'none' : render.stroke.hex(),
-        'fill-opacity': surface.fill == null ? 1.0 : surface.fill.a / 0xFF,
-        'stroke-width': (_ref5 = surface['stroke-width']) != null ? _ref5 : 1
+    PathPainter.prototype.paint = function(renderObject, canvas) {
+      var _ref5;
+      return canvas.path().path(renderObject.renderModel.projected.points).style({
+        fill: renderObject.renderModel.fill == null ? 'none' : renderObject.renderModel.fill.hex(),
+        stroke: renderObject.renderModel.stroke == null ? 'none' : renderObject.renderModel.stroke.hex(),
+        'fill-opacity': renderObject.surface.fill == null ? 1.0 : renderObject.surface.fill.a / 0xFF,
+        'stroke-width': (_ref5 = renderObject.surface['stroke-width']) != null ? _ref5 : 1
       });
     };
 
@@ -904,12 +956,11 @@
     }
 
     TextPainter.prototype.paint = function(surface, canvas) {
-      var render, _ref6;
-      render = surface.render;
-      return canvas.text().text(surface.text).transform(render.transform.multiply(render.projection)).style({
-        fill: render.fill == null ? 'none' : render.fill.hex(),
-        stroke: render.stroke == null ? 'none' : render.stroke.hex(),
-        'text-anchor': (_ref6 = surface.anchor) != null ? _ref6 : 'middle'
+      var _ref6;
+      return canvas.text().text(renderObject.surface.text).transform(renderObject.renderModel.transform.multiply(renderObject.renderModel.projection)).style({
+        fill: renderObject.renderModel.fill == null ? 'none' : renderObject.renderModel.fill.hex(),
+        stroke: renderObject.renderModel.stroke == null ? 'none' : renderObject.renderModel.stroke.hex(),
+        'text-anchor': (_ref6 = renderObject.surface.anchor) != null ? _ref6 : 'middle'
       });
     };
 
@@ -1063,11 +1114,17 @@
       tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0);
       return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2 * front);
     },
-    orthoExtent: function(extent) {
-      if (extent == null) {
-        extent = 100;
+    orthoExtent: function(extentX, extentY, extentZ) {
+      if (extentX == null) {
+        extentX = 100;
       }
-      return seen.Projections.ortho(-extent, extent, -extent, extent, extent, 2 * extent);
+      if (extentY == null) {
+        extentY = extentX;
+      }
+      if (extentZ == null) {
+        extentZ = extentY;
+      }
+      return seen.Projections.ortho(-extentX, extentX, -extentY, extentY, extentY, 2 * extentY);
     },
     perspective: function(left, right, bottom, top, near, far) {
       var dx, dy, dz, m, near2;
@@ -1136,6 +1193,63 @@
         y = 0;
       }
       return new seen.Matrix().scale(width / 2, -height / 2).translate(x + width / 2, y + height / 2);
+    },
+    matchOrigin: function(width, height, x, y) {
+      if (width == null) {
+        width = 500;
+      }
+      if (height == null) {
+        height = 500;
+      }
+      if (x == null) {
+        x = 0;
+      }
+      if (y == null) {
+        y = 0;
+      }
+      return new seen.Matrix().scale(width, -height).translate(x, y + height);
+    }
+  };
+
+  seen.Camera = (function() {
+    Camera.prototype.defaults = {
+      projection: seen.Projections.orthoExtent(),
+      viewport: seen.Viewports.centerOrigin(),
+      location: seen.P(0, 0, 0)
+    };
+
+    function Camera(options) {
+      seen.Util.defaults(this, options, this.defaults);
+    }
+
+    return Camera;
+
+  })();
+
+  seen.Cameras = {
+    orthoCenterOrigin: function(width, height) {
+      if (width == null) {
+        width = 500;
+      }
+      if (height == null) {
+        height = 500;
+      }
+      return new seen.Camera({
+        projection: seen.Projections.orthoExtent(width / 2, height / 2, height / 2),
+        viewport: seen.Viewports.centerOrigin(width, height)
+      });
+    },
+    orthoMatchOrigin: function(width, height) {
+      if (width == null) {
+        width = 500;
+      }
+      if (height == null) {
+        height = 500;
+      }
+      return new seen.Camera({
+        projection: seen.Projections.ortho(-width, width, -height, height, height, height * 2),
+        viewport: seen.Viewports.matchOrigin(width, height)
+      });
     }
   };
 
@@ -1149,32 +1263,12 @@
     return d.y;
   });
 
-  seen.Renderer = (function() {
-    function Renderer() {}
-
-    Renderer.prototype.render = function(surfaces) {
-      var surface, _i, _len;
-      this.reset();
-      for (_i = 0, _len = surfaces.length; _i < _len; _i++) {
-        surface = surfaces[_i];
-        surface.painter.paint(surface, this);
-      }
-      return this.hideUnused();
-    };
-
-    Renderer.prototype.path = function() {};
-
-    Renderer.prototype.text = function() {};
-
-    return Renderer;
-
-  })();
-
   seen.SvgRenderer = (function(_super) {
     __extends(SvgRenderer, _super);
 
     function SvgRenderer() {
-      this._i = 0;
+      _ref6 = SvgRenderer.__super__.constructor.apply(this, arguments);
+      return _ref6;
     }
 
     SvgRenderer.prototype.addTo = function(layer) {
@@ -1319,7 +1413,7 @@
       if (frameTime !== NaN) {
         this._fps += (frameTime - this._fps) / 20;
       }
-      return this._text.textContent = "fps: " + (this._fps.toFixed(1)) + " surfaces: " + e.surfaces.length;
+      return this._text.textContent = "fps: " + (this._fps.toFixed(1)) + " surfaces: " + e.length;
     };
 
     return SvgRenderDebug;
@@ -1327,14 +1421,17 @@
   })();
 
   seen.SvgFillRect = (function() {
-    function SvgFillRect() {}
+    function SvgFillRect(width, height) {
+      this.width = width != null ? width : 500;
+      this.height = height != null ? height : 500;
+    }
 
     SvgFillRect.prototype.addTo = function(layer) {
       var rect;
       rect = _svg('rect');
       rect.setAttribute('fill', '#EEE');
-      rect.setAttribute('width', 500);
-      rect.setAttribute('height', 500);
+      rect.setAttribute('width', this.width);
+      rect.setAttribute('height', this.width);
       return layer.appendChild(rect);
     };
 
@@ -1345,24 +1442,24 @@
   seen.Scene = (function() {
     Scene.prototype.defaults = {
       cullBackfaces: true,
-      projection: seen.Projections.perspective(-100, 100, -100, 100, 100, 300),
-      viewport: seen.Viewports.centerOrigin(500, 500)
+      camera: seen.Cameras.orthoCenterOrigin(500, 500)
     };
 
     function Scene(options) {
       this._renderSurfaces = __bind(this._renderSurfaces, this);
       this.render = __bind(this.render, this);
       seen.Util.defaults(this, options, this.defaults);
-      this.dispatch = d3.dispatch('beforeRender', 'afterRender');
+      this.dispatch = d3.dispatch('beforeRender', 'afterRender', 'render');
       d3.rebind(this, this.dispatch, ['on']);
       this.group = new seen.Group();
       this.shader = seen.Shaders.phong;
       this.lights = {
         points: [],
+        directionals: [],
         ambients: []
       };
       this.surfaces = [];
-      this.renderModelCache = {};
+      this._renderModelCache = {};
     }
 
     Scene.prototype.startRenderLoop = function(msecDelay) {
@@ -1373,23 +1470,21 @@
     };
 
     Scene.prototype.render = function() {
-      var surfaces;
+      var renderObjects;
       this.dispatch.beforeRender();
-      surfaces = this._renderSurfaces();
-      this.renderer.render(surfaces);
-      this.dispatch.afterRender({
-        surfaces: surfaces
-      });
+      renderObjects = this._renderSurfaces();
+      this.dispatch.render(renderObjects);
+      this.dispatch.afterRender(renderObjects);
       return this;
     };
 
     Scene.prototype._renderSurfaces = function() {
-      var key, light, lights, projection, _i, _len, _ref6,
+      var key, light, lights, projection, _i, _len, _ref7,
         _this = this;
-      projection = this.projection.multiply(this.viewport);
-      _ref6 = this.lights;
-      for (key in _ref6) {
-        lights = _ref6[key];
+      projection = this.camera.projection.multiply(this.camera.viewport);
+      _ref7 = this.lights;
+      for (key in _ref7) {
+        lights = _ref7[key];
         for (_i = 0, _len = lights.length; _i < _len; _i++) {
           light = lights[_i];
           light.render();
@@ -1397,16 +1492,19 @@
       }
       this.surfaces.length = 0;
       this.group.eachTransformedShape(function(shape, transform) {
-        var render, surface, _j, _len1, _ref7, _ref8, _ref9, _results;
-        _ref7 = shape.surfaces;
+        var renderModel, surface, _j, _len1, _ref10, _ref8, _ref9, _results;
+        _ref8 = shape.surfaces;
         _results = [];
-        for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
-          surface = _ref7[_j];
-          render = surface.render = _this._renderSurface(surface, transform, projection);
-          if (!_this.cullBackfaces || !surface.cullBackfaces || render.projected.normal.z < 0) {
-            render.fill = (_ref8 = surface.fill) != null ? _ref8.render(_this.lights, _this.shader, render.transformed) : void 0;
-            render.stroke = (_ref9 = surface.stroke) != null ? _ref9.render(_this.lights, _this.shader, render.transformed) : void 0;
-            _results.push(_this.surfaces.push(surface));
+        for (_j = 0, _len1 = _ref8.length; _j < _len1; _j++) {
+          surface = _ref8[_j];
+          renderModel = _this._renderSurface(surface, transform, projection);
+          if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
+            renderModel.fill = (_ref9 = surface.fill) != null ? _ref9.render(_this.lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel.stroke = (_ref10 = surface.stroke) != null ? _ref10.render(_this.lights, _this.shader, renderModel.transformed) : void 0;
+            _results.push(_this.surfaces.push({
+              renderModel: renderModel,
+              surface: surface
+            }));
           } else {
             _results.push(void 0);
           }
@@ -1414,16 +1512,16 @@
         return _results;
       });
       this.surfaces.sort(function(a, b) {
-        return b.render.projected.barycenter.z - a.render.projected.barycenter.z;
+        return b.renderModel.projected.barycenter.z - a.renderModel.projected.barycenter.z;
       });
       return this.surfaces;
     };
 
     Scene.prototype._renderSurface = function(surface, transform, projection) {
       var renderModel;
-      renderModel = this.renderModelCache[surface.id];
+      renderModel = this._renderModelCache[surface.id];
       if (renderModel == null) {
-        renderModel = this.renderModelCache[surface.id] = new seen.RenderSurface(surface.points, transform, projection);
+        renderModel = this._renderModelCache[surface.id] = new seen.RenderModel(surface.points, transform, projection);
       } else {
         renderModel.update(transform, projection);
       }

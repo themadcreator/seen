@@ -6,23 +6,7 @@ _line = d3.svg.line()
   .x((d) -> d.x)
   .y((d) -> d.y)
 
-class seen.Renderer
-  render: (surfaces) ->
-    @reset()
-    for surface in surfaces
-      surface.painter.paint(surface, @)
-    @hideUnused()
-
-  path : ->
-    # override should return a path renderer
-
-  text : ->
-    # override should return a text renderer
-
 class seen.SvgRenderer extends seen.Renderer
-  constructor : () ->
-    @_i = 0
-
   addTo : (layer) ->
     @_g = layer
 
@@ -119,12 +103,14 @@ class seen.SvgRenderDebug
   _renderEnd: (e) =>
     frameTime = 1000 / (new Date() - @_renderStartTime)
     if frameTime != NaN then @_fps += (frameTime - @_fps) / 20
-    @_text.textContent = "fps: #{@_fps.toFixed(1)} surfaces: #{e.surfaces.length}"
+    @_text.textContent = "fps: #{@_fps.toFixed(1)} surfaces: #{e.length}"
 
 class seen.SvgFillRect
+  constructor : (@width = 500, @height = 500) ->
+
   addTo: (layer) ->
     rect = _svg('rect')
     rect.setAttribute('fill', '#EEE')
-    rect.setAttribute('width', 500)
-    rect.setAttribute('height', 500)
+    rect.setAttribute('width',  @width)
+    rect.setAttribute('height', @width)
     layer.appendChild(rect)

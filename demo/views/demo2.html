@@ -1,0 +1,39 @@
+{% extends 'demo-template.html' %}
+
+{% block demo %}
+<script type="text/coffeescript" src="/demo.coffee"></script>
+<script type="text/coffeescript">
+  w = 1000
+  h = 1000
+
+  hw = w/2 - 10
+  hh = h/2 - 10
+
+  ###
+  plate = new seen.Shape('custom', [new seen.Surface([
+    seen.P(-hw, -hh, -500)
+    seen.P( hw, -hh, -500)
+    seen.P( hw,  hh, -500)
+    seen.P(-hw,  hh, -500)
+  ])])
+  ###
+  plate = new seen.Shape('custom', [new seen.Surface([
+    seen.P(10, 10, -500)
+    seen.P(w - 10, 10, -500)
+    seen.P(w - 10, h - 10, -500)
+    seen.P(10, h - 10, -500)
+  ])])
+
+  plate.fill new seen.Material seen.C.hsl(0, 0.5, 0.4)
+    
+  scene = seen.emptyScene()
+  scene.camera = seen.Cameras.orthoMatchOrigin(w, h)
+  scene.group.add(plate)
+
+  new seen.SvgCanvas(document.getElementById('seen-canvas'))
+    .layer('background', new seen.SvgFillRect(w, h))
+    .layer('scene', new seen.SvgRenderer(scene))
+
+  scene.render()
+</script>
+{% endblock %}

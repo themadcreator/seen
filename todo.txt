@@ -1,25 +1,27 @@
 TODO before v1.0
-  Quaternion Mouse Rotation
+  Non-d3 dispatch and line
   Viewport-aligned projection
-  Non-d3 dispatch
+  Scene sharing across canvases
+  Full documentation and some demos
 
 TODO Demos
   All shapes
-  Picture in Picture
   front,side,top,iso view
   Materials parameter sliders
-  Perspective projection diagrams w/ FOV slider
   Bar Chart
+  
+  Picture in Picture
+  Perspective projection diagrams w/ FOV slider
   Area Chart
 
 TODO Features
-  Scene sharing across canvases -
-    this requires each canvas has their own copy of the renderdata
+  Quaternion Mouse Rotation
+  Shape manipulator control
   Shadow Casting
   Physics
   Animation
   Human-Scale Articulated Skeleton
-  Shape manipulator control
+  Directional lights
 
   isometric projection
 

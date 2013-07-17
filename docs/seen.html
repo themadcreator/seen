@@ -1545,12 +1545,14 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Light</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Transformable</span></span>
+  defaults : 
+    point     : seen.P()
+    color     : seen.C.white
+    intensity : <span class="number">0.01</span>
+    normal    : seen.P(<span class="number">1</span>, -<span class="number">1</span>, -<span class="number">1</span>).normalize()
+
   constructor: (opts) -&gt;
-    seen.Util.defaults(@, opts,
-        point     : seen.P()
-        color     : seen.C.white
-        intensity : <span class="number">0.01</span>
-      )
+    seen.Util.defaults(@, opts, <span class="property">@defaults</span>)
 
   render : -&gt;
     <span class="property">@colorIntensity</span> = <span class="property">@color</span>.scale(<span class="property">@intensity</span>)
@@ -1584,12 +1586,12 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
               </div>
               <p>Every <code>Shader</code> implementation must override the <code>shade</code> method.</p>
 <p><code>lights</code> is an object containing the ambient, point, and directional light sources.
-<code>renderData</code> is an instance of <code>RenderSurface</code> and contains the transformed and projected surface data.
+<code>renderModel</code> is an instance of <code>RenderModel</code> and contains the transformed and projected surface data.
 <code>material</code> is an instance of <code>Material</code> and contains the color and other attributes for determining how light reflects off the surface.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;</pre></div></div>
             
         </li>
         
@@ -1601,12 +1603,12 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
                 <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
               <p>Override this</p>
-<p>The <code>Phong</code> shader implements the Phong shading model with a diffuse, specular, and ambient term.</p>
-<p>See <a href="https://en.wikipedia.org/wiki/Phong_reflection_model">https://en.wikipedia.org/wiki/Phong_reflection_model</a> for more information</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Phong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>seen.ShaderUtils = {
+  applyDiffuse : (c, light, lightNormal, surfaceNormal, material) -&gt;
+    dot = lightNormal.dot(surfaceNormal)</pre></div></div>
             
         </li>
         
@@ -1617,16 +1619,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-89">&#182;</a>
               </div>
-              <p>see <code>Shader.shade</code></p>
+              <p>diffuse and specular</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;
-    c = <span class="keyword">new</span> seen.Color()
-
-    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
-      Lm  = light.point.subtract(renderData.barycenter).normalize()
-      dot = Lm.dot(renderData.normal)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
             
         </li>
         
@@ -1637,15 +1634,14 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
-              <p>diffuse and specular</p>
+              <p>Apply diffuse phong shading</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)
-        c._addChannels(light.colorIntensity.scale(dot))
+            <div class="content"><div class='highlight'><pre>      c._addChannels(light.colorIntensity.scale(dot))
 
-        Rm                = renderData.normal.multiply(dot * <span class="number">2</span>).subtract(Lm)
-        specularIntensity = Math.pow(<span class="number">1</span> + Rm.dot(seen.Points.Z), material.specularExponent)</pre></div></div>
+  applyDiffuseAndSpecular : (c, light, lightNormal, surfaceNormal, material) -&gt;
+    dot = lightNormal.dot(surfaceNormal)</pre></div></div>
             
         </li>
         
@@ -1656,15 +1652,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-91">&#182;</a>
               </div>
-              <p>TODO scale by specular color from material if available
-specularColor     = seen.C.white #material.specularColor ? seen.C.white
-c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
+              <p>diffuse and specular</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>        c._offset(specularIntensity * light.intensity)
-
-    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
             
         </li>
         
@@ -1675,14 +1667,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-92">&#182;</a>
               </div>
-              <p>ambient</p>
+              <p>Apply diffuse phong shading</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      c._addChannels(light.colorIntensity)
-
-    c._multiplyChannels(material.color)._clamp(<span class="number">0</span>, <span class="number">0xFF</span>)
-    <span class="keyword">return</span> c</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      c._addChannels(light.colorIntensity.scale(dot))</pre></div></div>
             
         </li>
         
@@ -1693,11 +1682,13 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-93">&#182;</a>
               </div>
-              <p>The <code>DiffusePhong</code> shader implements the Phong shading model with a diffuse and ambient term (no specular).</p>
+              <p>Apply specular phong shading</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">DiffusePhong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>      eyeNormal         = seen.Points.Z
+      reflectionNormal  = surfaceNormal.multiply(dot * <span class="number">2</span>).subtract(lightNormal)
+      specularIntensity = Math.pow(<span class="number">1</span> + reflectionNormal.dot(eyeNormal), material.specularExponent)</pre></div></div>
             
         </li>
         
@@ -1708,16 +1699,15 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-94">&#182;</a>
               </div>
-              <p>see <code>Shader.shade</code></p>
+              <p>TODO scale by specular color from material if available
+specularColor     = seen.C.white #material.specularColor ? seen.C.white
+c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;
-    c = <span class="keyword">new</span> seen.Color()
+            <div class="content"><div class='highlight'><pre>      c._offset(specularIntensity * light.intensity)
 
-    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
-      Lm  = light.point.subtract(renderData.barycenter).normalize()
-      dot = Lm.dot(renderData.normal)</pre></div></div>
+  applyAmbient : (c, light) -&gt;</pre></div></div>
             
         </li>
         
@@ -1728,12 +1718,12 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-95">&#182;</a>
               </div>
-              <p>diffuse</p>
+              <p>Apply ambient shading</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)
-        c._addChannels(light.colorIntensity.scale(dot))</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    c._addChannels(light.colorIntensity)
+}</pre></div></div>
             
         </li>
         
@@ -1744,15 +1734,12 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-96">&#182;</a>
               </div>
-              <p>ambient</p>
+              <p>The <code>Phong</code> shader implements the Phong shading model with a diffuse, specular, and ambient term.</p>
+<p>See <a href="https://en.wikipedia.org/wiki/Phong_reflection_model">https://en.wikipedia.org/wiki/Phong_reflection_model</a> for more information</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients
-      c._addChannels(light.colorIntensity)
-
-    c._multiplyChannels(material.color)._clamp(<span class="number">0</span>, <span class="number">0xFF</span>)
-    <span class="keyword">return</span> c</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Phong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
             
         </li>
         
@@ -1763,11 +1750,25 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-97">&#182;</a>
               </div>
-              <p>The <code>Ambient</code> shader colors surfaces from ambient light only.</p>
+              <p>see <code>Shader.shade</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Ambient</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
+      lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+      seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material)
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.directionals
+      seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material)
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients
+      seen.ShaderUtils.applyAmbient(c, light)
+
+    c._multiplyChannels(material.color)._clamp(<span class="number">0</span>, <span class="number">0xFF</span>)
+    <span class="keyword">return</span> c</pre></div></div>
             
         </li>
         
@@ -1778,12 +1779,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-98">&#182;</a>
               </div>
-              <p>see <code>Shader.shade</code></p>
+              <p>The <code>DiffusePhong</code> shader implements the Phong shading model with a diffuse and ambient term (no specular).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;
-    c = <span class="keyword">new</span> seen.Color()</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">DiffusePhong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
             
         </li>
         
@@ -1794,12 +1794,22 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-99">&#182;</a>
               </div>
-              <p>ambient</p>
+              <p>see <code>Shader.shade</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients
-      c._addChannels(light.colorIntensity)
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
+      lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+      seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material)
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.directionals
+      seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material)
+
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients
+      seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(<span class="number">0</span>, <span class="number">0xFF</span>)
     <span class="keyword">return</span> c</pre></div></div>
@@ -1813,11 +1823,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-100">&#182;</a>
               </div>
-              <p>The <code>Flat</code> shader colors surfaces with the material color, disregarding all light sources.</p>
+              <p>The <code>Ambient</code> shader colors surfaces from ambient light only.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Flat</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Ambient</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
             
         </li>
         
@@ -1832,15 +1842,14 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderData, material) -&gt;
-    <span class="keyword">return</span> material.color
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;
+    c = <span class="keyword">new</span> seen.Color()
 
-seen.Shaders = {
-  phong   : <span class="keyword">new</span> Phong()
-  diffuse : <span class="keyword">new</span> DiffusePhong()
-  ambient : <span class="keyword">new</span> Ambient()
-  flat    : <span class="keyword">new</span> Flat()
-}</pre></div></div>
+    <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients
+      seen.ShaderUtils.applyAmbient(c, light)
+
+    c._multiplyChannels(material.color)._clamp(<span class="number">0</span>, <span class="number">0xFF</span>)
+    <span class="keyword">return</span> c</pre></div></div>
             
         </li>
         
@@ -1848,14 +1857,14 @@ seen.Shaders = {
         <li id="section-102">
             <div class="annotation">
               
-              <div class="pilwrap for-h2">
+              <div class="pilwrap ">
                 <a class="pilcrow" href="#section-102">&#182;</a>
               </div>
-              <h2>Geometry</h2>
-<h4>Groups, shapes, surfaces, and render data</h4>
-<hr>
+              <p>The <code>Flat</code> shader colors surfaces with the material color, disregarding all light sources.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Flat</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
             
         </li>
         
@@ -1866,7 +1875,60 @@ seen.Shaders = {
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-103">&#182;</a>
               </div>
-              <p>The <code>RenderSurface</code> object contains the transformed and projected points as well as various data
+              <p>see <code>Shader.shade</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;
+    <span class="keyword">return</span> material.color
+
+seen.Shaders = {
+  phong   : <span class="keyword">new</span> Phong()
+  diffuse : <span class="keyword">new</span> DiffusePhong()
+  ambient : <span class="keyword">new</span> Ambient()
+  flat    : <span class="keyword">new</span> Flat()
+}
+
+
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Renderer</span></span>
+  constructor: (<span class="property">@scene</span>) -&gt;
+    <span class="property">@scene</span>.<span class="literal">on</span> <span class="string">'render.renderer'</span>, <span class="property">@render</span>
+
+  render: (renderObjects) =&gt;
+    <span class="property">@reset</span>()
+    <span class="keyword">for</span> renderObject <span class="keyword">in</span> renderObjects
+      renderObject.surface.painter.paint(renderObject, @)
+    <span class="property">@hideUnused</span>()
+
+  path : -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-104">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-104">&#182;</a>
+              </div>
+              <p>override should return a path renderer</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  text : -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-105">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-105">&#182;</a>
+              </div>
+              <p>override should return a text renderer</p>
+<p>The <code>RenderModel</code> object contains the transformed and projected points as well as various data
 needed to render scene shapes.</p>
 <p>Once initialized, the object will have a constant memory footprint
 down to <code>Number</code> primitives. Also, we compare each transform and projection
@@ -1874,7 +1936,7 @@ to prevent unnecessary re-computation.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">RenderSurface</span></span>
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">RenderModel</span></span>
   constructor: (<span class="property">@points</span>, <span class="property">@transform</span>, <span class="property">@projection</span>) -&gt;
     <span class="property">@transformed</span> = <span class="property">@_initRenderData</span>()
     <span class="property">@projected</span>   = <span class="property">@_initRenderData</span>()
@@ -1884,7 +1946,7 @@ to prevent unnecessary re-computation.</p>
     <span class="keyword">if</span> seen.Util.arraysEqual(transform.m, <span class="property">@transform</span>.m) <span class="keyword">and</span> seen.Util.arraysEqual(projection.m, <span class="property">@projection</span>.m)
       <span class="keyword">return</span>
     <span class="keyword">else</span>
-      <span class="property">@transform</span> = transform
+      <span class="property">@transform</span>  = transform
       <span class="property">@projection</span> = projection
       <span class="property">@_update</span>()
 
@@ -1906,11 +1968,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-104">
+        <li id="section-106">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-104">&#182;</a>
+                <a class="pilcrow" href="#section-106">&#182;</a>
               </div>
               <p>Apply transform to points</p>
 
@@ -1923,11 +1985,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-105">
+        <li id="section-107">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-105">&#182;</a>
+                <a class="pilcrow" href="#section-107">&#182;</a>
               </div>
               <p>Applying the clip is what ultimately scales the x and y coordinates in a perpsective projection</p>
 
@@ -1938,11 +2000,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-106">
+        <li id="section-108">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-106">&#182;</a>
+                <a class="pilcrow" href="#section-108">&#182;</a>
               </div>
               <p>Compute barycenter, which is used in aligning shapes in the painters algorithm</p>
 
@@ -1956,11 +2018,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-107">
+        <li id="section-109">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-107">&#182;</a>
+                <a class="pilcrow" href="#section-109">&#182;</a>
               </div>
               <p>Compute normal, which is used for backface culling (when enabled)</p>
 
@@ -1968,21 +2030,77 @@ to prevent unnecessary re-computation.</p>
             
             <div class="content"><div class='highlight'><pre>    set.v0.set(set.points[<span class="number">1</span>])._subtract(set.points[<span class="number">0</span>])
     set.v1.set(set.points[points.length - <span class="number">1</span>])._subtract(set.points[<span class="number">0</span>])
-    set.normal.set(set.v0._cross(set.v1)._normalize())
+    set.normal.set(set.v0._cross(set.v1)._normalize())</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-110">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-110">&#182;</a>
+              </div>
+              <h2>Geometry</h2>
+<h4>Groups, shapes, and surfaces</h4>
+<hr>
 
-<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Surface</span></span>
-  cullBackfaces : <span class="literal">true</span>
-  fill          : <span class="keyword">new</span> seen.Material(seen.C.gray)
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-111">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-111">&#182;</a>
+              </div>
+              <p>A surface is a defined as a planar object in 3D space. These paths don&#39;t necessarily need to be convex.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Surface</span></span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-112">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-112">&#182;</a>
+              </div>
+              <p>When &#39;false&#39; this will override backface culling, which is useful if your material is transparent</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  cullBackfaces : <span class="literal">true</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-113">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-113">&#182;</a>
+              </div>
+              <p>Fill and stroke may be <code>Material</code> objects, which define the color and finish of the object and are rendered using the scene&#39;s shader.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  fill          : <span class="keyword">new</span> seen.Material(seen.C.gray)
   stroke        : <span class="literal">null</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-108">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-108">&#182;</a>
+                <a class="pilcrow" href="#section-114">&#182;</a>
               </div>
               <p>TODO change to options constructor with defaults</p>
 
@@ -2039,11 +2157,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-109">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-109">&#182;</a>
+                <a class="pilcrow" href="#section-115">&#182;</a>
               </div>
               <h2>Painters</h2>
 <hr>
@@ -2053,53 +2171,51 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-110">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-110">&#182;</a>
+                <a class="pilcrow" href="#section-116">&#182;</a>
               </div>
               
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Painter</span></span>
-  paint : (surface, canvas) -&gt;</pre></div></div>
+  paint : (renderObject, canvas) -&gt;</pre></div></div>
             
         </li>
         
         
-        <li id="section-111">
+        <li id="section-117">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-111">&#182;</a>
+                <a class="pilcrow" href="#section-117">&#182;</a>
               </div>
               <p>Override this</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">PathPainter</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Painter</span></span>
-  paint : (surface, canvas) -&gt;
-    render = surface.render
+  paint : (renderObject, canvas) -&gt;
     canvas.path()
-      .path(render.projected.points)
+      .path(renderObject.renderModel.projected.points)
       .style(
-        fill           : <span class="keyword">if</span> <span class="keyword">not</span> render.fill? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> render.fill.hex()
-        stroke         : <span class="keyword">if</span> <span class="keyword">not</span> render.stroke? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> render.stroke.hex()
-        <span class="string">'fill-opacity'</span> : <span class="keyword">if</span> <span class="keyword">not</span> surface.fill? <span class="keyword">then</span> <span class="number">1.0</span> <span class="keyword">else</span> (surface.fill.a / <span class="number">0xFF</span>)
-        <span class="string">'stroke-width'</span> : surface[<span class="string">'stroke-width'</span>] ? <span class="number">1</span>
+        fill           : <span class="keyword">if</span> <span class="keyword">not</span> renderObject.renderModel.fill? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> renderObject.renderModel.fill.hex()
+        stroke         : <span class="keyword">if</span> <span class="keyword">not</span> renderObject.renderModel.stroke? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> renderObject.renderModel.stroke.hex()
+        <span class="string">'fill-opacity'</span> : <span class="keyword">if</span> <span class="keyword">not</span> renderObject.surface.fill? <span class="keyword">then</span> <span class="number">1.0</span> <span class="keyword">else</span> (renderObject.surface.fill.a / <span class="number">0xFF</span>)
+        <span class="string">'stroke-width'</span> : renderObject.surface[<span class="string">'stroke-width'</span>] ? <span class="number">1</span>
       )
 
 <span class="class"><span class="keyword">class</span> <span class="title">TextPainter</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Painter</span></span>
   paint : (surface, canvas) -&gt;
-    render = surface.render
     canvas.text()
-      .text(surface.text)
-      .transform(render.transform.multiply render.projection)
+      .text(renderObject.surface.text)
+      .transform(renderObject.renderModel.transform.multiply renderObject.renderModel.projection)
       .style(
-        fill          : <span class="keyword">if</span> <span class="keyword">not</span> render.fill? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> render.fill.hex()
-        stroke        : <span class="keyword">if</span> <span class="keyword">not</span> render.stroke? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> render.stroke.hex()
-        <span class="string">'text-anchor'</span> : surface.anchor ? <span class="string">'middle'</span>
+        fill          : <span class="keyword">if</span> <span class="keyword">not</span> renderObject.renderModel.fill? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> renderObject.renderModel.fill.hex()
+        stroke        : <span class="keyword">if</span> <span class="keyword">not</span> renderObject.renderModel.stroke? <span class="keyword">then</span> <span class="string">'none'</span> <span class="keyword">else</span> renderObject.renderModel.stroke.hex()
+        <span class="string">'text-anchor'</span> : renderObject.surface.anchor ? <span class="string">'middle'</span>
       )
 
 seen.Painters = {
@@ -2110,11 +2226,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-112">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-112">&#182;</a>
+                <a class="pilcrow" href="#section-118">&#182;</a>
               </div>
               <h2>Shapes</h2>
 <h4>Shape primitives and shape-making methods</h4>
@@ -2125,11 +2241,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-113">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-113">&#182;</a>
+                <a class="pilcrow" href="#section-119">&#182;</a>
               </div>
               
             </div>
@@ -2278,11 +2394,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-114">
+        <li id="section-120">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-114">&#182;</a>
+                <a class="pilcrow" href="#section-120">&#182;</a>
               </div>
               <h2>Projections</h2>
 <h4>Projections and viewport tranformations.</h4>
@@ -2293,11 +2409,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-115">
+        <li id="section-121">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-115">&#182;</a>
+                <a class="pilcrow" href="#section-121">&#182;</a>
               </div>
               
             </div>
@@ -2307,17 +2423,27 @@ seen.Painters = {
     tan = front * Math.tan(fovyInDegrees * Math.PI / <span class="number">360.0</span>)
     <span class="keyword">return</span> seen.Projections.perspective(-tan, tan, -tan, tan, front, <span class="number">2</span>*front)
 
-  orthoExtent : (extent = <span class="number">100</span>) -&gt;
-    <span class="keyword">return</span> seen.Projections.ortho(-extent, extent, -extent, extent, extent, <span class="number">2</span>*extent)</pre></div></div>
+  orthoExtent : (extentX, extentY, extentZ) -&gt;
+    extentX ?= <span class="number">100</span>
+    extentY ?= extentX
+    extentZ ?= extentY 
+    <span class="keyword">return</span> seen.Projections.ortho(
+      -extentX
+      extentX
+      -extentY
+      extentY
+      extentY
+      <span class="number">2</span>*extentY
+    )</pre></div></div>
             
         </li>
         
         
-        <li id="section-116">
+        <li id="section-122">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-116">&#182;</a>
+                <a class="pilcrow" href="#section-122">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix assuming camera is at (0,0,0)</p>
 
@@ -2385,6 +2511,33 @@ seen.Viewports = {
     <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix()
       .scale(width / <span class="number">2</span>, -height / <span class="number">2</span>)
       .translate(x + width / <span class="number">2</span>, y + height / <span class="number">2</span>)
+
+  matchOrigin : (width = <span class="number">500</span>, height = <span class="number">500</span>, x = <span class="number">0</span>, y = <span class="number">0</span>) -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix()
+      .scale(width, -height)
+      .translate(x, y + height)
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Camera</span></span>
+  defaults :
+    projection : seen.Projections.orthoExtent()
+    viewport   : seen.Viewports.centerOrigin()
+    location   : seen.P(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)
+
+  constructor : (options) -&gt;
+    seen.Util.defaults(@, options, <span class="property">@defaults</span>)
+
+seen.Cameras = {
+  orthoCenterOrigin : (width = <span class="number">500</span>, height = <span class="number">500</span>) -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Camera(
+      projection : seen.Projections.orthoExtent(width<span class="regexp">/2, height/2, height/</span><span class="number">2</span>)
+      viewport   : seen.Viewports.centerOrigin(width, height)
+    )
+  orthoMatchOrigin : (width = <span class="number">500</span>, height = <span class="number">500</span>) -&gt;
+    <span class="keyword">return</span> <span class="keyword">new</span> seen.Camera(
+      projection : seen.Projections.ortho(-width, width, -height, height, height, height*<span class="number">2</span>)
+      viewport   : seen.Viewports.matchOrigin(width, height)
+    )
 }
 
 
@@ -2396,47 +2549,7 @@ _line = d3.svg.line()
   .x((d) -&gt; d.x)
   .y((d) -&gt; d.y)
 
-<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Renderer</span></span>
-  render: (surfaces) -&gt;
-    <span class="property">@reset</span>()
-    <span class="keyword">for</span> surface <span class="keyword">in</span> surfaces
-      surface.painter.paint(surface, @)
-    <span class="property">@hideUnused</span>()
-
-  path : -&gt;</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-117">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-117">&#182;</a>
-              </div>
-              <p>override should return a path renderer</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  text : -&gt;</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-118">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-118">&#182;</a>
-              </div>
-              <p>override should return a text renderer</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">SvgRenderer</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Renderer</span></span>
-  constructor : () -&gt;
-    <span class="property">@_i</span> = <span class="number">0</span>
-
+<span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">SvgRenderer</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Renderer</span></span>
   addTo : (layer) -&gt;
     <span class="property">@_g</span> = layer
 
@@ -2533,24 +2646,26 @@ _line = d3.svg.line()
   _renderEnd: (e) =&gt;
     frameTime = <span class="number">1000</span> / (<span class="keyword">new</span> Date() - <span class="property">@_renderStartTime</span>)
     <span class="keyword">if</span> frameTime != NaN <span class="keyword">then</span> <span class="property">@_fps</span> += (frameTime - <span class="property">@_fps</span>) / <span class="number">20</span>
-    <span class="property">@_text</span>.textContent = <span class="string">"fps: <span class="subst">#{@_fps.toFixed(<span class="number">1</span>)}</span> surfaces: <span class="subst">#{e.surfaces.length}</span>"</span>
+    <span class="property">@_text</span>.textContent = <span class="string">"fps: <span class="subst">#{@_fps.toFixed(<span class="number">1</span>)}</span> surfaces: <span class="subst">#{e.length}</span>"</span>
 
 <span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">SvgFillRect</span></span>
+  constructor : (<span class="property">@width</span> = <span class="number">500</span>, <span class="property">@height</span> = <span class="number">500</span>) -&gt;
+
   addTo: (layer) -&gt;
     rect = _svg(<span class="string">'rect'</span>)
     rect.setAttribute(<span class="string">'fill'</span>, <span class="string">'#EEE'</span>)
-    rect.setAttribute(<span class="string">'width'</span>, <span class="number">500</span>)
-    rect.setAttribute(<span class="string">'height'</span>, <span class="number">500</span>)
+    rect.setAttribute(<span class="string">'width'</span>,  <span class="property">@width</span>)
+    rect.setAttribute(<span class="string">'height'</span>, <span class="property">@width</span>)
     layer.appendChild(rect)</pre></div></div>
             
         </li>
         
         
-        <li id="section-119">
+        <li id="section-123">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-119">&#182;</a>
+                <a class="pilcrow" href="#section-123">&#182;</a>
               </div>
               <h2>The Scene</h2>
 <hr>
@@ -2560,11 +2675,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-120">
+        <li id="section-124">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-120">&#182;</a>
+                <a class="pilcrow" href="#section-124">&#182;</a>
               </div>
               
             </div>
@@ -2572,31 +2687,31 @@ _line = d3.svg.line()
             <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Scene</span></span>
   defaults:
     cullBackfaces : <span class="literal">true</span>
-    projection    : seen.Projections.perspective(-<span class="number">100</span>, <span class="number">100</span>, -<span class="number">100</span>, <span class="number">100</span>, <span class="number">100</span>, <span class="number">300</span>)
-    viewport      : seen.Viewports.centerOrigin(<span class="number">500</span>, <span class="number">500</span>)
+    camera        : seen.Cameras.orthoCenterOrigin(<span class="number">500</span>, <span class="number">500</span>)
 
   constructor: (options) -&gt;
     seen.Util.defaults(@, options, <span class="property">@defaults</span>)
 
-    <span class="property">@dispatch</span> = d3.dispatch(<span class="string">'beforeRender'</span>, <span class="string">'afterRender'</span>)
+    <span class="property">@dispatch</span> = d3.dispatch(<span class="string">'beforeRender'</span>, <span class="string">'afterRender'</span>, <span class="string">'render'</span>)
     d3.rebind(@, <span class="property">@dispatch</span>, [<span class="string">'on'</span>])
 
     <span class="property">@group</span>  = <span class="keyword">new</span> seen.Group()
     <span class="property">@shader</span> = seen.Shaders.phong
     <span class="property">@lights</span> =
-      points   : []
-      ambients : []
+      points       : []
+      directionals : []
+      ambients     : []
     <span class="property">@surfaces</span> = []
-    <span class="property">@renderModelCache</span> = {}
+    <span class="property">@_renderModelCache</span> = {}
 
   startRenderLoop: (msecDelay = <span class="number">30</span>) -&gt;
     setInterval(<span class="property">@render</span>, msecDelay)
 
   render: () =&gt;
     <span class="property">@dispatch</span>.beforeRender()
-    surfaces = <span class="property">@_renderSurfaces</span>()
-    <span class="property">@renderer</span>.render(surfaces)
-    <span class="property">@dispatch</span>.afterRender(surfaces : surfaces)
+    renderObjects = <span class="property">@_renderSurfaces</span>()
+    <span class="property">@dispatch</span>.render(renderObjects)
+    <span class="property">@dispatch</span>.afterRender(renderObjects)
     <span class="keyword">return</span> @
  
   _renderSurfaces: () =&gt;</pre></div></div>
@@ -2604,26 +2719,26 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-121">
+        <li id="section-125">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-121">&#182;</a>
+                <a class="pilcrow" href="#section-125">&#182;</a>
               </div>
               <p>compute projection matrix</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    projection = <span class="property">@projection</span>.multiply(<span class="property">@viewport</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    projection = <span class="property">@camera</span>.projection.multiply(<span class="property">@camera</span>.viewport)</pre></div></div>
             
         </li>
         
         
-        <li id="section-122">
+        <li id="section-126">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-122">&#182;</a>
+                <a class="pilcrow" href="#section-126">&#182;</a>
               </div>
               <p>precompute light data</p>
 
@@ -2636,11 +2751,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-123">
+        <li id="section-127">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-123">&#182;</a>
+                <a class="pilcrow" href="#section-127">&#182;</a>
               </div>
               <p>clear renderable surfaces array</p>
 
@@ -2653,86 +2768,88 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-124">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-124">&#182;</a>
-              </div>
-              <p>compute transformed and projected geometry</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        render = surface.render = <span class="property">@_renderSurface</span>(surface, transform, projection)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-125">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-125">&#182;</a>
-              </div>
-              <p>test for culling</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        <span class="keyword">if</span> (<span class="keyword">not</span> <span class="property">@cullBackfaces</span> <span class="keyword">or</span> <span class="keyword">not</span> surface.cullBackfaces <span class="keyword">or</span> render.projected.normal.z &lt; <span class="number">0</span>)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-126">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-126">&#182;</a>
-              </div>
-              <p>apply material shading</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>          render.fill   = surface.fill?.render(<span class="property">@lights</span>, <span class="property">@shader</span>, render.transformed)
-          render.stroke = surface.stroke?.render(<span class="property">@lights</span>, <span class="property">@shader</span>, render.transformed)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-127">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-127">&#182;</a>
-              </div>
-              <p>add surface to renderable surfaces array</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>          <span class="property">@surfaces</span>.push(surface)</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-128">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-128">&#182;</a>
               </div>
+              <p>compute transformed and projected geometry</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        renderModel = <span class="property">@_renderSurface</span>(surface, transform, projection)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-129">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-129">&#182;</a>
+              </div>
+              <p>test for culling</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">if</span> (<span class="keyword">not</span> <span class="property">@cullBackfaces</span> <span class="keyword">or</span> <span class="keyword">not</span> surface.cullBackfaces <span class="keyword">or</span> renderModel.projected.normal.z &lt; <span class="number">0</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-130">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-130">&#182;</a>
+              </div>
+              <p>apply material shading</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          renderModel.fill   = surface.fill?.render(<span class="property">@lights</span>, <span class="property">@shader</span>, renderModel.transformed)
+          renderModel.stroke = surface.stroke?.render(<span class="property">@lights</span>, <span class="property">@shader</span>, renderModel.transformed)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-131">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-131">&#182;</a>
+              </div>
+              <p>add surface to renderable surfaces array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="property">@surfaces</span>.push
+            renderModel : renderModel
+            surface     : surface</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-132">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-132">&#182;</a>
+              </div>
               <p>sort for painter&#39;s algorithm</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>    <span class="property">@surfaces</span>.sort (a, b) -&gt;
-      <span class="keyword">return</span>  b.render.projected.barycenter.z - a.render.projected.barycenter.z
+      <span class="keyword">return</span>  b.renderModel.projected.barycenter.z - a.renderModel.projected.barycenter.z
 
     <span class="keyword">return</span> <span class="property">@surfaces</span>
 
   _renderSurface : (surface, transform, projection) -&gt;
-    renderModel = <span class="property">@renderModelCache</span>[surface.id]
+    renderModel = <span class="property">@_renderModelCache</span>[surface.id]
     <span class="keyword">if</span> <span class="keyword">not</span> renderModel?
-      renderModel = <span class="property">@renderModelCache</span>[surface.id] = <span class="keyword">new</span> seen.RenderSurface(surface.points, transform, projection)
+      renderModel = <span class="property">@_renderModelCache</span>[surface.id] = <span class="keyword">new</span> seen.RenderModel(surface.points, transform, projection)
     <span class="keyword">else</span>
       renderModel.update(transform, projection)
     <span class="keyword">return</span> renderModel</pre></div></div>

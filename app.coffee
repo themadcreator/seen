@@ -15,8 +15,8 @@ app.set 'view engine', 'html'
 app.set 'views', path.join(__dirname, 'demo', 'views')
 app.engine '.html', consolidate.swig
 
-app.get '/', (req, res) ->
-  res.render 'demo1'
+app.get '/1', (req, res) -> res.render 'demo1'
+app.get '/2', (req, res) -> res.render 'demo2'
 
 app.listen(5000)
 console.log('Listening on port 5000')

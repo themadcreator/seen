@@ -68,7 +68,7 @@ seen.demoScene = () ->
   scene.group.eachShape randomColors
 
   scene.group
-    .scale(0.3)
+    .scale(2)
     .translate(0,0,-100)
 
   scene.on 'beforeRender.animate', () ->

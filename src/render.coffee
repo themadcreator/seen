@@ -1,15 +1,28 @@
 
-# ## Geometry
-# #### Groups, shapes, surfaces, and render data
-# ------------------
+class seen.Renderer
+  constructor: (@scene) ->
+    @scene.on 'render.renderer', @render
 
-# The `RenderSurface` object contains the transformed and projected points as well as various data
+  render: (renderObjects) =>
+    @reset()
+    for renderObject in renderObjects
+      renderObject.surface.painter.paint(renderObject, @)
+    @hideUnused()
+
+  path : ->
+    # override should return a path renderer
+
+  text : ->
+    # override should return a text renderer
+
+
+# The `RenderModel` object contains the transformed and projected points as well as various data
 # needed to render scene shapes.
 #
 # Once initialized, the object will have a constant memory footprint
 # down to `Number` primitives. Also, we compare each transform and projection
 # to prevent unnecessary re-computation.
-class seen.RenderSurface
+class seen.RenderModel
   constructor: (@points, @transform, @projection) ->
     @transformed = @_initRenderData()
     @projected   = @_initRenderData()
@@ -19,7 +32,7 @@ class seen.RenderSurface
     if seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m)
       return
     else
-      @transform = transform
+      @transform  = transform
       @projection = projection
       @_update()
 
@@ -54,57 +67,3 @@ class seen.RenderSurface
     set.v0.set(set.points[1])._subtract(set.points[0])
     set.v1.set(set.points[points.length - 1])._subtract(set.points[0])
     set.normal.set(set.v0._cross(set.v1)._normalize())
-
-class seen.Surface
-  cullBackfaces : true
-  fill          : new seen.Material(seen.C.gray)
-  stroke        : null
-
-  # TODO change to options constructor with defaults
-  constructor: (@points, @painter = seen.Painters.path) ->
-    @id = 's' + seen.Util.uniqueId()
-
-class seen.Shape extends seen.Transformable
-  constructor: (@type, @surfaces) ->
-    super()
-
-  eachSurface: (f) ->
-    @surfaces.forEach(f)
-    return @
-
-  fill: (fill) ->
-    @eachSurface (s) -> s.fill = fill
-    return @
-
-  stroke: (stroke) ->
-    @eachSurface (s) -> s.stroke = stroke
-    return @
-
-class seen.Group extends seen.Transformable
-  constructor: () ->
-    super()
-    @children = []
-
-  add: (child) ->
-    @children.push child
-    return @
-
-  append: () ->
-    group = new seen.Group
-    @add group
-    return group
-
-  eachShape: (f) ->
-    for child in @children
-      if child instanceof seen.Shape
-        f.call(@, child)
-      if child instanceof seen.Group
-        child.eachTransformedShape(f)
-
-  eachTransformedShape: (f, m = null) ->
-    m ?= @m
-    for child in @children
-      if child instanceof seen.Shape
-        f.call(@, child, child.m.multiply(m))
-      if child instanceof seen.Group
-        child.eachTransformedShape(f, child.m.multiply(m))

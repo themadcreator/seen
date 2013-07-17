@@ -518,15 +518,16 @@ class seen.Material
 # #### Lights and various shaders
 # ------------------
 
-
 # This model object holds the attributes and transformation of a light source.
 class seen.Light extends seen.Transformable
+  defaults : 
+    point     : seen.P()
+    color     : seen.C.white
+    intensity : 0.01
+    normal    : seen.P(1, -1, -1).normalize()
+
   constructor: (opts) ->
-    seen.Util.defaults(@, opts,
-        point     : seen.P()
-        color     : seen.C.white
-        intensity : 0.01
-      )
+    seen.Util.defaults(@, opts, @defaults)
 
   render : ->
     @colorIntensity = @color.scale(@intensity)
@@ -539,37 +540,59 @@ class seen.Shader
   # Every `Shader` implementation must override the `shade` method.
   # 
   # `lights` is an object containing the ambient, point, and directional light sources.
-  # `renderData` is an instance of `RenderSurface` and contains the transformed and projected surface data.
+  # `renderModel` is an instance of `RenderModel` and contains the transformed and projected surface data.
   # `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.
-  shade: (lights, renderData, material) ->
+  shade: (lights, renderModel, material) ->
     # Override this
+
+seen.ShaderUtils = {
+  applyDiffuse : (c, light, lightNormal, surfaceNormal, material) ->
+    dot = lightNormal.dot(surfaceNormal)
+
+    # diffuse and specular
+    if (dot > 0)
+      # Apply diffuse phong shading
+      c._addChannels(light.colorIntensity.scale(dot))
+
+  applyDiffuseAndSpecular : (c, light, lightNormal, surfaceNormal, material) ->
+    dot = lightNormal.dot(surfaceNormal)
+
+    # diffuse and specular
+    if (dot > 0)
+      # Apply diffuse phong shading
+      c._addChannels(light.colorIntensity.scale(dot))
+
+      # Apply specular phong shading
+      eyeNormal         = seen.Points.Z
+      reflectionNormal  = surfaceNormal.multiply(dot * 2).subtract(lightNormal)
+      specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent)
+      # TODO scale by specular color from material if available
+      # specularColor     = seen.C.white #material.specularColor ? seen.C.white
+      # c._addChannels(specularColor.scale(specularIntensity * light.intensity))
+      c._offset(specularIntensity * light.intensity)
+
+  applyAmbient : (c, light) ->
+    # Apply ambient shading
+    c._addChannels(light.colorIntensity)
+}
 
 # The `Phong` shader implements the Phong shading model with a diffuse, specular, and ambient term.
 #
 # See https://en.wikipedia.org/wiki/Phong_reflection_model for more information
 class Phong extends seen.Shader
   # see `Shader.shade`
-  shade: (lights, renderData, material) ->
+  shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
     for light in lights.points
-      Lm  = light.point.subtract(renderData.barycenter).normalize()
-      dot = Lm.dot(renderData.normal)
+      lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+      seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material)
 
-      # diffuse and specular
-      if (dot > 0)
-        c._addChannels(light.colorIntensity.scale(dot))
-
-        Rm                = renderData.normal.multiply(dot * 2).subtract(Lm)
-        specularIntensity = Math.pow(1 + Rm.dot(seen.Points.Z), material.specularExponent)
-        # TODO scale by specular color from material if available
-        # specularColor     = seen.C.white #material.specularColor ? seen.C.white
-        # c._addChannels(specularColor.scale(specularIntensity * light.intensity))
-        c._offset(specularIntensity * light.intensity)
+    for light in lights.directionals
+      seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material)
 
     for light in lights.ambients
-      # ambient
-      c._addChannels(light.colorIntensity)
+      seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -577,20 +600,18 @@ class Phong extends seen.Shader
 # The `DiffusePhong` shader implements the Phong shading model with a diffuse and ambient term (no specular).
 class DiffusePhong extends seen.Shader
   # see `Shader.shade`
-  shade: (lights, renderData, material) ->
+  shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
     for light in lights.points
-      Lm  = light.point.subtract(renderData.barycenter).normalize()
-      dot = Lm.dot(renderData.normal)
+      lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+      seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material)
 
-      # diffuse
-      if (dot > 0)
-        c._addChannels(light.colorIntensity.scale(dot))
+    for light in lights.directionals
+      seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material)
 
-    # ambient
     for light in lights.ambients
-      c._addChannels(light.colorIntensity)
+      seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -598,12 +619,11 @@ class DiffusePhong extends seen.Shader
 # The `Ambient` shader colors surfaces from ambient light only.
 class Ambient extends seen.Shader
   # see `Shader.shade`
-  shade: (lights, renderData, material) ->
+  shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
-    # ambient
     for light in lights.ambients
-      c._addChannels(light.colorIntensity)
+      seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -611,7 +631,7 @@ class Ambient extends seen.Shader
 # The `Flat` shader colors surfaces with the material color, disregarding all light sources.
 class Flat extends seen.Shader
   # see `Shader.shade`
-  shade: (lights, renderData, material) ->
+  shade: (lights, renderModel, material) ->
     return material.color
 
 seen.Shaders = {
@@ -623,17 +643,30 @@ seen.Shaders = {
 
 
 
-# ## Geometry
-# #### Groups, shapes, surfaces, and render data
-# ------------------
+class seen.Renderer
+  constructor: (@scene) ->
+    @scene.on 'render.renderer', @render
 
-# The `RenderSurface` object contains the transformed and projected points as well as various data
+  render: (renderObjects) =>
+    @reset()
+    for renderObject in renderObjects
+      renderObject.surface.painter.paint(renderObject, @)
+    @hideUnused()
+
+  path : ->
+    # override should return a path renderer
+
+  text : ->
+    # override should return a text renderer
+
+
+# The `RenderModel` object contains the transformed and projected points as well as various data
 # needed to render scene shapes.
 #
 # Once initialized, the object will have a constant memory footprint
 # down to `Number` primitives. Also, we compare each transform and projection
 # to prevent unnecessary re-computation.
-class seen.RenderSurface
+class seen.RenderModel
   constructor: (@points, @transform, @projection) ->
     @transformed = @_initRenderData()
     @projected   = @_initRenderData()
@@ -643,7 +676,7 @@ class seen.RenderSurface
     if seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m)
       return
     else
-      @transform = transform
+      @transform  = transform
       @projection = projection
       @_update()
 
@@ -679,8 +712,16 @@ class seen.RenderSurface
     set.v1.set(set.points[points.length - 1])._subtract(set.points[0])
     set.normal.set(set.v0._cross(set.v1)._normalize())
 
+
+# ## Geometry
+# #### Groups, shapes, and surfaces
+# ------------------
+
+# A surface is a defined as a planar object in 3D space. These paths don't necessarily need to be convex.
 class seen.Surface
+  # When 'false' this will override backface culling, which is useful if your material is transparent
   cullBackfaces : true
+  # Fill and stroke may be `Material` objects, which define the color and finish of the object and are rendered using the scene's shader.
   fill          : new seen.Material(seen.C.gray)
   stroke        : null
 
@@ -739,31 +780,29 @@ class seen.Group extends seen.Transformable
 # ------------------
 
 class seen.Painter
-  paint : (surface, canvas) ->
+  paint : (renderObject, canvas) ->
     # Override this
 
 class PathPainter extends seen.Painter
-  paint : (surface, canvas) ->
-    render = surface.render
+  paint : (renderObject, canvas) ->
     canvas.path()
-      .path(render.projected.points)
+      .path(renderObject.renderModel.projected.points)
       .style(
-        fill           : if not render.fill? then 'none' else render.fill.hex()
-        stroke         : if not render.stroke? then 'none' else render.stroke.hex()
-        'fill-opacity' : if not surface.fill? then 1.0 else (surface.fill.a / 0xFF)
-        'stroke-width' : surface['stroke-width'] ? 1
+        fill           : if not renderObject.renderModel.fill? then 'none' else renderObject.renderModel.fill.hex()
+        stroke         : if not renderObject.renderModel.stroke? then 'none' else renderObject.renderModel.stroke.hex()
+        'fill-opacity' : if not renderObject.surface.fill? then 1.0 else (renderObject.surface.fill.a / 0xFF)
+        'stroke-width' : renderObject.surface['stroke-width'] ? 1
       )
 
 class TextPainter extends seen.Painter
   paint : (surface, canvas) ->
-    render = surface.render
     canvas.text()
-      .text(surface.text)
-      .transform(render.transform.multiply render.projection)
+      .text(renderObject.surface.text)
+      .transform(renderObject.renderModel.transform.multiply renderObject.renderModel.projection)
       .style(
-        fill          : if not render.fill? then 'none' else render.fill.hex()
-        stroke        : if not render.stroke? then 'none' else render.stroke.hex()
-        'text-anchor' : surface.anchor ? 'middle'
+        fill          : if not renderObject.renderModel.fill? then 'none' else renderObject.renderModel.fill.hex()
+        stroke        : if not renderObject.renderModel.stroke? then 'none' else renderObject.renderModel.stroke.hex()
+        'text-anchor' : renderObject.surface.anchor ? 'middle'
       )
 
 seen.Painters = {
@@ -926,8 +965,18 @@ seen.Projections = {
     tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0)
     return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2*front)
 
-  orthoExtent : (extent = 100) ->
-    return seen.Projections.ortho(-extent, extent, -extent, extent, extent, 2*extent)
+  orthoExtent : (extentX, extentY, extentZ) ->
+    extentX ?= 100
+    extentY ?= extentX
+    extentZ ?= extentY 
+    return seen.Projections.ortho(
+      -extentX
+      extentX
+      -extentY
+      extentY
+      extentY
+      2*extentY
+    )
   
   # Creates a perspective projection matrix assuming camera is at (0,0,0)
   perspective : (left, right, bottom, top, near, far) ->
@@ -992,6 +1041,33 @@ seen.Viewports = {
     return new seen.Matrix()
       .scale(width / 2, -height / 2)
       .translate(x + width / 2, y + height / 2)
+
+  matchOrigin : (width = 500, height = 500, x = 0, y = 0) ->
+    return new seen.Matrix()
+      .scale(width, -height)
+      .translate(x, y + height)
+}
+
+class seen.Camera
+  defaults :
+    projection : seen.Projections.orthoExtent()
+    viewport   : seen.Viewports.centerOrigin()
+    location   : seen.P(0,0,0)
+
+  constructor : (options) ->
+    seen.Util.defaults(@, options, @defaults)
+
+seen.Cameras = {
+  orthoCenterOrigin : (width = 500, height = 500) ->
+    return new seen.Camera(
+      projection : seen.Projections.orthoExtent(width/2, height/2, height/2)
+      viewport   : seen.Viewports.centerOrigin(width, height)
+    )
+  orthoMatchOrigin : (width = 500, height = 500) ->
+    return new seen.Camera(
+      projection : seen.Projections.ortho(-width, width, -height, height, height, height*2)
+      viewport   : seen.Viewports.matchOrigin(width, height)
+    )
 }
 
 
@@ -1003,23 +1079,7 @@ _line = d3.svg.line()
   .x((d) -> d.x)
   .y((d) -> d.y)
 
-class seen.Renderer
-  render: (surfaces) ->
-    @reset()
-    for surface in surfaces
-      surface.painter.paint(surface, @)
-    @hideUnused()
-
-  path : ->
-    # override should return a path renderer
-
-  text : ->
-    # override should return a text renderer
-
 class seen.SvgRenderer extends seen.Renderer
-  constructor : () ->
-    @_i = 0
-
   addTo : (layer) ->
     @_g = layer
 
@@ -1116,14 +1176,16 @@ class seen.SvgRenderDebug
   _renderEnd: (e) =>
     frameTime = 1000 / (new Date() - @_renderStartTime)
     if frameTime != NaN then @_fps += (frameTime - @_fps) / 20
-    @_text.textContent = "fps: #{@_fps.toFixed(1)} surfaces: #{e.surfaces.length}"
+    @_text.textContent = "fps: #{@_fps.toFixed(1)} surfaces: #{e.length}"
 
 class seen.SvgFillRect
+  constructor : (@width = 500, @height = 500) ->
+
   addTo: (layer) ->
     rect = _svg('rect')
     rect.setAttribute('fill', '#EEE')
-    rect.setAttribute('width', 500)
-    rect.setAttribute('height', 500)
+    rect.setAttribute('width',  @width)
+    rect.setAttribute('height', @width)
     layer.appendChild(rect)
 
 
@@ -1133,36 +1195,36 @@ class seen.SvgFillRect
 class seen.Scene
   defaults:
     cullBackfaces : true
-    projection    : seen.Projections.perspective(-100, 100, -100, 100, 100, 300)
-    viewport      : seen.Viewports.centerOrigin(500, 500)
+    camera        : seen.Cameras.orthoCenterOrigin(500, 500)
 
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
 
-    @dispatch = d3.dispatch('beforeRender', 'afterRender')
+    @dispatch = d3.dispatch('beforeRender', 'afterRender', 'render')
     d3.rebind(@, @dispatch, ['on'])
 
     @group  = new seen.Group()
     @shader = seen.Shaders.phong
     @lights =
-      points   : []
-      ambients : []
+      points       : []
+      directionals : []
+      ambients     : []
     @surfaces = []
-    @renderModelCache = {}
+    @_renderModelCache = {}
 
   startRenderLoop: (msecDelay = 30) ->
     setInterval(@render, msecDelay)
 
   render: () =>
     @dispatch.beforeRender()
-    surfaces = @_renderSurfaces()
-    @renderer.render(surfaces)
-    @dispatch.afterRender(surfaces : surfaces)
+    renderObjects = @_renderSurfaces()
+    @dispatch.render(renderObjects)
+    @dispatch.afterRender(renderObjects)
     return @
  
   _renderSurfaces: () =>
     # compute projection matrix
-    projection = @projection.multiply(@viewport)
+    projection = @camera.projection.multiply(@camera.viewport)
 
     # precompute light data
     for key, lights of @lights
@@ -1174,27 +1236,29 @@ class seen.Scene
     @group.eachTransformedShape (shape, transform) =>
       for surface in shape.surfaces
         # compute transformed and projected geometry
-        render = surface.render = @_renderSurface(surface, transform, projection)
+        renderModel = @_renderSurface(surface, transform, projection)
 
         # test for culling
-        if (not @cullBackfaces or not surface.cullBackfaces or render.projected.normal.z < 0)
+        if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
           # apply material shading
-          render.fill   = surface.fill?.render(@lights, @shader, render.transformed)
-          render.stroke = surface.stroke?.render(@lights, @shader, render.transformed)
+          renderModel.fill   = surface.fill?.render(@lights, @shader, renderModel.transformed)
+          renderModel.stroke = surface.stroke?.render(@lights, @shader, renderModel.transformed)
 
           # add surface to renderable surfaces array
-          @surfaces.push(surface)
+          @surfaces.push
+            renderModel : renderModel
+            surface     : surface
 
     # sort for painter's algorithm
     @surfaces.sort (a, b) ->
-      return  b.render.projected.barycenter.z - a.render.projected.barycenter.z
+      return  b.renderModel.projected.barycenter.z - a.renderModel.projected.barycenter.z
 
     return @surfaces
 
   _renderSurface : (surface, transform, projection) ->
-    renderModel = @renderModelCache[surface.id]
+    renderModel = @_renderModelCache[surface.id]
     if not renderModel?
-      renderModel = @renderModelCache[surface.id] = new seen.RenderSurface(surface.points, transform, projection)
+      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface.points, transform, projection)
     else
       renderModel.update(transform, projection)
     return renderModel
