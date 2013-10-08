@@ -39,26 +39,17 @@
               <div class="pilwrap for-h2">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <h2>MIT License</h2>
-<p>  Copyright (c) 2013 github/themadcreator</p>
-<p>  Permission is hereby granted, free of charge, to any person
-  obtaining a copy of this software and associated documentation
-  files (the &quot;Software&quot;), to deal in the Software without
-  restriction, including without limitation the rights to use,
-  copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the
-  Software is furnished to do so, subject to the following
-  conditions:</p>
-<p>  The above copyright notice and this permission notice shall be
-  included in all copies or substantial portions of the Software.</p>
-<p>  THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
-  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-  OTHER DEALINGS IN THE SOFTWARE.</p>
+              <h2>Apache 2.0 License</h2>
+<pre><code>Copyright 2013 github/themadcreator</code></pre>
+<p>   Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at</p>
+<pre><code>   http://www.apache.org/licenses/LICENSE-2.0</code></pre>
+<p>   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.</p>
 <h2>Init</h2>
 <h4>Module definition</h4>
 <hr>
@@ -1551,14 +1542,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
     intensity : <span class="number">0.01</span>
     normal    : seen.P(<span class="number">1</span>, -<span class="number">1</span>, -<span class="number">1</span>).normalize()
 
-  constructor: (opts) -&gt;
-    seen.Util.defaults(@, opts, <span class="property">@defaults</span>)
+  constructor: (options) -&gt;
+    seen.Util.defaults(@, options, <span class="property">@defaults</span>)
 
   render : -&gt;
-    <span class="property">@colorIntensity</span> = <span class="property">@color</span>.scale(<span class="property">@intensity</span>)
-  
-  transform: (m) =&gt;
-    <span class="property">@point</span>.transform(m)</pre></div></div>
+    <span class="property">@colorIntensity</span> = <span class="property">@color</span>.scale(<span class="property">@intensity</span>)</pre></div></div>
             
         </li>
         
@@ -1569,11 +1557,18 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
-              <p>The <code>Shader</code> class is the base class for all shader objects.</p>
+              <p>TODO - i dont this this works</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  transform: (m) =&gt;
+    <span class="property">@point</span>.transform(m)
+
+seen.ShaderUtils = {
+  applyDiffuse : (c, light, lightNormal, surfaceNormal, material) -&gt;
+    dot = lightNormal.dot(surfaceNormal)
+
+    <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
             
         </li>
         
@@ -1584,14 +1579,16 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-87">&#182;</a>
               </div>
-              <p>Every <code>Shader</code> implementation must override the <code>shade</code> method.</p>
-<p><code>lights</code> is an object containing the ambient, point, and directional light sources.
-<code>renderModel</code> is an instance of <code>RenderModel</code> and contains the transformed and projected surface data.
-<code>material</code> is an instance of <code>Material</code> and contains the color and other attributes for determining how light reflects off the surface.</p>
+              <p>Apply diffuse phong shading</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;</pre></div></div>
+            <div class="content"><div class='highlight'><pre>      c._addChannels(light.colorIntensity.scale(dot))
+
+  applyDiffuseAndSpecular : (c, light, lightNormal, surfaceNormal, material) -&gt;
+    dot = lightNormal.dot(surfaceNormal)
+
+    <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
             
         </li>
         
@@ -1602,71 +1599,6 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
-              <p>Override this</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>seen.ShaderUtils = {
-  applyDiffuse : (c, light, lightNormal, surfaceNormal, material) -&gt;
-    dot = lightNormal.dot(surfaceNormal)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-89">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-89">&#182;</a>
-              </div>
-              <p>diffuse and specular</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-90">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-90">&#182;</a>
-              </div>
-              <p>Apply diffuse phong shading</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>      c._addChannels(light.colorIntensity.scale(dot))
-
-  applyDiffuseAndSpecular : (c, light, lightNormal, surfaceNormal, material) -&gt;
-    dot = lightNormal.dot(surfaceNormal)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-91">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-91">&#182;</a>
-              </div>
-              <p>diffuse and specular</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (dot &gt; <span class="number">0</span>)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-92">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-92">&#182;</a>
-              </div>
               <p>Apply diffuse phong shading</p>
 
             </div>
@@ -1676,11 +1608,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
         </li>
         
         
-        <li id="section-93">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-93">&#182;</a>
+                <a class="pilcrow" href="#section-89">&#182;</a>
               </div>
               <p>Apply specular phong shading</p>
 
@@ -1693,11 +1625,11 @@ seen.C.gray  = seen.C.hex(<span class="string">'#888888'</span>)</pre></div></di
         </li>
         
         
-        <li id="section-94">
+        <li id="section-90">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-94">&#182;</a>
+                <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
               <p>TODO scale by specular color from material if available
 specularColor     = seen.C.white #material.specularColor ? seen.C.white
@@ -1712,11 +1644,11 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-95">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-95">&#182;</a>
+                <a class="pilcrow" href="#section-91">&#182;</a>
               </div>
               <p>Apply ambient shading</p>
 
@@ -1728,33 +1660,53 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-96">
+        <li id="section-92">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-96">&#182;</a>
+                <a class="pilcrow" href="#section-92">&#182;</a>
               </div>
-              <p>The <code>Phong</code> shader implements the Phong shading model with a diffuse, specular, and ambient term.</p>
-<p>See <a href="https://en.wikipedia.org/wiki/Phong_reflection_model">https://en.wikipedia.org/wiki/Phong_reflection_model</a> for more information</p>
+              <p>The <code>Shader</code> class is the base class for all shader objects.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Phong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
             
         </li>
         
         
-        <li id="section-97">
+        <li id="section-93">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-97">&#182;</a>
+                <a class="pilcrow" href="#section-93">&#182;</a>
               </div>
-              <p>see <code>Shader.shade</code></p>
+              <p>Every <code>Shader</code> implementation must override the <code>shade</code> method.</p>
+<p><code>lights</code> is an object containing the ambient, point, and directional light sources.
+<code>renderModel</code> is an instance of <code>RenderModel</code> and contains the transformed and projected surface data.
+<code>material</code> is an instance of <code>Material</code> and contains the color and other attributes for determining how light reflects off the surface.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;
+            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-94">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-94">&#182;</a>
+              </div>
+              <p>Override this</p>
+<p>The <code>Phong</code> shader implements the Phong shading model with a diffuse, specular, and ambient term.</p>
+<p>See <a href="https://en.wikipedia.org/wiki/Phong_reflection_model">https://en.wikipedia.org/wiki/Phong_reflection_model</a> for more information</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Phong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderModel, material) -&gt;
     c = <span class="keyword">new</span> seen.Color()
 
     <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
@@ -1773,32 +1725,18 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-98">
+        <li id="section-95">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-98">&#182;</a>
+                <a class="pilcrow" href="#section-95">&#182;</a>
               </div>
               <p>The <code>DiffusePhong</code> shader implements the Phong shading model with a diffuse and ambient term (no specular).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">DiffusePhong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-99">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-99">&#182;</a>
-              </div>
-              <p>see <code>Shader.shade</code></p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">DiffusePhong</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderModel, material) -&gt;
     c = <span class="keyword">new</span> seen.Color()
 
     <span class="keyword">for</span> light <span class="keyword">in</span> lights.points
@@ -1817,32 +1755,18 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-100">
+        <li id="section-96">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-100">&#182;</a>
+                <a class="pilcrow" href="#section-96">&#182;</a>
               </div>
               <p>The <code>Ambient</code> shader colors surfaces from ambient light only.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Ambient</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-101">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-101">&#182;</a>
-              </div>
-              <p>see <code>Shader.shade</code></p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Ambient</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderModel, material) -&gt;
     c = <span class="keyword">new</span> seen.Color()
 
     <span class="keyword">for</span> light <span class="keyword">in</span> lights.ambients
@@ -1854,32 +1778,18 @@ c._addChannels(specularColor.scale(specularIntensity * light.intensity))</p>
         </li>
         
         
-        <li id="section-102">
+        <li id="section-97">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-102">&#182;</a>
+                <a class="pilcrow" href="#section-97">&#182;</a>
               </div>
               <p>The <code>Flat</code> shader colors surfaces with the material color, disregarding all light sources.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Flat</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-103">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-103">&#182;</a>
-              </div>
-              <p>see <code>Shader.shade</code></p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  shade: (lights, renderModel, material) -&gt;
+            <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">Flat</span> <span class="keyword">extends</span> <span class="title">seen</span>.<span class="title">Shader</span></span>
+  shade: (lights, renderModel, material) -&gt;
     <span class="keyword">return</span> material.color
 
 seen.Shaders = {
@@ -1906,11 +1816,11 @@ seen.Shaders = {
         </li>
         
         
-        <li id="section-104">
+        <li id="section-98">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-104">&#182;</a>
+                <a class="pilcrow" href="#section-98">&#182;</a>
               </div>
               <p>override should return a path renderer</p>
 
@@ -1921,11 +1831,11 @@ seen.Shaders = {
         </li>
         
         
-        <li id="section-105">
+        <li id="section-99">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-105">&#182;</a>
+                <a class="pilcrow" href="#section-99">&#182;</a>
               </div>
               <p>override should return a text renderer</p>
 <p>The <code>RenderModel</code> object contains the transformed and projected points as well as various data
@@ -1968,11 +1878,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-106">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-106">&#182;</a>
+                <a class="pilcrow" href="#section-100">&#182;</a>
               </div>
               <p>Apply transform to points</p>
 
@@ -1985,11 +1895,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-107">
+        <li id="section-101">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-107">&#182;</a>
+                <a class="pilcrow" href="#section-101">&#182;</a>
               </div>
               <p>Applying the clip is what ultimately scales the x and y coordinates in a perpsective projection</p>
 
@@ -2000,11 +1910,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-108">
+        <li id="section-102">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-108">&#182;</a>
+                <a class="pilcrow" href="#section-102">&#182;</a>
               </div>
               <p>Compute barycenter, which is used in aligning shapes in the painters algorithm</p>
 
@@ -2018,11 +1928,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-109">
+        <li id="section-103">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-109">&#182;</a>
+                <a class="pilcrow" href="#section-103">&#182;</a>
               </div>
               <p>Compute normal, which is used for backface culling (when enabled)</p>
 
@@ -2035,11 +1945,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-110">
+        <li id="section-104">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-110">&#182;</a>
+                <a class="pilcrow" href="#section-104">&#182;</a>
               </div>
               <h2>Geometry</h2>
 <h4>Groups, shapes, and surfaces</h4>
@@ -2050,11 +1960,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-111">
+        <li id="section-105">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-111">&#182;</a>
+                <a class="pilcrow" href="#section-105">&#182;</a>
               </div>
               <p>A surface is a defined as a planar object in 3D space. These paths don&#39;t necessarily need to be convex.</p>
 
@@ -2065,11 +1975,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-112">
+        <li id="section-106">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-112">&#182;</a>
+                <a class="pilcrow" href="#section-106">&#182;</a>
               </div>
               <p>When &#39;false&#39; this will override backface culling, which is useful if your material is transparent</p>
 
@@ -2080,11 +1990,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-113">
+        <li id="section-107">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-113">&#182;</a>
+                <a class="pilcrow" href="#section-107">&#182;</a>
               </div>
               <p>Fill and stroke may be <code>Material</code> objects, which define the color and finish of the object and are rendered using the scene&#39;s shader.</p>
 
@@ -2096,11 +2006,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-114">
+        <li id="section-108">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-114">&#182;</a>
+                <a class="pilcrow" href="#section-108">&#182;</a>
               </div>
               <p>TODO change to options constructor with defaults</p>
 
@@ -2157,11 +2067,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-115">
+        <li id="section-109">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-115">&#182;</a>
+                <a class="pilcrow" href="#section-109">&#182;</a>
               </div>
               <h2>Painters</h2>
 <hr>
@@ -2171,11 +2081,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-116">
+        <li id="section-110">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-116">&#182;</a>
+                <a class="pilcrow" href="#section-110">&#182;</a>
               </div>
               
             </div>
@@ -2186,11 +2096,11 @@ to prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-117">
+        <li id="section-111">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-117">&#182;</a>
+                <a class="pilcrow" href="#section-111">&#182;</a>
               </div>
               <p>Override this</p>
 
@@ -2226,11 +2136,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-118">
+        <li id="section-112">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-118">&#182;</a>
+                <a class="pilcrow" href="#section-112">&#182;</a>
               </div>
               <h2>Shapes</h2>
 <h4>Shape primitives and shape-making methods</h4>
@@ -2241,11 +2151,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-119">
+        <li id="section-113">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-119">&#182;</a>
+                <a class="pilcrow" href="#section-113">&#182;</a>
               </div>
               
             </div>
@@ -2394,11 +2304,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-120">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-120">&#182;</a>
+                <a class="pilcrow" href="#section-114">&#182;</a>
               </div>
               <h2>Projections</h2>
 <h4>Projections and viewport tranformations.</h4>
@@ -2409,24 +2319,24 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-121">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-121">&#182;</a>
+                <a class="pilcrow" href="#section-115">&#182;</a>
               </div>
               
             </div>
             
             <div class="content"><div class='highlight'><pre>seen.Projections = {
-  perspectiveFov : (fovyInDegrees = <span class="number">50</span>, front = <span class="number">100</span>) -&gt;
+  perspectiveFov : (fovyInDegrees = <span class="number">50</span>, front = <span class="number">1</span>) -&gt;
     tan = front * Math.tan(fovyInDegrees * Math.PI / <span class="number">360.0</span>)
     <span class="keyword">return</span> seen.Projections.perspective(-tan, tan, -tan, tan, front, <span class="number">2</span>*front)
 
   orthoExtent : (extentX, extentY, extentZ) -&gt;
     extentX ?= <span class="number">100</span>
     extentY ?= extentX
-    extentZ ?= extentY 
+    extentZ ?= extentY
     <span class="keyword">return</span> seen.Projections.ortho(
       -extentX
       extentX
@@ -2439,17 +2349,17 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-122">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-122">&#182;</a>
+                <a class="pilcrow" href="#section-116">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix assuming camera is at (0,0,0)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  perspective : (left, right, bottom, top, near, far) -&gt;
+            <div class="content"><div class='highlight'><pre>  perspective : (left=-<span class="number">1</span>, right=<span class="number">1</span>, bottom=-<span class="number">1</span>, top=<span class="number">1</span>, near=<span class="number">1</span>, far=<span class="number">100</span>) -&gt;
     near2 = <span class="number">2</span> * near
     dx    = right - left
     dy    = top - bottom
@@ -2460,24 +2370,24 @@ seen.Painters = {
     m[<span class="number">1</span>]  = <span class="number">0.0</span>
     m[<span class="number">2</span>]  = (right + left) / dx
     m[<span class="number">3</span>]  = <span class="number">0.0</span>
-    
+
     m[<span class="number">4</span>]  = <span class="number">0.0</span>
     m[<span class="number">5</span>]  = near2 / dy
     m[<span class="number">6</span>]  = (top + bottom) / dy
     m[<span class="number">7</span>]  = <span class="number">0.0</span>
-    
+
     m[<span class="number">8</span>]  = <span class="number">0.0</span>
     m[<span class="number">9</span>]  = <span class="number">0.0</span>
     m[<span class="number">10</span>] = -(far + near) / dz
     m[<span class="number">11</span>] = -(far * near2) / dz
-    
+
     m[<span class="number">12</span>] = <span class="number">0.0</span>
     m[<span class="number">13</span>] = <span class="number">0.0</span>
     m[<span class="number">14</span>] = -<span class="number">1.0</span>
     m[<span class="number">15</span>] = <span class="number">0.0</span>
     <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix(m)
 
-  ortho : (left, right, bottom, top, near, far) -&gt;
+  ortho : (left=-<span class="number">1</span>, right=<span class="number">1</span>, bottom=-<span class="number">1</span>, top=<span class="number">1</span>, near=<span class="number">1</span>, far=<span class="number">100</span>) -&gt;
     near2 = <span class="number">2</span> * near
     dx    = right - left
     dy    = top - bottom
@@ -2488,17 +2398,17 @@ seen.Painters = {
     m[<span class="number">1</span>]  = <span class="number">0.0</span>
     m[<span class="number">2</span>]  = <span class="number">0.0</span>
     m[<span class="number">3</span>]  = (right + left) / dx
-    
+
     m[<span class="number">4</span>]  = <span class="number">0.0</span>
     m[<span class="number">5</span>]  = <span class="number">2</span> / dy
     m[<span class="number">6</span>]  = <span class="number">0.0</span>
     m[<span class="number">7</span>]  = -(top + bottom) / dy
-    
+
     m[<span class="number">8</span>]  = <span class="number">0.0</span>
     m[<span class="number">9</span>]  = <span class="number">0.0</span>
     m[<span class="number">10</span>] = -<span class="number">2</span> / dz
     m[<span class="number">11</span>] = -(far + near) / dz
-    
+
     m[<span class="number">12</span>] = <span class="number">0.0</span>
     m[<span class="number">13</span>] = <span class="number">0.0</span>
     m[<span class="number">14</span>] = <span class="number">0.0</span>
@@ -2507,22 +2417,43 @@ seen.Painters = {
 }
 
 seen.Viewports = {
-  centerOrigin : (width = <span class="number">500</span>, height = <span class="number">500</span>, x = <span class="number">0</span>, y = <span class="number">0</span>) -&gt;
-    <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix()
-      .scale(width / <span class="number">2</span>, -height / <span class="number">2</span>)
-      .translate(x + width / <span class="number">2</span>, y + height / <span class="number">2</span>)
-
-  matchOrigin : (width = <span class="number">500</span>, height = <span class="number">500</span>, x = <span class="number">0</span>, y = <span class="number">0</span>) -&gt;
-    <span class="keyword">return</span> <span class="keyword">new</span> seen.Matrix()
+  alignCenter : (projection, width = <span class="number">500</span>, height = <span class="number">500</span>, x = <span class="number">0</span>, y = <span class="number">0</span>) -&gt;
+    prescale = <span class="keyword">new</span> seen.Matrix()
+      .translate(-x, -y, -<span class="number">1</span>)
+      .scale(<span class="number">1</span><span class="regexp">/width, 1/height, 1/</span>height)
+    postscale = <span class="keyword">new</span> seen.Matrix()
       .scale(width, -height)
-      .translate(x, y + height)
+      .translate(x + width<span class="regexp">/2, y + height/</span><span class="number">2</span>)
+    <span class="keyword">return</span> prescale.multiply(projection).multiply(postscale)
+
+  alignOrigin : (projection, width = <span class="number">500</span>, height = <span class="number">500</span>, x = <span class="number">0</span>, y = <span class="number">0</span>) -&gt;
+    prescale = <span class="keyword">new</span> seen.Matrix()
+      .translate(-x, -y, -<span class="number">1</span>)
+      .scale(<span class="number">1</span><span class="regexp">/width, 1/height, 1/</span>height)
+    postscale = <span class="keyword">new</span> seen.Matrix()
+      .scale(width, -height)
+      .translate(x, y)
+    <span class="keyword">return</span> prescale.multiply(projection).multiply(postscale)
 }
 
 <span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Camera</span></span>
   defaults :
-    projection : seen.Projections.orthoExtent()
-    viewport   : seen.Viewports.centerOrigin()
-    location   : seen.P(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)
+    projection : seen.Projections.orthoExtent()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-117">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-117">&#182;</a>
+              </div>
+              <p>viewport   : seen.Viewports.centerOrigin()</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    location   : seen.P(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>)
 
   constructor : (options) -&gt;
     seen.Util.defaults(@, options, <span class="property">@defaults</span>)
@@ -2661,11 +2592,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-123">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-123">&#182;</a>
+                <a class="pilcrow" href="#section-118">&#182;</a>
               </div>
               <h2>The Scene</h2>
 <hr>
@@ -2675,11 +2606,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-124">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-124">&#182;</a>
+                <a class="pilcrow" href="#section-119">&#182;</a>
               </div>
               
             </div>
@@ -2687,7 +2618,7 @@ _line = d3.svg.line()
             <div class="content"><div class='highlight'><pre><span class="class"><span class="keyword">class</span> <span class="title">seen</span>.<span class="title">Scene</span></span>
   defaults:
     cullBackfaces : <span class="literal">true</span>
-    camera        : seen.Cameras.orthoCenterOrigin(<span class="number">500</span>, <span class="number">500</span>)
+    projection    : seen.Viewports.alignCenter(seen.Projections.perspective())
 
   constructor: (options) -&gt;
     seen.Util.defaults(@, options, <span class="property">@defaults</span>)
@@ -2713,32 +2644,32 @@ _line = d3.svg.line()
     <span class="property">@dispatch</span>.render(renderObjects)
     <span class="property">@dispatch</span>.afterRender(renderObjects)
     <span class="keyword">return</span> @
- 
+
   _renderSurfaces: () =&gt;</pre></div></div>
             
         </li>
         
         
-        <li id="section-125">
+        <li id="section-120">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-125">&#182;</a>
+                <a class="pilcrow" href="#section-120">&#182;</a>
               </div>
               <p>compute projection matrix</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    projection = <span class="property">@camera</span>.projection.multiply(<span class="property">@camera</span>.viewport)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    projection = <span class="property">@projection</span> <span class="comment"># @camera.projection.multiply(@camera.viewport)</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-126">
+        <li id="section-121">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-126">&#182;</a>
+                <a class="pilcrow" href="#section-121">&#182;</a>
               </div>
               <p>precompute light data</p>
 
@@ -2751,11 +2682,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-127">
+        <li id="section-122">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-127">&#182;</a>
+                <a class="pilcrow" href="#section-122">&#182;</a>
               </div>
               <p>clear renderable surfaces array</p>
 
@@ -2768,11 +2699,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-128">
+        <li id="section-123">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-128">&#182;</a>
+                <a class="pilcrow" href="#section-123">&#182;</a>
               </div>
               <p>compute transformed and projected geometry</p>
 
@@ -2783,11 +2714,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-129">
+        <li id="section-124">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-129">&#182;</a>
+                <a class="pilcrow" href="#section-124">&#182;</a>
               </div>
               <p>test for culling</p>
 
@@ -2798,11 +2729,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-130">
+        <li id="section-125">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-130">&#182;</a>
+                <a class="pilcrow" href="#section-125">&#182;</a>
               </div>
               <p>apply material shading</p>
 
@@ -2814,11 +2745,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-131">
+        <li id="section-126">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-131">&#182;</a>
+                <a class="pilcrow" href="#section-126">&#182;</a>
               </div>
               <p>add surface to renderable surfaces array</p>
 
@@ -2831,11 +2762,11 @@ _line = d3.svg.line()
         </li>
         
         
-        <li id="section-132">
+        <li id="section-127">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-132">&#182;</a>
+                <a class="pilcrow" href="#section-127">&#182;</a>
               </div>
               <p>sort for painter&#39;s algorithm</p>
 

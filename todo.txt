@@ -1,7 +1,8 @@
 TODO before v1.0
   Non-d3 dispatch and line
-  Viewport-aligned projection
+  Lights attached to groups, available in rendermodel
   Scene sharing across canvases
+  Move demo scripts into subdir
   Full documentation and some demos
 
 TODO Demos
@@ -9,7 +10,7 @@ TODO Demos
   front,side,top,iso view
   Materials parameter sliders
   Bar Chart
-  
+
   Picture in Picture
   Perspective projection diagrams w/ FOV slider
   Area Chart
@@ -36,3 +37,6 @@ TODO Features
     Pipes
     JSON format objects
 
+Features
+
+  Viewport-aligned projection

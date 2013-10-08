@@ -2,9 +2,6 @@
 seen.emptyScene = () ->
   scene = new seen.Scene()
 
-  # center-ize projection/camera matrix
-  scene.projection = seen.Projections.perspectiveFov(55)
-
   # lights
   scene.lights.points.push new seen.Light
     point: new seen.Point(-80, 120, 220)
@@ -48,7 +45,7 @@ seen.demoScene = () ->
   scene.group.add(seen.Shapes.unitcube().scale(30))
   scene.group.add(seen.Shapes.tetrahedron().scale(10).translate(50,50))
   scene.group.add(seen.Shapes.tetrahedron().scale(10).roty(0.5 * Math.PI).translate(-50,30))
- 
+
   inside     = scene.group.append()
   outside    = scene.group.append()
   faroutside = scene.group.append()
@@ -68,8 +65,7 @@ seen.demoScene = () ->
   scene.group.eachShape randomColors
 
   scene.group
-    .scale(2)
-    .translate(0,0,-100)
+    .scale(1.5)
 
   scene.on 'beforeRender.animate', () ->
     for i in [0...3]
@@ -109,7 +105,7 @@ seen.demoSkeletonScene = () ->
     .scale(10)
     .translate(0,20,-150)
 
-  
+
   i = 0
   scene.on 'beforeRender.animate', () ->
     for g, gi in [skeleton.leftShoulder, skeleton.rightShoulder]
@@ -130,7 +126,7 @@ seen.demoArticulationScene2 = () ->
   joints = seen.Shapes.joints(5)
   root = joints[0]
   root.scale(20)
-  
+
   root.eachShape randomColors
 
   scene.group = root
@@ -163,7 +159,7 @@ seen.demoArticulationScene = () ->
         .add(seen.Shapes.unitcube().scale(size))
     joints.push nextg
     lastg = nextg
-  
+
   root.eachShape randomColors
 
   scene.group = root

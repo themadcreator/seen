@@ -1,29 +1,20 @@
 
 
-# ## MIT License
+# ## Apache 2.0 License
 # 
-#   Copyright (c) 2013 github/themadcreator
+#     Copyright 2013 github/themadcreator
 # 
-#   Permission is hereby granted, free of charge, to any person
-#   obtaining a copy of this software and associated documentation
-#   files (the "Software"), to deal in the Software without
-#   restriction, including without limitation the rights to use,
-#   copy, modify, merge, publish, distribute, sublicense, and/or sell
-#   copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following
-#   conditions:
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
 # 
-#   The above copyright notice and this permission notice shall be
-#   included in all copies or substantial portions of the Software.
+#        http://www.apache.org/licenses/LICENSE-2.0
 # 
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-#   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-#   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-#   NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-#   HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-#   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-#   OTHER DEALINGS IN THE SOFTWARE.
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
 # 
 
 
@@ -526,30 +517,20 @@ class seen.Light extends seen.Transformable
     intensity : 0.01
     normal    : seen.P(1, -1, -1).normalize()
 
-  constructor: (opts) ->
-    seen.Util.defaults(@, opts, @defaults)
+  constructor: (options) ->
+    seen.Util.defaults(@, options, @defaults)
 
   render : ->
     @colorIntensity = @color.scale(@intensity)
   
+  # TODO - i dont this this works
   transform: (m) =>
     @point.transform(m)
-
-# The `Shader` class is the base class for all shader objects.
-class seen.Shader
-  # Every `Shader` implementation must override the `shade` method.
-  # 
-  # `lights` is an object containing the ambient, point, and directional light sources.
-  # `renderModel` is an instance of `RenderModel` and contains the transformed and projected surface data.
-  # `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.
-  shade: (lights, renderModel, material) ->
-    # Override this
 
 seen.ShaderUtils = {
   applyDiffuse : (c, light, lightNormal, surfaceNormal, material) ->
     dot = lightNormal.dot(surfaceNormal)
 
-    # diffuse and specular
     if (dot > 0)
       # Apply diffuse phong shading
       c._addChannels(light.colorIntensity.scale(dot))
@@ -557,7 +538,6 @@ seen.ShaderUtils = {
   applyDiffuseAndSpecular : (c, light, lightNormal, surfaceNormal, material) ->
     dot = lightNormal.dot(surfaceNormal)
 
-    # diffuse and specular
     if (dot > 0)
       # Apply diffuse phong shading
       c._addChannels(light.colorIntensity.scale(dot))
@@ -576,11 +556,20 @@ seen.ShaderUtils = {
     c._addChannels(light.colorIntensity)
 }
 
+# The `Shader` class is the base class for all shader objects.
+class seen.Shader
+  # Every `Shader` implementation must override the `shade` method.
+  # 
+  # `lights` is an object containing the ambient, point, and directional light sources.
+  # `renderModel` is an instance of `RenderModel` and contains the transformed and projected surface data.
+  # `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.
+  shade: (lights, renderModel, material) ->
+    # Override this
+
 # The `Phong` shader implements the Phong shading model with a diffuse, specular, and ambient term.
 #
 # See https://en.wikipedia.org/wiki/Phong_reflection_model for more information
 class Phong extends seen.Shader
-  # see `Shader.shade`
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
@@ -599,7 +588,6 @@ class Phong extends seen.Shader
 
 # The `DiffusePhong` shader implements the Phong shading model with a diffuse and ambient term (no specular).
 class DiffusePhong extends seen.Shader
-  # see `Shader.shade`
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
@@ -618,7 +606,6 @@ class DiffusePhong extends seen.Shader
 
 # The `Ambient` shader colors surfaces from ambient light only.
 class Ambient extends seen.Shader
-  # see `Shader.shade`
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
@@ -630,7 +617,6 @@ class Ambient extends seen.Shader
 
 # The `Flat` shader colors surfaces with the material color, disregarding all light sources.
 class Flat extends seen.Shader
-  # see `Shader.shade`
   shade: (lights, renderModel, material) ->
     return material.color
 
@@ -961,14 +947,14 @@ seen.Shapes = {
 # ------------------
 
 seen.Projections = {
-  perspectiveFov : (fovyInDegrees = 50, front = 100) ->
+  perspectiveFov : (fovyInDegrees = 50, front = 1) ->
     tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0)
     return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2*front)
 
   orthoExtent : (extentX, extentY, extentZ) ->
     extentX ?= 100
     extentY ?= extentX
-    extentZ ?= extentY 
+    extentZ ?= extentY
     return seen.Projections.ortho(
       -extentX
       extentX
@@ -977,9 +963,9 @@ seen.Projections = {
       extentY
       2*extentY
     )
-  
+
   # Creates a perspective projection matrix assuming camera is at (0,0,0)
-  perspective : (left, right, bottom, top, near, far) ->
+  perspective : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
     near2 = 2 * near
     dx    = right - left
     dy    = top - bottom
@@ -990,24 +976,24 @@ seen.Projections = {
     m[1]  = 0.0
     m[2]  = (right + left) / dx
     m[3]  = 0.0
-    
+
     m[4]  = 0.0
     m[5]  = near2 / dy
     m[6]  = (top + bottom) / dy
     m[7]  = 0.0
-    
+
     m[8]  = 0.0
     m[9]  = 0.0
     m[10] = -(far + near) / dz
     m[11] = -(far * near2) / dz
-    
+
     m[12] = 0.0
     m[13] = 0.0
     m[14] = -1.0
     m[15] = 0.0
     return new seen.Matrix(m)
 
-  ortho : (left, right, bottom, top, near, far) ->
+  ortho : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
     near2 = 2 * near
     dx    = right - left
     dy    = top - bottom
@@ -1018,17 +1004,17 @@ seen.Projections = {
     m[1]  = 0.0
     m[2]  = 0.0
     m[3]  = (right + left) / dx
-    
+
     m[4]  = 0.0
     m[5]  = 2 / dy
     m[6]  = 0.0
     m[7]  = -(top + bottom) / dy
-    
+
     m[8]  = 0.0
     m[9]  = 0.0
     m[10] = -2 / dz
     m[11] = -(far + near) / dz
-    
+
     m[12] = 0.0
     m[13] = 0.0
     m[14] = 0.0
@@ -1037,21 +1023,29 @@ seen.Projections = {
 }
 
 seen.Viewports = {
-  centerOrigin : (width = 500, height = 500, x = 0, y = 0) ->
-    return new seen.Matrix()
-      .scale(width / 2, -height / 2)
-      .translate(x + width / 2, y + height / 2)
-
-  matchOrigin : (width = 500, height = 500, x = 0, y = 0) ->
-    return new seen.Matrix()
+  alignCenter : (projection, width = 500, height = 500, x = 0, y = 0) ->
+    prescale = new seen.Matrix()
+      .translate(-x, -y, -1)
+      .scale(1/width, 1/height, 1/height)
+    postscale = new seen.Matrix()
       .scale(width, -height)
-      .translate(x, y + height)
+      .translate(x + width/2, y + height/2)
+    return prescale.multiply(projection).multiply(postscale)
+
+  alignOrigin : (projection, width = 500, height = 500, x = 0, y = 0) ->
+    prescale = new seen.Matrix()
+      .translate(-x, -y, -1)
+      .scale(1/width, 1/height, 1/height)
+    postscale = new seen.Matrix()
+      .scale(width, -height)
+      .translate(x, y)
+    return prescale.multiply(projection).multiply(postscale)
 }
 
 class seen.Camera
   defaults :
     projection : seen.Projections.orthoExtent()
-    viewport   : seen.Viewports.centerOrigin()
+    #viewport   : seen.Viewports.centerOrigin()
     location   : seen.P(0,0,0)
 
   constructor : (options) ->
@@ -1195,7 +1189,7 @@ class seen.SvgFillRect
 class seen.Scene
   defaults:
     cullBackfaces : true
-    camera        : seen.Cameras.orthoCenterOrigin(500, 500)
+    projection    : seen.Viewports.alignCenter(seen.Projections.perspective())
 
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -1221,10 +1215,10 @@ class seen.Scene
     @dispatch.render(renderObjects)
     @dispatch.afterRender(renderObjects)
     return @
- 
+
   _renderSurfaces: () =>
     # compute projection matrix
-    projection = @camera.projection.multiply(@camera.viewport)
+    projection = @projection # @camera.projection.multiply(@camera.viewport)
 
     # precompute light data
     for key, lights of @lights

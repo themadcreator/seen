@@ -535,9 +535,9 @@
       normal: seen.P(1, -1, -1).normalize()
     };
 
-    function Light(opts) {
+    function Light(options) {
       this.transform = __bind(this.transform, this);
-      seen.Util.defaults(this, opts, this.defaults);
+      seen.Util.defaults(this, options, this.defaults);
     }
 
     Light.prototype.render = function() {
@@ -551,15 +551,6 @@
     return Light;
 
   })(seen.Transformable);
-
-  seen.Shader = (function() {
-    function Shader() {}
-
-    Shader.prototype.shade = function(lights, renderModel, material) {};
-
-    return Shader;
-
-  })();
 
   seen.ShaderUtils = {
     applyDiffuse: function(c, light, lightNormal, surfaceNormal, material) {
@@ -584,6 +575,15 @@
       return c._addChannels(light.colorIntensity);
     }
   };
+
+  seen.Shader = (function() {
+    function Shader() {}
+
+    Shader.prototype.shade = function(lights, renderModel, material) {};
+
+    return Shader;
+
+  })();
 
   Phong = (function(_super) {
     __extends(Phong, _super);
@@ -1109,7 +1109,7 @@
         fovyInDegrees = 50;
       }
       if (front == null) {
-        front = 100;
+        front = 1;
       }
       tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0);
       return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2 * front);
@@ -1128,6 +1128,24 @@
     },
     perspective: function(left, right, bottom, top, near, far) {
       var dx, dy, dz, m, near2;
+      if (left == null) {
+        left = -1;
+      }
+      if (right == null) {
+        right = 1;
+      }
+      if (bottom == null) {
+        bottom = -1;
+      }
+      if (top == null) {
+        top = 1;
+      }
+      if (near == null) {
+        near = 1;
+      }
+      if (far == null) {
+        far = 100;
+      }
       near2 = 2 * near;
       dx = right - left;
       dy = top - bottom;
@@ -1153,6 +1171,24 @@
     },
     ortho: function(left, right, bottom, top, near, far) {
       var dx, dy, dz, m, near2;
+      if (left == null) {
+        left = -1;
+      }
+      if (right == null) {
+        right = 1;
+      }
+      if (bottom == null) {
+        bottom = -1;
+      }
+      if (top == null) {
+        top = 1;
+      }
+      if (near == null) {
+        near = 1;
+      }
+      if (far == null) {
+        far = 100;
+      }
       near2 = 2 * near;
       dx = right - left;
       dy = top - bottom;
@@ -1179,7 +1215,8 @@
   };
 
   seen.Viewports = {
-    centerOrigin: function(width, height, x, y) {
+    alignCenter: function(projection, width, height, x, y) {
+      var postscale, prescale;
       if (width == null) {
         width = 500;
       }
@@ -1192,9 +1229,12 @@
       if (y == null) {
         y = 0;
       }
-      return new seen.Matrix().scale(width / 2, -height / 2).translate(x + width / 2, y + height / 2);
+      prescale = new seen.Matrix().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
+      postscale = new seen.Matrix().scale(width, -height).translate(x + width / 2, y + height / 2);
+      return prescale.multiply(projection).multiply(postscale);
     },
-    matchOrigin: function(width, height, x, y) {
+    alignOrigin: function(projection, width, height, x, y) {
+      var postscale, prescale;
       if (width == null) {
         width = 500;
       }
@@ -1207,14 +1247,15 @@
       if (y == null) {
         y = 0;
       }
-      return new seen.Matrix().scale(width, -height).translate(x, y + height);
+      prescale = new seen.Matrix().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
+      postscale = new seen.Matrix().scale(width, -height).translate(x, y);
+      return prescale.multiply(projection).multiply(postscale);
     }
   };
 
   seen.Camera = (function() {
     Camera.prototype.defaults = {
       projection: seen.Projections.orthoExtent(),
-      viewport: seen.Viewports.centerOrigin(),
       location: seen.P(0, 0, 0)
     };
 
@@ -1442,7 +1483,7 @@
   seen.Scene = (function() {
     Scene.prototype.defaults = {
       cullBackfaces: true,
-      camera: seen.Cameras.orthoCenterOrigin(500, 500)
+      projection: seen.Viewports.alignCenter(seen.Projections.perspective())
     };
 
     function Scene(options) {
@@ -1481,7 +1522,7 @@
     Scene.prototype._renderSurfaces = function() {
       var key, light, lights, projection, _i, _len, _ref7,
         _this = this;
-      projection = this.camera.projection.multiply(this.camera.viewport);
+      projection = this.projection;
       _ref7 = this.lights;
       for (key in _ref7) {
         lights = _ref7[key];

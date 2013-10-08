@@ -4,7 +4,7 @@
 class seen.Scene
   defaults:
     cullBackfaces : true
-    camera        : seen.Cameras.orthoCenterOrigin(500, 500)
+    projection    : seen.Viewports.alignCenter(seen.Projections.perspective())
 
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -30,10 +30,10 @@ class seen.Scene
     @dispatch.render(renderObjects)
     @dispatch.afterRender(renderObjects)
     return @
- 
+
   _renderSurfaces: () =>
     # compute projection matrix
-    projection = @camera.projection.multiply(@camera.viewport)
+    projection = @projection # @camera.projection.multiply(@camera.viewport)
 
     # precompute light data
     for key, lights of @lights
