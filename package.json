@@ -5,7 +5,7 @@
   "private"     : true,
   "scripts": {
     "prepublish" : "cake build docs",
-    "start"      : "./node_modules/.bin/node-dev app.coffee"
+    "start"      : "./node_modules/.bin/node-dev demo/app.coffee"
   },
   "dependencies": {
     "express"       : "3.x",

@@ -68,7 +68,7 @@ IDENTITY = [1.0, 0.0, 0.0, 0.0,
 # The `Matrix` class stores transformations in the scene. These include:
 # (1) Camera Projection and Viewport transformations.
 # (2) Transformations of any `Transformable` type object, such as `Shapes`
-# 
+#
 # `Matrix` objects have two sets of manipulation methods.
 # Normal methods (e.g. `translate`) are **non-destructive** -- i.e. they return a new object without modifying the existing object.
 # Underscored methods (e.g. `_translate`) are **destructive** -- i.e. they modifying and return the existing object.
@@ -124,9 +124,9 @@ class seen.Matrix
     c = ARRAY_POOL
     for j in [0...4]
       for i in [0...16] by 4
-        c[i + j] = 
-          m[i    ] * @m[     j] + 
-          m[i + 1] * @m[ 4 + j] + 
+        c[i + j] =
+          m[i    ] * @m[     j] +
+          m[i + 1] * @m[ 4 + j] +
           m[i + 2] * @m[ 8 + j] +
           m[i + 3] * @m[12 + j]
     ARRAY_POOL = @m
@@ -134,7 +134,7 @@ class seen.Matrix
     return @
 
   # Destructively apply a rotation about the X axis. `Theta` is measured in Radians
-  _rotx: (theta) -> 
+  _rotx: (theta) ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ 1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1 ]
@@ -182,9 +182,9 @@ seen.Matrices = {
 }
 
 # `Transformable` base class extended by `Shape` and `Group`.
-# 
+#
 # The advantages of keeping transforms in `Matrix` form are (1) lazy computation of point position (2) ability combine hierarchical transformations easily (3) ability to reset transformations to an original state.
-# 
+#
 # Resetting transformations is especially useful when you want to animate interpolated values. Instead of computing the difference at each animation step, you can compute the global interpolated value for that time step and apply that value directly to a matrix (once it is reset).
 class seen.Transformable
   constructor: ->
@@ -243,7 +243,7 @@ class seen.Point
     r.y = @x * matrix.m[4] + @y * matrix.m[5] + @z * matrix.m[6] + @w * matrix.m[7]
     r.z = @x * matrix.m[8] + @y * matrix.m[9] + @z * matrix.m[10] + @w * matrix.m[11]
     r.w = @x * matrix.m[12] + @y * matrix.m[13] + @z * matrix.m[14] + @w * matrix.m[15]
-  
+
     @set(r)
     return @
 
@@ -254,10 +254,10 @@ class seen.Point
     @z = p.z
     @w = p.w
     return @
-  
+
   # Creates and returns a new `Point` with the same values as this object.
   copy: () ->
-    return new Point(@x, @y, @z, @w)
+    return new seen.Point(@x, @y, @z, @w)
 
   # Non-destructively scales this `Point` by its magnitude.
   normalize: () ->
@@ -305,7 +305,7 @@ class seen.Point
   _normalize: () ->
     n = Math.sqrt(@dot(@))
     if n == 0
-      @set(Points.Z)
+      @set(seen.Points.Z)
     else
       @_divide(n)
     return @

@@ -19,9 +19,7 @@
   plate.fill new seen.Material seen.C.hsl(0, 0.5, 0.4)
 
   scene = seen.emptyScene()
-  scene.projection = seen.Viewports.alignCenter(
-    seen.Projections.perspective(), w, h)
-
+  scene.projection = seen.Viewports.alignCenter(seen.Projections.perspective(), w, h)
   scene.group.add(plate)
 
   new seen.SvgCanvas(document.getElementById('seen-canvas'))

@@ -1,0 +1,43 @@
+{% extends 'demo-template.html' %}
+
+{% block demo %}
+<script src="/lib/jquery.js"></script>
+<script type="text/coffeescript" src="/demo.coffee"></script>
+<script type="text/coffeescript">
+  w = 800
+  h = 800
+
+  # Make a plate that will take up the entire viewport minus 10 pixel margins
+  hw = w/2 - 10
+  hh = h/2 - 10
+
+  scene = seen.emptyScene()
+  scene.projection = seen.Viewports.alignCenter(seen.Projections.perspective(), w, h)
+
+  $.getJSON 'assets/teapot.json', {}, (geom) ->
+
+    faces = geom.faces.map (face) ->
+      surface = new seen.Surface face.map (v) -> seen.P(geom.vertices[v - 1]...)
+      surface.cullBackfaces = false
+      return surface
+
+    teapot = new seen.Shape('custom', faces)
+    teapot.fill new seen.Material seen.C.hsl(0.6, 0.7, 0.4)
+    teapot.scale(100)
+    teapot.translate(0,-180,-100)
+    teapot.rotx(Math.PI/8) # .roty(-Math.PI/4)
+    scene.group.add(teapot)
+
+
+    #scene.on 'beforeRender.animate', () ->
+    #  teapot.rotx(0.003).roty(0.007).rotz(0.005)
+    #scene.startRenderLoop(10)
+    scene.render()
+
+  new seen.SvgCanvas(document.getElementById('seen-canvas'))
+    .layer('background', new seen.SvgFillRect(w, h))
+    .layer('scene', new seen.SvgRenderer(scene))
+
+  scene.render()
+</script>
+{% endblock %}

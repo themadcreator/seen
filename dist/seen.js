@@ -260,7 +260,7 @@
     };
 
     Point.prototype.copy = function() {
-      return new Point(this.x, this.y, this.z, this.w);
+      return new seen.Point(this.x, this.y, this.z, this.w);
     };
 
     Point.prototype.normalize = function() {
@@ -309,7 +309,7 @@
       var n;
       n = Math.sqrt(this.dot(this));
       if (n === 0) {
-        this.set(Points.Z);
+        this.set(seen.Points.Z);
       } else {
         this._divide(n);
       }
