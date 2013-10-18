@@ -18,13 +18,13 @@
 
   plate.fill new seen.Material seen.C.hsl(0, 0.5, 0.4)
 
-  model = seen.simpleModel()
+  model = seen.demo.model()
   model.add(plate)
 
   scene = new seen.Scene
     model  : model
     camera : new seen.Camera
-      viewport : seen.Viewports2.center(w,h)
+      viewport : seen.Viewports.center(w,h)
 
   new seen.SvgCanvas(document.getElementById('seen-canvas'))
     .layer('background', new seen.SvgFillRect(w, h))

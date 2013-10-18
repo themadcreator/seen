@@ -962,12 +962,12 @@
     }
 
     PathPainter.prototype.paint = function(renderObject, canvas) {
-      var _ref5;
+      var _ref5, _ref6;
       return canvas.path().path(renderObject.renderModel.projected.points).style({
         fill: renderObject.renderModel.fill == null ? 'none' : renderObject.renderModel.fill.hex(),
         stroke: renderObject.renderModel.stroke == null ? 'none' : renderObject.renderModel.stroke.hex(),
-        'fill-opacity': renderObject.surface.fill == null ? 1.0 : renderObject.surface.fill.a / 0xFF,
-        'stroke-width': (_ref5 = renderObject.surface['stroke-width']) != null ? _ref5 : 1
+        'fill-opacity': ((_ref5 = renderObject.surface.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderObject.surface.fill.a / 255.0,
+        'stroke-width': (_ref6 = renderObject.surface['stroke-width']) != null ? _ref6 : 1
       });
     };
 
@@ -1243,45 +1243,6 @@
   };
 
   seen.Viewports = {
-    alignCenter: function(projection, width, height, x, y) {
-      var postscale, prescale;
-      if (width == null) {
-        width = 500;
-      }
-      if (height == null) {
-        height = 500;
-      }
-      if (x == null) {
-        x = 0;
-      }
-      if (y == null) {
-        y = 0;
-      }
-      prescale = new seen.Matrix().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
-      postscale = new seen.Matrix().scale(width, -height).translate(x + width / 2, y + height / 2);
-      return prescale.multiply(projection).multiply(postscale);
-    },
-    alignOrigin: function(projection, width, height, x, y) {
-      var postscale, prescale;
-      if (width == null) {
-        width = 500;
-      }
-      if (height == null) {
-        height = 500;
-      }
-      if (x == null) {
-        x = 0;
-      }
-      if (y == null) {
-        y = 0;
-      }
-      prescale = new seen.Matrix().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
-      postscale = new seen.Matrix().scale(width, -height).translate(x, y);
-      return prescale.multiply(projection).multiply(postscale);
-    }
-  };
-
-  seen.Viewports2 = {
     center: function(width, height, x, y) {
       var postscale, prescale;
       if (width == null) {
@@ -1329,7 +1290,7 @@
   seen.Camera = (function() {
     Camera.prototype.defaults = {
       projection: seen.Projections.perspective(),
-      viewport: seen.Viewports2.center(),
+      viewport: seen.Viewports.center(),
       camera: seen.Matrices.identity.copy()
     };
 
@@ -1344,33 +1305,6 @@
     return Camera;
 
   })();
-
-  seen.Cameras = {
-    orthoCenterOrigin: function(width, height) {
-      if (width == null) {
-        width = 500;
-      }
-      if (height == null) {
-        height = 500;
-      }
-      return new seen.Camera({
-        projection: seen.Projections.orthoExtent(width / 2, height / 2, height / 2),
-        viewport: seen.Viewports.centerOrigin(width, height)
-      });
-    },
-    orthoMatchOrigin: function(width, height) {
-      if (width == null) {
-        width = 500;
-      }
-      if (height == null) {
-        height = 500;
-      }
-      return new seen.Camera({
-        projection: seen.Projections.ortho(-width, width, -height, height, height, height * 2),
-        viewport: seen.Viewports.matchOrigin(width, height)
-      });
-    }
-  };
 
   _svg = function(name) {
     return document.createElementNS('http://www.w3.org/2000/svg', name);

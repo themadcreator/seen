@@ -6,12 +6,12 @@
   w = 500
   h = 500
 
-  demo = seen.demoModel()
+  demo = seen.demo.tetrahedra()
 
   scene = new seen.Scene
     model  : demo.model
     camera : new seen.Camera
-      viewport : seen.Viewports2.center(500, 500)
+      viewport : seen.Viewports.center(500, 500)
 
   new seen.SvgCanvas(document.getElementById('seen-canvas'))
     .layer('background', new seen.SvgFillRect())

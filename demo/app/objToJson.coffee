@@ -1,15 +1,5 @@
-fs = require 'fs'
-
-#threeobj = require('three-obj')()
-#threeobj.load 'assets/teapot.obj', (response) -> fs.writeFile 'assets/teapot.json', JSON.stringify(response), -> console.log 'done'
-
-
-
-readline = require('readline')
-
-rl = readline.createInterface
-  input    : fs.createReadStream('assets/teapot.obj')
-  terminal : false
+# Read wavefront OBJ file, output JSON.
+# NOTE: WAVEFRONT OBJ ARRAY INDICES ARE 1-BASED!!!!
 
 obj = {
   create : ->
@@ -22,6 +12,12 @@ obj = {
 
 geom = obj.create()
 
+fs       = require 'fs'
+readline = require('readline')
+rl = readline.createInterface
+  input    : fs.createReadStream('assets/teapot.obj')
+  terminal : false
+
 rl.on 'line', (line) ->
   data    = line.split(' ')
   command = data.slice(0,1)
@@ -29,4 +25,4 @@ rl.on 'line', (line) ->
   obj[command]?(geom, data)
 
 rl.on 'close', ->
-  fs.writeFile 'assets/teapot2.json', JSON.stringify(geom), -> console.log 'done'
+  fs.writeFile 'assets/teapot.json', JSON.stringify(geom), -> console.log 'done'

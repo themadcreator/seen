@@ -1,31 +1,24 @@
+seen.demo = {}
 
-seen.emptyScene = () ->
-  scene = new seen.Scene()
-
-  # lights
-  scene.lights.push seen.Lights.point
-    point     : seen.P(-80, 120, 220)
-    intensity : 0.005
-
-  scene.lights.push seen.Lights.ambient
-    intensity : 0.002
-
-  return scene
-
-seen.simpleModel = () ->
+seen.demo.model = () ->
   model = new seen.Model()
 
   model.lights.push seen.Lights.point
     point     : seen.P(-80, 120, 220)
     intensity : 0.005
 
+  model.lights.push seen.Lights.directional
+    point     : seen.P(-80, 120, 220)
+    color     : seen.C.hsl(0.1, 0.5, 0.5)
+    intensity : 0.003
+
   model.lights.push seen.Lights.ambient
     intensity : 0.002
 
   return model
 
-seen.demoText = () ->
-  scene = seen.emptyScene()
+seen.demo.text = () ->
+  model = seen.demo.model()
   scene.projection = seen.Projections.orthoExtent()
 
   # shapes!
@@ -50,8 +43,8 @@ seen.demoText = () ->
 
   return scene
 
-seen.demoModel = () ->
-  model = seen.simpleModel()
+seen.demo.tetrahedra = () ->
+  model = seen.demo.model()
 
   # shapes!
   model.add(seen.Shapes.unitcube().scale(30))
@@ -85,130 +78,8 @@ seen.demoModel = () ->
     around
   }
 
-seen.demoSimpleScene = () ->
-  scene = seen.emptyScene()
-
-  # shapes!
-  scene.group.add(seen.Shapes.unitcube().scale(30))
-  scene.group.add(seen.Shapes.tetrahedron().scale(10).translate(50,50))
-  scene.group.add(seen.Shapes.tetrahedron().scale(10).roty(0.5 * Math.PI).translate(-50,30))
-  scene.group.eachShape randomColors
-
-  return scene
-
 randomColors = (shape) ->
   hue = Math.random()
   for surface in shape.surfaces
     surface.fill = new seen.Material seen.C.hsl(hue, 0.5, 0.4)
-
-seen.demoSkeletonScene = () ->
-  scene = seen.emptyScene()
-
-  skeleton = seen.Shapes.bipedSkeleton()
-  skeleton.root.eachShape randomColors
-  scene.group = skeleton.root
-
-  scene.group
-    .scale(10)
-    .translate(0,20,-150)
-
-
-  i = 0
-  scene.on 'beforeRender.animate', () ->
-    for g, gi in [skeleton.leftShoulder, skeleton.rightShoulder]
-      g.reset().rotz(0.3 * Math.sin(i*0.05))
-
-    for g, gi in [skeleton.leftArm.elbow]
-      g.reset().rotx(-1 - 0.3 * Math.cos(i*0.05))
-
-    i++
-
-  return scene
-
-
-seen.demoArticulationScene2 = () ->
-  scene = seen.emptyScene()
-
-  # Shape tree
-  joints = seen.Shapes.joints(5)
-  root = joints[0]
-  root.scale(20)
-
-  root.eachShape randomColors
-
-  scene.group = root
-
-  i = 0
-  renderLoop = () ->
-    for j, ji in joints
-      j.reset().rotx(0.1 * Math.sin(i*0.1)) unless ji == 0
-    root.roty(0.02).rotx(0.015)
-    scene.render()
-    i++
-
-  setInterval(renderLoop, 30)
-
-  return scene
-
-seen.demoArticulationScene = () ->
-  scene = seen.emptyScene()
-
-  size = 5
-
-  # Shape tree
-  root = new seen.Group().add(seen.Shapes.unitcube().scale(size))
-  lastg = root
-  joints = []
-  for i in [0...20]
-    nextg = lastg.append()
-      .translate(0,size)
-      .append()
-        .add(seen.Shapes.unitcube().scale(size))
-    joints.push nextg
-    lastg = nextg
-
-  root.eachShape randomColors
-
-  scene.group = root
-
-  i = 0
-  renderLoop = () ->
-    for g in joints
-      g.reset().rotz(0.02 * Math.sin(i*0.05))
-    root.roty(0.02).rotx(0.015)
-    scene.render()
-    i++
-
-  setInterval(renderLoop, 30)
-
-  return scene
-
-seen.demoJSONScene = () ->
-  scene = seen.emptyScene()
-
-  s = {
-    type: 'tetrahedron'
-    transforms: [
-      ['scale', 30]
-    ]
-  }
-
-  shape = seen.Shapes.fromJSON(s)
-  #shape = seen.Shapes.fromJSON(shape.toJSON())
-  #console.debug shape.toJSON()
-  scene.group.add shape
-
-  for shape in scene.group.children
-    hue = Math.random()
-    for surface in shape.surfaces
-      surface.fill = new seen.Colors.fromHsl(hue, 0.5, 0.4)
-
-  renderLoop = () ->
-      #for shape in scene.shapes
-      #  shape.roty(0.005).rotx(0.002)
-      scene.render()
-  setInterval(renderLoop, 30)
-
-  return scene
-
 

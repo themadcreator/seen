@@ -79,26 +79,6 @@ seen.Projections = {
 }
 
 seen.Viewports = {
-  alignCenter : (projection, width = 500, height = 500, x = 0, y = 0) ->
-    prescale = new seen.Matrix()
-      .translate(-x, -y, -1)
-      .scale(1/width, 1/height, 1/height)
-    postscale = new seen.Matrix()
-      .scale(width, -height)
-      .translate(x + width/2, y + height/2)
-    return prescale.multiply(projection).multiply(postscale)
-
-  alignOrigin : (projection, width = 500, height = 500, x = 0, y = 0) ->
-    prescale = new seen.Matrix()
-      .translate(-x, -y, -1)
-      .scale(1/width, 1/height, 1/height)
-    postscale = new seen.Matrix()
-      .scale(width, -height)
-      .translate(x, y)
-    return prescale.multiply(projection).multiply(postscale)
-}
-
-seen.Viewports2 = {
   center : (width = 500, height = 500, x = 0, y = 0) ->
     prescale = new seen.Matrix()
       .translate(-x, -y, -1)
@@ -121,7 +101,7 @@ seen.Viewports2 = {
 class seen.Camera
   defaults :
     projection : seen.Projections.perspective()
-    viewport   : seen.Viewports2.center()
+    viewport   : seen.Viewports.center()
     camera     : seen.Matrices.identity.copy()
 
   constructor : (options) ->
@@ -130,15 +110,3 @@ class seen.Camera
   getMatrix : ->
     @camera.multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
 
-seen.Cameras = {
-  orthoCenterOrigin : (width = 500, height = 500) ->
-    return new seen.Camera(
-      projection : seen.Projections.orthoExtent(width/2, height/2, height/2)
-      viewport   : seen.Viewports.centerOrigin(width, height)
-    )
-  orthoMatchOrigin : (width = 500, height = 500) ->
-    return new seen.Camera(
-      projection : seen.Projections.ortho(-width, width, -height, height, height, height*2)
-      viewport   : seen.Viewports.matchOrigin(width, height)
-    )
-}

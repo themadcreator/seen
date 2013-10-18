@@ -7,47 +7,38 @@
 {% endblock %}
 
 {% block demo %}
-<script src="/lib/jquery.js"></script>
 <script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
   w = 400
   h = 400
 
-  model  = seen.demo.model()
+  cube = seen.Shapes.cube()
+  cube.scale(190)
+  for surface in cube.surfaces
+    surface.fill = new seen.Material seen.C.hsl(Math.random(), 0.5, 0.4)
+
+  model = seen.demo.model()
+  model.add(cube)
 
   scene1 = new seen.Scene
     model  : model
     camera : new seen.Camera
-      viewport : seen.Viewports.center(w,h)
+      viewport   : seen.Viewports.center(w,h)
+      camera     : seen.Matrices.identity.scale(0.5).rotx(Math.PI/6).roty(-Math.PI/4)
+      projection : seen.Projections.perspective()
 
   scene2 = new seen.Scene
     model  : model
     camera : new seen.Camera
-      viewport : seen.Viewports.center(w,h)
-      camera   : seen.Matrices.identity.rotx(Math.PI/2)
+      viewport   : seen.Viewports.center(w,h)
+      projection : seen.Projections.ortho()
 
   scene3 = new seen.Scene
     model  : model
     camera : new seen.Camera
-      viewport : seen.Viewports.center(w,h)
-      camera   : seen.Matrices.identity.roty(-Math.PI/2)
-
-  scenes = [scene1, scene2, scene3]
-
-  $.getJSON 'assets/teapot.json', {}, (geom) ->
-
-    faces = geom.faces.map (face) ->
-      surface = new seen.Surface face.map (v) -> seen.P(geom.vertices[v - 1]...)
-      surface.cullBackfaces = false
-      return surface
-
-    teapot = new seen.Shape('custom', faces)
-    teapot.fill new seen.Material seen.C.hsl(0.6, 0.1, 0.5)
-    teapot.scale(40).translate(0,-60)
-
-    model.add(teapot)
-
-    s.render() for s in scenes
+      viewport   : seen.Viewports.center(w,h)
+      camera     : seen.Matrices.identity.roty(-Math.PI/2)
+      projection : seen.Projections.ortho()
 
   new seen.SvgCanvas(document.getElementById('seen-canvas-1'))
     .layer('background', new seen.SvgFillRect(w, h))
@@ -61,6 +52,10 @@
     .layer('background', new seen.SvgFillRect(w, h))
     .layer('scene', new seen.SvgRenderer(scene3))
 
-    s.render() for s in scenes
+  scenes = [scene1, scene2, scene3]
+  s.render() for s in scenes
+
 </script>
 {% endblock %}
+
+

@@ -523,7 +523,7 @@ class seen.Light extends seen.Transformable
   render : ->
     @colorIntensity = @color.scale(@intensity)
 
-  # TODO - i dont this this works
+  # TODO - i dont think this works
   transform: (m) =>
     @point.transform(m)
 
@@ -795,7 +795,7 @@ class PathPainter extends seen.Painter
       .style(
         fill           : if not renderObject.renderModel.fill? then 'none' else renderObject.renderModel.fill.hex()
         stroke         : if not renderObject.renderModel.stroke? then 'none' else renderObject.renderModel.stroke.hex()
-        'fill-opacity' : if not renderObject.surface.fill? then 1.0 else (renderObject.surface.fill.a / 0xFF)
+        'fill-opacity' : if not renderObject.surface.fill?.a? then 1.0 else (renderObject.surface.fill.a / 255.0)
         'stroke-width' : renderObject.surface['stroke-width'] ? 1
       )
 
@@ -1042,26 +1042,6 @@ seen.Projections = {
 }
 
 seen.Viewports = {
-  alignCenter : (projection, width = 500, height = 500, x = 0, y = 0) ->
-    prescale = new seen.Matrix()
-      .translate(-x, -y, -1)
-      .scale(1/width, 1/height, 1/height)
-    postscale = new seen.Matrix()
-      .scale(width, -height)
-      .translate(x + width/2, y + height/2)
-    return prescale.multiply(projection).multiply(postscale)
-
-  alignOrigin : (projection, width = 500, height = 500, x = 0, y = 0) ->
-    prescale = new seen.Matrix()
-      .translate(-x, -y, -1)
-      .scale(1/width, 1/height, 1/height)
-    postscale = new seen.Matrix()
-      .scale(width, -height)
-      .translate(x, y)
-    return prescale.multiply(projection).multiply(postscale)
-}
-
-seen.Viewports2 = {
   center : (width = 500, height = 500, x = 0, y = 0) ->
     prescale = new seen.Matrix()
       .translate(-x, -y, -1)
@@ -1084,7 +1064,7 @@ seen.Viewports2 = {
 class seen.Camera
   defaults :
     projection : seen.Projections.perspective()
-    viewport   : seen.Viewports2.center()
+    viewport   : seen.Viewports.center()
     camera     : seen.Matrices.identity.copy()
 
   constructor : (options) ->
@@ -1093,18 +1073,6 @@ class seen.Camera
   getMatrix : ->
     @camera.multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
 
-seen.Cameras = {
-  orthoCenterOrigin : (width = 500, height = 500) ->
-    return new seen.Camera(
-      projection : seen.Projections.orthoExtent(width/2, height/2, height/2)
-      viewport   : seen.Viewports.centerOrigin(width, height)
-    )
-  orthoMatchOrigin : (width = 500, height = 500) ->
-    return new seen.Camera(
-      projection : seen.Projections.ortho(-width, width, -height, height, height, height*2)
-      viewport   : seen.Viewports.matchOrigin(width, height)
-    )
-}
 
 
 
