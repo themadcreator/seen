@@ -1,18 +1,42 @@
 {% extends 'demo-template.html' %}
 
+{% block canvases %}
+  <svg width="400" height="400" id="seen-canvas-1"></svg>
+  <svg width="400" height="400" id="seen-canvas-2"></svg>
+  <svg width="400" height="400" id="seen-canvas-3"></svg>
+{% endblock %}
+
 {% block demo %}
 <script src="/lib/jquery.js"></script>
 <script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
-  w = 800
-  h = 800
+  w = 400
+  h = 400
 
   # Make a plate that will take up the entire viewport minus 10 pixel margins
   hw = w/2 - 10
   hh = h/2 - 10
 
-  scene = seen.emptyScene()
-  scene.projection = seen.Viewports.alignCenter(seen.Projections.perspective(), w, h)
+  model  = seen.simpleModel()
+
+  scene1 = new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      viewport : seen.Viewports2.center(w,h)
+
+  scene2 = new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      viewport : seen.Viewports2.center(w,h)
+      camera   : seen.Matrices.identity.rotx(Math.PI/2)
+
+  scene3 = new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      viewport : seen.Viewports2.center(w,h)
+      camera   : seen.Matrices.identity.roty(-Math.PI/2)
+
+  scenes = [scene1, scene2, scene3]
 
   $.getJSON 'assets/teapot.json', {}, (geom) ->
 
@@ -23,21 +47,24 @@
 
     teapot = new seen.Shape('custom', faces)
     teapot.fill new seen.Material seen.C.hsl(0.6, 0.7, 0.4)
-    teapot.scale(100)
-    teapot.translate(0,-180,-100)
-    teapot.rotx(Math.PI/8) # .roty(-Math.PI/4)
-    scene.group.add(teapot)
+    teapot.scale(40).translate(0,-60)
 
+    model.add(teapot)
 
-    #scene.on 'beforeRender.animate', () ->
-    #  teapot.rotx(0.003).roty(0.007).rotz(0.005)
-    #scene.startRenderLoop(10)
-    scene.render()
+    s.render() for s in scenes
 
-  new seen.SvgCanvas(document.getElementById('seen-canvas'))
+  new seen.SvgCanvas(document.getElementById('seen-canvas-1'))
     .layer('background', new seen.SvgFillRect(w, h))
-    .layer('scene', new seen.SvgRenderer(scene))
+    .layer('scene', new seen.SvgRenderer(scene1))
 
-  scene.render()
+  new seen.SvgCanvas(document.getElementById('seen-canvas-2'))
+    .layer('background', new seen.SvgFillRect(w, h))
+    .layer('scene', new seen.SvgRenderer(scene2))
+
+  new seen.SvgCanvas(document.getElementById('seen-canvas-3'))
+    .layer('background', new seen.SvgFillRect(w, h))
+    .layer('scene', new seen.SvgRenderer(scene3))
+
+    s.render() for s in scenes
 </script>
 {% endblock %}

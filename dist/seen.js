@@ -535,7 +535,8 @@
       normal: seen.P(1, -1, -1).normalize()
     };
 
-    function Light(options) {
+    function Light(type, options) {
+      this.type = type;
       this.transform = __bind(this.transform, this);
       seen.Util.defaults(this, options, this.defaults);
     }
@@ -551,6 +552,31 @@
     return Light;
 
   })(seen.Transformable);
+
+  seen.Lights = {
+    point: function(opts) {
+      return new seen.Light('point', opts);
+    },
+    directional: function(opts) {
+      return new seen.Light('directional', opts);
+    },
+    ambient: function(opts) {
+      return new seen.Light('ambient', opts);
+    },
+    toHash: function(lights) {
+      return {
+        points: lights.filter(function(light) {
+          return light.type === 'point';
+        }),
+        directionals: lights.filter(function(light) {
+          return light.type === 'directional';
+        }),
+        ambients: lights.filter(function(light) {
+          return light.type === 'ambient';
+        })
+      };
+    }
+  };
 
   seen.ShaderUtils = {
     applyDiffuse: function(c, light, lightNormal, surfaceNormal, material) {
@@ -703,10 +729,12 @@
   };
 
   seen.Renderer = (function() {
+    Renderer.cid = 0;
+
     function Renderer(scene) {
       this.scene = scene;
       this.render = __bind(this.render, this);
-      this.scene.on('render.renderer', this.render);
+      this.scene.on("render.renderer-" + (seen.Renderer.cid++), this.render);
     }
 
     Renderer.prototype.render = function(renderObjects) {
@@ -850,27 +878,28 @@
 
   })(seen.Transformable);
 
-  seen.Group = (function(_super) {
-    __extends(Group, _super);
+  seen.Model = (function(_super) {
+    __extends(Model, _super);
 
-    function Group() {
-      Group.__super__.constructor.call(this);
+    function Model() {
+      Model.__super__.constructor.call(this);
       this.children = [];
+      this.lights = [];
     }
 
-    Group.prototype.add = function(child) {
+    Model.prototype.add = function(child) {
       this.children.push(child);
       return this;
     };
 
-    Group.prototype.append = function() {
+    Model.prototype.append = function() {
       var group;
-      group = new seen.Group;
+      group = new seen.Model;
       this.add(group);
       return group;
     };
 
-    Group.prototype.eachShape = function(f) {
+    Model.prototype.eachShape = function(f) {
       var child, _i, _len, _ref4, _results;
       _ref4 = this.children;
       _results = [];
@@ -879,7 +908,7 @@
         if (child instanceof seen.Shape) {
           f.call(this, child);
         }
-        if (child instanceof seen.Group) {
+        if (child instanceof seen.Model) {
           _results.push(child.eachTransformedShape(f));
         } else {
           _results.push(void 0);
@@ -888,23 +917,22 @@
       return _results;
     };
 
-    Group.prototype.eachTransformedShape = function(f, m) {
-      var child, _i, _len, _ref4, _results;
-      if (m == null) {
-        m = null;
-      }
-      if (m == null) {
-        m = this.m;
-      }
+    Model.prototype.eachTransformedShape = function(f) {
+      return this._eachTransformedShape(f, this.lights, this.m);
+    };
+
+    Model.prototype._eachTransformedShape = function(f, lights, m) {
+      var child, childLights, _i, _len, _ref4, _results;
       _ref4 = this.children;
       _results = [];
       for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
         child = _ref4[_i];
         if (child instanceof seen.Shape) {
-          f.call(this, child, child.m.multiply(m));
+          f.call(this, child, lights, child.m.multiply(m));
         }
-        if (child instanceof seen.Group) {
-          _results.push(child.eachTransformedShape(f, child.m.multiply(m)));
+        if (child instanceof seen.Model) {
+          childLights = child.lights.length === 0 ? lights : lights.concat(child.lights);
+          _results.push(child._eachTransformedShape(f, childLights, child.m.multiply(m)));
         } else {
           _results.push(void 0);
         }
@@ -912,7 +940,7 @@
       return _results;
     };
 
-    return Group;
+    return Model;
 
   })(seen.Transformable);
 
@@ -1253,15 +1281,65 @@
     }
   };
 
+  seen.Viewports2 = {
+    center: function(width, height, x, y) {
+      var postscale, prescale;
+      if (width == null) {
+        width = 500;
+      }
+      if (height == null) {
+        height = 500;
+      }
+      if (x == null) {
+        x = 0;
+      }
+      if (y == null) {
+        y = 0;
+      }
+      prescale = new seen.Matrix().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
+      postscale = new seen.Matrix().scale(width, -height).translate(x + width / 2, y + height / 2);
+      return {
+        prescale: prescale,
+        postscale: postscale
+      };
+    },
+    origin: function(width, height, x, y) {
+      var postscale, prescale;
+      if (width == null) {
+        width = 500;
+      }
+      if (height == null) {
+        height = 500;
+      }
+      if (x == null) {
+        x = 0;
+      }
+      if (y == null) {
+        y = 0;
+      }
+      prescale = new seen.Matrix().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
+      postscale = new seen.Matrix().scale(width, -height).translate(x, y);
+      return {
+        prescale: prescale,
+        postscale: postscale
+      };
+    }
+  };
+
   seen.Camera = (function() {
     Camera.prototype.defaults = {
-      projection: seen.Projections.orthoExtent(),
-      location: seen.P(0, 0, 0)
+      projection: seen.Projections.perspective(),
+      viewport: seen.Viewports2.center(),
+      camera: seen.Matrices.identity.copy()
     };
 
     function Camera(options) {
       seen.Util.defaults(this, options, this.defaults);
     }
+
+    Camera.prototype.getMatrix = function() {
+      return this.camera.multiply(this.viewport.prescale).multiply(this.projection).multiply(this.viewport.postscale);
+    };
 
     return Camera;
 
@@ -1483,7 +1561,9 @@
   seen.Scene = (function() {
     Scene.prototype.defaults = {
       cullBackfaces: true,
-      projection: seen.Viewports.alignCenter(seen.Projections.perspective())
+      camera: new seen.Camera(),
+      model: new seen.Model(),
+      shader: seen.Shaders.phong
     };
 
     function Scene(options) {
@@ -1492,14 +1572,6 @@
       seen.Util.defaults(this, options, this.defaults);
       this.dispatch = d3.dispatch('beforeRender', 'afterRender', 'render');
       d3.rebind(this, this.dispatch, ['on']);
-      this.group = new seen.Group();
-      this.shader = seen.Shaders.phong;
-      this.lights = {
-        points: [],
-        directionals: [],
-        ambients: []
-      };
-      this.surfaces = [];
       this._renderModelCache = {};
     }
 
@@ -1520,29 +1592,26 @@
     };
 
     Scene.prototype._renderSurfaces = function() {
-      var key, light, lights, projection, _i, _len, _ref7,
+      var projection, surfaces,
         _this = this;
-      projection = this.projection;
-      _ref7 = this.lights;
-      for (key in _ref7) {
-        lights = _ref7[key];
+      projection = this.camera.getMatrix();
+      surfaces = [];
+      this.model.eachTransformedShape(function(shape, lights, transform) {
+        var light, renderModel, surface, _i, _j, _len, _len1, _ref7, _ref8, _ref9, _results;
         for (_i = 0, _len = lights.length; _i < _len; _i++) {
           light = lights[_i];
           light.render();
         }
-      }
-      this.surfaces.length = 0;
-      this.group.eachTransformedShape(function(shape, transform) {
-        var renderModel, surface, _j, _len1, _ref10, _ref8, _ref9, _results;
-        _ref8 = shape.surfaces;
+        lights = seen.Lights.toHash(lights);
+        _ref7 = shape.surfaces;
         _results = [];
-        for (_j = 0, _len1 = _ref8.length; _j < _len1; _j++) {
-          surface = _ref8[_j];
+        for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
+          surface = _ref7[_j];
           renderModel = _this._renderSurface(surface, transform, projection);
           if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
-            renderModel.fill = (_ref9 = surface.fill) != null ? _ref9.render(_this.lights, _this.shader, renderModel.transformed) : void 0;
-            renderModel.stroke = (_ref10 = surface.stroke) != null ? _ref10.render(_this.lights, _this.shader, renderModel.transformed) : void 0;
-            _results.push(_this.surfaces.push({
+            renderModel.fill = (_ref8 = surface.fill) != null ? _ref8.render(lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel.stroke = (_ref9 = surface.stroke) != null ? _ref9.render(lights, _this.shader, renderModel.transformed) : void 0;
+            _results.push(surfaces.push({
               renderModel: renderModel,
               surface: surface
             }));
@@ -1552,10 +1621,10 @@
         }
         return _results;
       });
-      this.surfaces.sort(function(a, b) {
+      surfaces.sort(function(a, b) {
         return b.renderModel.projected.barycenter.z - a.renderModel.projected.barycenter.z;
       });
-      return this.surfaces;
+      return surfaces;
     };
 
     Scene.prototype._renderSurface = function(surface, transform, projection) {

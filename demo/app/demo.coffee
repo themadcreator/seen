@@ -3,14 +3,26 @@ seen.emptyScene = () ->
   scene = new seen.Scene()
 
   # lights
-  scene.lights.points.push new seen.Light
-    point: new seen.Point(-80, 120, 220)
-    intensity: 0.005
+  scene.lights.push seen.Lights.point
+    point     : seen.P(-80, 120, 220)
+    intensity : 0.005
 
-  scene.lights.ambients.push new seen.Light
-    intensity: 0.002
+  scene.lights.push seen.Lights.ambient
+    intensity : 0.002
 
   return scene
+
+seen.simpleModel = () ->
+  model = new seen.Model()
+
+  model.lights.push seen.Lights.point
+    point     : seen.P(-80, 120, 220)
+    intensity : 0.005
+
+  model.lights.push seen.Lights.ambient
+    intensity : 0.002
+
+  return model
 
 seen.demoText = () ->
   scene = seen.emptyScene()
@@ -38,18 +50,18 @@ seen.demoText = () ->
 
   return scene
 
-seen.demoScene = () ->
-  scene = seen.emptyScene()
+seen.demoModel = () ->
+  model = seen.simpleModel()
 
   # shapes!
-  scene.group.add(seen.Shapes.unitcube().scale(30))
-  scene.group.add(seen.Shapes.tetrahedron().scale(10).translate(50,50))
-  scene.group.add(seen.Shapes.tetrahedron().scale(10).roty(0.5 * Math.PI).translate(-50,30))
+  model.add(seen.Shapes.unitcube().scale(30))
+  model.add(seen.Shapes.tetrahedron().scale(10).translate(50,50))
+  model.add(seen.Shapes.tetrahedron().scale(10).roty(0.5 * Math.PI).translate(-50,30))
 
-  inside     = scene.group.append()
-  outside    = scene.group.append()
-  faroutside = scene.group.append()
-  around     = scene.group.append()
+  inside     = model.append()
+  outside    = model.append()
+  faroutside = model.append()
+  around     = model.append()
 
   for i in [0...360] by 4
     inside.add     seen.Shapes.tetrahedron().scale(1).translate(-70).roty(i / 180.0 * Math.PI).rotz(0.5 * Math.sin(i / 60  * Math.PI))
@@ -62,21 +74,16 @@ seen.demoScene = () ->
       .roty(1)
       .rotz(1)
 
-  scene.group.eachShape randomColors
+  model.eachShape randomColors
+  model.scale(1.5)
 
-  scene.group
-    .scale(1.5)
-
-  scene.on 'beforeRender.animate', () ->
-    for i in [0...3]
-      scene.group.children[i].rotx(0.01 * (i+1))
-      scene.group.children[i].roty(0.02).rotx(0.015)
-    outside.roty(0.02).rotx(0.015)
-    inside.roty(-0.01).rotx(-0.02)
-    faroutside.roty(0.02).rotz(0.02)
-    around.roty(0.01)
-
-  return scene
+  return {
+    model
+    inside
+    outside
+    faroutside
+    around
+  }
 
 seen.demoSimpleScene = () ->
   scene = seen.emptyScene()

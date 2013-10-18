@@ -511,21 +511,32 @@ class seen.Material
 
 # This model object holds the attributes and transformation of a light source.
 class seen.Light extends seen.Transformable
-  defaults : 
+  defaults :
     point     : seen.P()
     color     : seen.C.white
     intensity : 0.01
     normal    : seen.P(1, -1, -1).normalize()
 
-  constructor: (options) ->
+  constructor: (@type, options) ->
     seen.Util.defaults(@, options, @defaults)
 
   render : ->
     @colorIntensity = @color.scale(@intensity)
-  
+
   # TODO - i dont this this works
   transform: (m) =>
     @point.transform(m)
+
+seen.Lights = {
+  point       : (opts) -> new seen.Light 'point', opts
+  directional : (opts) -> new seen.Light 'directional', opts
+  ambient     : (opts) -> new seen.Light 'ambient', opts
+
+  toHash      : (lights) ->
+    points       : lights.filter (light) -> light.type is 'point'
+    directionals : lights.filter (light) -> light.type is 'directional'
+    ambients     : lights.filter (light) -> light.type is 'ambient'
+}
 
 seen.ShaderUtils = {
   applyDiffuse : (c, light, lightNormal, surfaceNormal, material) ->
@@ -559,7 +570,7 @@ seen.ShaderUtils = {
 # The `Shader` class is the base class for all shader objects.
 class seen.Shader
   # Every `Shader` implementation must override the `shade` method.
-  # 
+  #
   # `lights` is an object containing the ambient, point, and directional light sources.
   # `renderModel` is an instance of `RenderModel` and contains the transformed and projected surface data.
   # `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.
@@ -630,8 +641,9 @@ seen.Shaders = {
 
 
 class seen.Renderer
+  @cid : 0
   constructor: (@scene) ->
-    @scene.on 'render.renderer', @render
+    @scene.on "render.renderer-#{seen.Renderer.cid++}", @render
 
   render: (renderObjects) =>
     @reset()
@@ -699,6 +711,7 @@ class seen.RenderModel
     set.normal.set(set.v0._cross(set.v1)._normalize())
 
 
+
 # ## Geometry
 # #### Groups, shapes, and surfaces
 # ------------------
@@ -731,17 +744,19 @@ class seen.Shape extends seen.Transformable
     @eachSurface (s) -> s.stroke = stroke
     return @
 
-class seen.Group extends seen.Transformable
+
+class seen.Model extends seen.Transformable
   constructor: () ->
     super()
     @children = []
+    @lights = []
 
   add: (child) ->
     @children.push child
     return @
 
   append: () ->
-    group = new seen.Group
+    group = new seen.Model
     @add group
     return group
 
@@ -749,16 +764,20 @@ class seen.Group extends seen.Transformable
     for child in @children
       if child instanceof seen.Shape
         f.call(@, child)
-      if child instanceof seen.Group
+      if child instanceof seen.Model
         child.eachTransformedShape(f)
 
-  eachTransformedShape: (f, m = null) ->
-    m ?= @m
+  eachTransformedShape: (f) ->
+    @_eachTransformedShape(f, @lights, @m)
+
+  _eachTransformedShape: (f, lights, m) ->
     for child in @children
       if child instanceof seen.Shape
-        f.call(@, child, child.m.multiply(m))
-      if child instanceof seen.Group
-        child.eachTransformedShape(f, child.m.multiply(m))
+        f.call(@, child, lights, child.m.multiply(m))
+      if child instanceof seen.Model
+        childLights = if child.lights.length is 0 then lights else lights.concat(child.lights)
+        # TODO properly chain transforms onto lights
+        child._eachTransformedShape(f, childLights, child.m.multiply(m))
 
 
 
@@ -1042,14 +1061,37 @@ seen.Viewports = {
     return prescale.multiply(projection).multiply(postscale)
 }
 
+seen.Viewports2 = {
+  center : (width = 500, height = 500, x = 0, y = 0) ->
+    prescale = new seen.Matrix()
+      .translate(-x, -y, -1)
+      .scale(1/width, 1/height, 1/height)
+    postscale = new seen.Matrix()
+      .scale(width, -height)
+      .translate(x + width/2, y + height/2)
+    return {prescale, postscale}
+
+  origin : (width = 500, height = 500, x = 0, y = 0) ->
+    prescale = new seen.Matrix()
+      .translate(-x, -y, -1)
+      .scale(1/width, 1/height, 1/height)
+    postscale = new seen.Matrix()
+      .scale(width, -height)
+      .translate(x, y)
+    return {prescale, postscale}
+}
+
 class seen.Camera
   defaults :
-    projection : seen.Projections.orthoExtent()
-    #viewport   : seen.Viewports.centerOrigin()
-    location   : seen.P(0,0,0)
+    projection : seen.Projections.perspective()
+    viewport   : seen.Viewports2.center()
+    camera     : seen.Matrices.identity.copy()
 
   constructor : (options) ->
     seen.Util.defaults(@, options, @defaults)
+
+  getMatrix : ->
+    @camera.multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
 
 seen.Cameras = {
   orthoCenterOrigin : (width = 500, height = 500) ->
@@ -1189,7 +1231,9 @@ class seen.SvgFillRect
 class seen.Scene
   defaults:
     cullBackfaces : true
-    projection    : seen.Viewports.alignCenter(seen.Projections.perspective())
+    camera        : new seen.Camera()
+    model         : new seen.Model()
+    shader        : seen.Shaders.phong
 
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -1197,13 +1241,6 @@ class seen.Scene
     @dispatch = d3.dispatch('beforeRender', 'afterRender', 'render')
     d3.rebind(@, @dispatch, ['on'])
 
-    @group  = new seen.Group()
-    @shader = seen.Shaders.phong
-    @lights =
-      points       : []
-      directionals : []
-      ambients     : []
-    @surfaces = []
     @_renderModelCache = {}
 
   startRenderLoop: (msecDelay = 30) ->
@@ -1218,16 +1255,16 @@ class seen.Scene
 
   _renderSurfaces: () =>
     # compute projection matrix
-    projection = @projection # @camera.projection.multiply(@camera.viewport)
+    projection = @camera.getMatrix()
 
-    # precompute light data
-    for key, lights of @lights
+    # build renderable surfaces array
+    surfaces = []
+    @model.eachTransformedShape (shape, lights, transform) =>
+      # precompute light data. TODO, reduce re-computation
       for light in lights
         light.render()
+      lights = seen.Lights.toHash(lights)
 
-    # clear renderable surfaces array
-    @surfaces.length = 0
-    @group.eachTransformedShape (shape, transform) =>
       for surface in shape.surfaces
         # compute transformed and projected geometry
         renderModel = @_renderSurface(surface, transform, projection)
@@ -1235,19 +1272,19 @@ class seen.Scene
         # test for culling
         if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
           # apply material shading
-          renderModel.fill   = surface.fill?.render(@lights, @shader, renderModel.transformed)
-          renderModel.stroke = surface.stroke?.render(@lights, @shader, renderModel.transformed)
+          renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
+          renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
 
           # add surface to renderable surfaces array
-          @surfaces.push
+          surfaces.push
             renderModel : renderModel
             surface     : surface
 
     # sort for painter's algorithm
-    @surfaces.sort (a, b) ->
+    surfaces.sort (a, b) ->
       return  b.renderModel.projected.barycenter.z - a.renderModel.projected.barycenter.z
 
-    return @surfaces
+    return surfaces
 
   _renderSurface : (surface, transform, projection) ->
     renderModel = @_renderModelCache[surface.id]

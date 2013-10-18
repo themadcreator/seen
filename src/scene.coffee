@@ -4,7 +4,9 @@
 class seen.Scene
   defaults:
     cullBackfaces : true
-    projection    : seen.Viewports.alignCenter(seen.Projections.perspective())
+    camera        : new seen.Camera()
+    model         : new seen.Model()
+    shader        : seen.Shaders.phong
 
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -12,13 +14,6 @@ class seen.Scene
     @dispatch = d3.dispatch('beforeRender', 'afterRender', 'render')
     d3.rebind(@, @dispatch, ['on'])
 
-    @group  = new seen.Group()
-    @shader = seen.Shaders.phong
-    @lights =
-      points       : []
-      directionals : []
-      ambients     : []
-    @surfaces = []
     @_renderModelCache = {}
 
   startRenderLoop: (msecDelay = 30) ->
@@ -33,16 +28,16 @@ class seen.Scene
 
   _renderSurfaces: () =>
     # compute projection matrix
-    projection = @projection # @camera.projection.multiply(@camera.viewport)
+    projection = @camera.getMatrix()
 
-    # precompute light data
-    for key, lights of @lights
+    # build renderable surfaces array
+    surfaces = []
+    @model.eachTransformedShape (shape, lights, transform) =>
+      # precompute light data. TODO, reduce re-computation
       for light in lights
         light.render()
+      lights = seen.Lights.toHash(lights)
 
-    # clear renderable surfaces array
-    @surfaces.length = 0
-    @group.eachTransformedShape (shape, transform) =>
       for surface in shape.surfaces
         # compute transformed and projected geometry
         renderModel = @_renderSurface(surface, transform, projection)
@@ -50,19 +45,19 @@ class seen.Scene
         # test for culling
         if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
           # apply material shading
-          renderModel.fill   = surface.fill?.render(@lights, @shader, renderModel.transformed)
-          renderModel.stroke = surface.stroke?.render(@lights, @shader, renderModel.transformed)
+          renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
+          renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
 
           # add surface to renderable surfaces array
-          @surfaces.push
+          surfaces.push
             renderModel : renderModel
             surface     : surface
 
     # sort for painter's algorithm
-    @surfaces.sort (a, b) ->
+    surfaces.sort (a, b) ->
       return  b.renderModel.projected.barycenter.z - a.renderModel.projected.barycenter.z
 
-    return @surfaces
+    return surfaces
 
   _renderSurface : (surface, transform, projection) ->
     renderModel = @_renderModelCache[surface.id]

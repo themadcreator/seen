@@ -8,6 +8,7 @@ DISTS = {
     'src/light.coffee'
     'src/render.coffee'
     'src/geometry.coffee'
+    'src/model.coffee'
     'src/painters.coffee'
     'src/shapes/primitives.coffee'
     'src/camera.coffee'
@@ -66,4 +67,4 @@ task 'docs', 'Build seen documentation', (options) ->
     console.log "Documented."
 
 
- 
+

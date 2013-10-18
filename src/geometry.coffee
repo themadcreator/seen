@@ -30,32 +30,3 @@ class seen.Shape extends seen.Transformable
   stroke: (stroke) ->
     @eachSurface (s) -> s.stroke = stroke
     return @
-
-class seen.Group extends seen.Transformable
-  constructor: () ->
-    super()
-    @children = []
-
-  add: (child) ->
-    @children.push child
-    return @
-
-  append: () ->
-    group = new seen.Group
-    @add group
-    return group
-
-  eachShape: (f) ->
-    for child in @children
-      if child instanceof seen.Shape
-        f.call(@, child)
-      if child instanceof seen.Group
-        child.eachTransformedShape(f)
-
-  eachTransformedShape: (f, m = null) ->
-    m ?= @m
-    for child in @children
-      if child instanceof seen.Shape
-        f.call(@, child, child.m.multiply(m))
-      if child instanceof seen.Group
-        child.eachTransformedShape(f, child.m.multiply(m))

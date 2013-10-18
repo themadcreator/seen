@@ -1,6 +1,10 @@
 TODO before v1.0
-  Non-d3 dispatch and line
   Lights attached to groups, available in rendermodel
+  -> Animator has timeout, fires events
+  -> Renderer renders into canvas
+  -> Group -> Model. has lights
+  -> View has model, camera, renderer, listens to events
+  Non-d3 dispatch and line
   Scene sharing across canvases
   Move demo scripts into subdir
   Full documentation and some demos
@@ -35,7 +39,7 @@ TODO Features
   Shapes
     Triangulated Torus
     Pipes
-    JSON format objects
+    (/) JSON format objects
 
 Features
 

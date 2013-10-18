@@ -1,7 +1,8 @@
 
 class seen.Renderer
+  @cid : 0
   constructor: (@scene) ->
-    @scene.on 'render.renderer', @render
+    @scene.on "render.renderer-#{seen.Renderer.cid++}", @render
 
   render: (renderObjects) =>
     @reset()

@@ -4,21 +4,32 @@
 
 # This model object holds the attributes and transformation of a light source.
 class seen.Light extends seen.Transformable
-  defaults : 
+  defaults :
     point     : seen.P()
     color     : seen.C.white
     intensity : 0.01
     normal    : seen.P(1, -1, -1).normalize()
 
-  constructor: (options) ->
+  constructor: (@type, options) ->
     seen.Util.defaults(@, options, @defaults)
 
   render : ->
     @colorIntensity = @color.scale(@intensity)
-  
-  # TODO - i dont this this works
+
+  # TODO - i dont think this works
   transform: (m) =>
     @point.transform(m)
+
+seen.Lights = {
+  point       : (opts) -> new seen.Light 'point', opts
+  directional : (opts) -> new seen.Light 'directional', opts
+  ambient     : (opts) -> new seen.Light 'ambient', opts
+
+  toHash      : (lights) ->
+    points       : lights.filter (light) -> light.type is 'point'
+    directionals : lights.filter (light) -> light.type is 'directional'
+    ambients     : lights.filter (light) -> light.type is 'ambient'
+}
 
 seen.ShaderUtils = {
   applyDiffuse : (c, light, lightNormal, surfaceNormal, material) ->
@@ -52,7 +63,7 @@ seen.ShaderUtils = {
 # The `Shader` class is the base class for all shader objects.
 class seen.Shader
   # Every `Shader` implementation must override the `shade` method.
-  # 
+  #
   # `lights` is an object containing the ambient, point, and directional light sources.
   # `renderModel` is an instance of `RenderModel` and contains the transformed and projected surface data.
   # `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.
