@@ -1,4 +1,6 @@
-seen.stockData = (callback) ->
+seen.demo ?= {}
+
+seen.demo.stockData = (callback) ->
   url       = 'http://query.yahooapis.com/v1/public/yql'
   startDate = '2013-01-01'
   endDate   = '2013-03-01'
@@ -7,26 +9,28 @@ seen.stockData = (callback) ->
   $.getJSON(url, "q=#{query}&env=#{env}&format=json", callback)
 
 
-seen.demoChart = () ->
-  scene = seen.emptyScene()
-  scene.cullBackfaces = false
-  scene.projection = seen.Projections.orthoExtent()
+seen.demo.demoChart = () ->
+  model = seen.demo.model()
 
-  datagroup = scene.group.append()
-  scene.group.roty(-0.5).rotz(-0.1).rotx(0.5).translate(0,-20)
+  scene = new seen.Scene
+    model         : model
+    cullBackfaces : false
+    camera        : new seen.Camera
+      camera     : seen.Matrices.identity.roty(-0.7).rotz(0.1).rotx(0.7).translate(0,-80)
+      projection : seen.Projections.ortho()
 
-
+  datagroup = model.append()
   scaleX = d3.scale.linear()
   scaleY = d3.scale.linear()
 
-  $.getJSON '/data.json', (data) ->
+  $.getJSON '/assets/data.json', (data) ->
     data = data.query.results.quote
-    
+
     scaleY.domain(d3.extent(data, (d) -> d.Close))
-    scaleY.range([0,80])
+    scaleY.range([0,200])
 
     scaleX.domain(d3.extent(data, (d) -> new Date(d.date).getTime()))
-    scaleX.range([-80,80])
+    scaleX.range([-200,200])
 
     pts = [
       new seen.Point(scaleX.range()[1], 0, 0)
@@ -39,7 +43,7 @@ seen.demoChart = () ->
 
     area = seen.Shapes.extrude(pts, 20).translate(0,0,-20)
     area.eachSurface (s) ->
-      s.fill = seen.Colors.fromRgb(0x20, 0xAA, 0xFF, 0x80)
+      s.fill = new seen.Material seen.Colors.hsl(0.6, 1, 0.5, 0.5)
     datagroup.add area
 
     fmt = d3.time.format('%b %e')
@@ -60,12 +64,10 @@ seen.demoChart = () ->
         new seen.Point(x, 0, 0)
       ]
       line.eachSurface (s) ->
-        s.stroke = seen.Colors.gray
-        s.fill = 'none'
+        s.stroke          = new seen.Material seen.Colors.gray, shader : seen.Shaders.flat
+        s.fill            = null
         s['stroke-width'] = 2
       datagroup.add line
-
-
 
     scene.render()
 

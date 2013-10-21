@@ -1,5 +1,4 @@
 TODO before v1.0
-  Lights attached to groups, transforms applied, available in rendermodel
   -> Animator has timeout, fires events
   Non-d3 dispatch and line
   Scene sharing across canvases

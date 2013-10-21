@@ -13,7 +13,7 @@ class PathPainter extends seen.Painter
       .style(
         fill           : if not renderObject.fill? then 'none' else renderObject.fill.hex()
         stroke         : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
-        'fill-opacity' : if not renderObject.surface.fill?.a? then 1.0 else (renderObject.surface.fill.a / 255.0)
+        'fill-opacity' : if not renderObject.fill?.a? then 1.0 else (renderObject.fill.a / 255.0)
         'stroke-width' : renderObject.surface['stroke-width'] ? 1
       )
 

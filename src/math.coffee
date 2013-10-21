@@ -210,6 +210,14 @@ class seen.Point
   normalize: () ->
     return @copy()._normalize()
 
+  # Apply a translation
+  translate: (x, y, z) ->
+    p = @copy()
+    p.x += x
+    p.y += y
+    p.z += z
+    return p
+
   # Non-destructively performs parameter-wise addition with the supplied `Point`.
   add: (q) ->
     return @copy()._add(q)

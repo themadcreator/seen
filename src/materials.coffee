@@ -75,7 +75,7 @@ seen.Colors = {
   # Creates a new `Color` using the supplied rgb and alpha values.
   #
   # Each value must be in the range [0, 255] or, equivalently, [0x00, 0xFF].
-  rgb: (r, g, b, a) ->
+  rgb: (r, g, b, a = 255) ->
     return new seen.Color(r, g, b, a)
 
   # Creates a new `Color` using the supplied hex string of the form "#RRGGBB".
@@ -89,23 +89,23 @@ seen.Colors = {
   # Creates a new `Color` using the supplied hue, saturation, and lightness (HSL) values.
   #
   # Each value must be in the range [0.0, 1.0].
-  hsl: (h, s, l) ->
+  hsl: (h, s, l, a = 1) ->
     r = g = b = 0
     if (s == 0)
       # When saturation is 0, the color is "achromatic" or "grayscale".
-      r = g = b = l 
-    else 
+      r = g = b = l
+    else
       hue2rgb = (p, q, t) ->
-        if (t < 0) 
+        if (t < 0)
           t += 1
-         else if (t > 1) 
+         else if (t > 1)
           t -= 1
-        
-        if (t < 1 / 6) 
+
+        if (t < 1 / 6)
           return p + (q - p) * 6 * t
-        else if (t < 1 / 2) 
+        else if (t < 1 / 2)
           return q
-        else if (t < 2 / 3) 
+        else if (t < 2 / 3)
           return p + (q - p) * (2 / 3 - t) * 6
         else
           return p
@@ -116,7 +116,7 @@ seen.Colors = {
       g = hue2rgb(p, q, h)
       b = hue2rgb(p, q, h - 1 / 3)
 
-    return new seen.Color(r * 255, g * 255, b * 255)
+    return new seen.Color(r * 255, g * 255, b * 255, a * 255)
 }
 
 # Shorten name of `Colors` object for convenience.
@@ -129,7 +129,7 @@ seen.C.gray  = seen.C.hex('#888888')
 
 # `Material` objects hold the attributes that desribe the color and finish of a surface.
 class seen.Material
-  defaults : 
+  defaults :
     # The base color of the material
     color            : seen.C.gray
     # The `metallic` attribute determines how the specular highlights are calculated. Normally, specular highlights are the color of the light source. If metallic is true, specular highlight colors are determined from the `specularColor` attribute.
@@ -141,10 +141,12 @@ class seen.Material
     # A `Shader` object may be supplied to override the shader used for this material. For example, if you want to apply a flat color to text or other shapes, set this value to `seen.Shaders.Flat`.
     shader           : null
 
-  constructor : (@color) ->
-    seen.Util.defaults(@, {}, @defaults)
+  constructor : (@color, options = {}) ->
+    seen.Util.defaults(@, options, @defaults)
 
   # Apply the shader's shading to this material, with the option to override the shader with the material's shader (if defined).
   render : (lights, shader, renderData) ->
     renderShader = @shader ? shader
-    return renderShader.shade(lights, renderData, @)
+    color = renderShader.shade(lights, renderData, @)
+    color.a = @color.a
+    return color
