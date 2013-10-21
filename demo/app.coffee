@@ -15,6 +15,7 @@ app.get '/1', (req, res) -> res.render 'demo1'
 app.get '/2', (req, res) -> res.render 'demo2'
 app.get '/3', (req, res) -> res.render 'demo3'
 app.get '/4', (req, res) -> res.render 'demo4'
+app.get '/5', (req, res) -> res.render 'demo5'
 
 app.listen(5000)
 console.log('Listening on port 5000')

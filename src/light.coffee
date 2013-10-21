@@ -11,24 +11,17 @@ class seen.Light extends seen.Transformable
     normal    : seen.P(1, -1, -1).normalize()
 
   constructor: (@type, options) ->
+    super
     seen.Util.defaults(@, options, @defaults)
+    @id = 'l' + seen.Util.uniqueId()
 
   render : ->
     @colorIntensity = @color.scale(@intensity)
-
-  # TODO - i dont think this works
-  transform: (m) =>
-    @point.transform(m)
 
 seen.Lights = {
   point       : (opts) -> new seen.Light 'point', opts
   directional : (opts) -> new seen.Light 'directional', opts
   ambient     : (opts) -> new seen.Light 'ambient', opts
-
-  toHash      : (lights) ->
-    points       : lights.filter (light) -> light.type is 'point'
-    directionals : lights.filter (light) -> light.type is 'directional'
-    ambients     : lights.filter (light) -> light.type is 'ambient'
 }
 
 seen.ShaderUtils = {
@@ -77,15 +70,15 @@ class Phong extends seen.Shader
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
-    for light in lights.points
-      lightNormal = light.point.subtract(renderModel.barycenter).normalize()
-      seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material)
-
-    for light in lights.directionals
-      seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material)
-
-    for light in lights.ambients
-      seen.ShaderUtils.applyAmbient(c, light)
+    for light in lights
+      switch light.type
+        when 'point'
+          lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+          seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material)
+        when 'directional'
+          seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material)
+        when 'ambient'
+          seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -95,15 +88,15 @@ class DiffusePhong extends seen.Shader
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
-    for light in lights.points
-      lightNormal = light.point.subtract(renderModel.barycenter).normalize()
-      seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material)
-
-    for light in lights.directionals
-      seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material)
-
-    for light in lights.ambients
-      seen.ShaderUtils.applyAmbient(c, light)
+    for light in lights
+      switch light.type
+        when 'point'
+          lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+          seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material)
+        when 'directional'
+          seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material)
+        when 'ambient'
+          seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -113,8 +106,10 @@ class Ambient extends seen.Shader
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
-    for light in lights.ambients
-      seen.ShaderUtils.applyAmbient(c, light)
+    for light in lights
+      switch light.type
+        when 'ambient'
+          seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c

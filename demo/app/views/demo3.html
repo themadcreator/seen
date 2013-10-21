@@ -42,25 +42,17 @@
       return surface
 
     teapot = new seen.Shape('custom', faces)
-    teapot.fill new seen.Material seen.C.hsl(0.6, 0.1, 0.5)
+    teapot.fill new seen.Material seen.C.gray
     teapot.scale(40).translate(0,-60)
 
     model.add(teapot)
 
     s.render() for s in scenes
 
-  new seen.SvgCanvas(document.getElementById('seen-canvas-1'))
-    .layer('background', new seen.SvgFillRect(w, h))
-    .layer('scene', new seen.SvgRenderer(scene1))
+  seen.SvgScene('seen-canvas-1', scene1, w, h)
+  seen.SvgScene('seen-canvas-2', scene2, w, h)
+  seen.SvgScene('seen-canvas-3', scene3, w, h)
+  s.render() for s in scenes
 
-  new seen.SvgCanvas(document.getElementById('seen-canvas-2'))
-    .layer('background', new seen.SvgFillRect(w, h))
-    .layer('scene', new seen.SvgRenderer(scene2))
-
-  new seen.SvgCanvas(document.getElementById('seen-canvas-3'))
-    .layer('background', new seen.SvgFillRect(w, h))
-    .layer('scene', new seen.SvgRenderer(scene3))
-
-    s.render() for s in scenes
 </script>
 {% endblock %}

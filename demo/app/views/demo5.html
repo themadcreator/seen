@@ -1,0 +1,39 @@
+{% extends 'demo-template.html' %}
+
+
+{% block demo %}
+<script type="text/coffeescript" src="/demo.coffee"></script>
+<script type="text/coffeescript">
+  w = 500
+  h = 500
+
+  cube = seen.Shapes.cube()
+  cube.scale(200)
+  cube.fill new seen.Material seen.C.gray
+
+  model = seen.demo.model()
+
+  lightGroup = model.append()
+  lightGroup.add(cube)
+  lightGroup.lights.push seen.Lights.point
+    point     : seen.P(300, 0, 0)
+    color     : seen.C.hsl(0, 1, 0.5)
+    intensity : 0.1
+
+  scene = new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      viewport   : seen.Viewports.center(w,h)
+      camera     : seen.Matrices.identity.scale(0.5).rotx(Math.PI/6).roty(-Math.PI/4)
+      projection : seen.Projections.perspective()
+
+  seen.SvgScene('seen-canvas', scene, w, h)
+  scene.startRenderLoop(10)
+
+  scene.on 'beforeRender.animate', () ->
+    lightGroup.roty(0.005)
+
+</script>
+{% endblock %}
+
+

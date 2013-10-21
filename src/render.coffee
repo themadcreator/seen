@@ -1,8 +1,7 @@
 
 class seen.Renderer
-  @cid : 0
   constructor: (@scene) ->
-    @scene.on "render.renderer-#{seen.Renderer.cid++}", @render
+    @scene.on "render.renderer-#{seen.Util.uniqueId()}", @render
 
   render: (renderObjects) =>
     @reset()
@@ -24,7 +23,8 @@ class seen.Renderer
 # down to `Number` primitives. Also, we compare each transform and projection
 # to prevent unnecessary re-computation.
 class seen.RenderModel
-  constructor: (@points, @transform, @projection) ->
+  constructor: (@surface, @transform, @projection) ->
+    @points      = @surface.points
     @transformed = @_initRenderData()
     @projected   = @_initRenderData()
     @_update()
@@ -68,3 +68,12 @@ class seen.RenderModel
     set.v0.set(set.points[1])._subtract(set.points[0])
     set.v1.set(set.points[points.length - 1])._subtract(set.points[0])
     set.normal.set(set.v0._cross(set.v1)._normalize())
+
+class seen.LightRenderModel
+  constructor: (light, transform) ->
+    @colorIntensity = light.color.scale(light.intensity)
+    @type           = light.type
+    @intensity      = light.intensity
+    @point          = light.point.copy().transform(transform)
+    origin          = seen.Points.ZERO.copy().transform(transform)
+    @normal         = light.normal.copy().transform(transform)._subtract(origin)._normalize()

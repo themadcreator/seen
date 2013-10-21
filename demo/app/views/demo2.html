@@ -26,10 +26,7 @@
     camera : new seen.Camera
       viewport : seen.Viewports.center(w,h)
 
-  new seen.SvgCanvas(document.getElementById('seen-canvas'))
-    .layer('background', new seen.SvgFillRect(w, h))
-    .layer('scene', new seen.SvgRenderer(scene))
-
+  seen.SvgScene('seen-canvas', scene, w, h)
   scene.render()
 </script>
 {% endblock %}

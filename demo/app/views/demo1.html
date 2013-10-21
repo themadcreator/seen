@@ -11,10 +11,10 @@
   scene = new seen.Scene
     model  : demo.model
     camera : new seen.Camera
-      viewport : seen.Viewports.center(500, 500)
+      viewport : seen.Viewports.center(w, h)
 
   new seen.SvgCanvas(document.getElementById('seen-canvas'))
-    .layer('background', new seen.SvgFillRect())
+    .layer('background', new seen.SvgFillRect(w,h))
     .layer('scene',      new seen.SvgRenderer(scene))
     .layer('foreground', new seen.SvgRenderDebug(scene))
 

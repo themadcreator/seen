@@ -1,9 +1,6 @@
 TODO before v1.0
-  Lights attached to groups, available in rendermodel
+  Lights attached to groups, transforms applied, available in rendermodel
   -> Animator has timeout, fires events
-  -> Renderer renders into canvas
-  -> Group -> Model. has lights
-  -> View has model, camera, renderer, listens to events
   Non-d3 dispatch and line
   Scene sharing across canvases
   Move demo scripts into subdir

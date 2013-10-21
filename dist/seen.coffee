@@ -518,24 +518,17 @@ class seen.Light extends seen.Transformable
     normal    : seen.P(1, -1, -1).normalize()
 
   constructor: (@type, options) ->
+    super
     seen.Util.defaults(@, options, @defaults)
+    @id = 'l' + seen.Util.uniqueId()
 
   render : ->
     @colorIntensity = @color.scale(@intensity)
-
-  # TODO - i dont think this works
-  transform: (m) =>
-    @point.transform(m)
 
 seen.Lights = {
   point       : (opts) -> new seen.Light 'point', opts
   directional : (opts) -> new seen.Light 'directional', opts
   ambient     : (opts) -> new seen.Light 'ambient', opts
-
-  toHash      : (lights) ->
-    points       : lights.filter (light) -> light.type is 'point'
-    directionals : lights.filter (light) -> light.type is 'directional'
-    ambients     : lights.filter (light) -> light.type is 'ambient'
 }
 
 seen.ShaderUtils = {
@@ -584,15 +577,15 @@ class Phong extends seen.Shader
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
-    for light in lights.points
-      lightNormal = light.point.subtract(renderModel.barycenter).normalize()
-      seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material)
-
-    for light in lights.directionals
-      seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material)
-
-    for light in lights.ambients
-      seen.ShaderUtils.applyAmbient(c, light)
+    for light in lights
+      switch light.type
+        when 'point'
+          lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+          seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material)
+        when 'directional'
+          seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material)
+        when 'ambient'
+          seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -602,15 +595,15 @@ class DiffusePhong extends seen.Shader
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
-    for light in lights.points
-      lightNormal = light.point.subtract(renderModel.barycenter).normalize()
-      seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material)
-
-    for light in lights.directionals
-      seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material)
-
-    for light in lights.ambients
-      seen.ShaderUtils.applyAmbient(c, light)
+    for light in lights
+      switch light.type
+        when 'point'
+          lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+          seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material)
+        when 'directional'
+          seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material)
+        when 'ambient'
+          seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -620,8 +613,10 @@ class Ambient extends seen.Shader
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
 
-    for light in lights.ambients
-      seen.ShaderUtils.applyAmbient(c, light)
+    for light in lights
+      switch light.type
+        when 'ambient'
+          seen.ShaderUtils.applyAmbient(c, light)
 
     c._multiplyChannels(material.color)._clamp(0, 0xFF)
     return c
@@ -641,9 +636,8 @@ seen.Shaders = {
 
 
 class seen.Renderer
-  @cid : 0
   constructor: (@scene) ->
-    @scene.on "render.renderer-#{seen.Renderer.cid++}", @render
+    @scene.on "render.renderer-#{seen.Util.uniqueId()}", @render
 
   render: (renderObjects) =>
     @reset()
@@ -665,7 +659,8 @@ class seen.Renderer
 # down to `Number` primitives. Also, we compare each transform and projection
 # to prevent unnecessary re-computation.
 class seen.RenderModel
-  constructor: (@points, @transform, @projection) ->
+  constructor: (@surface, @transform, @projection) ->
+    @points      = @surface.points
     @transformed = @_initRenderData()
     @projected   = @_initRenderData()
     @_update()
@@ -710,6 +705,15 @@ class seen.RenderModel
     set.v1.set(set.points[points.length - 1])._subtract(set.points[0])
     set.normal.set(set.v0._cross(set.v1)._normalize())
 
+class seen.LightRenderModel
+  constructor: (light, transform) ->
+    @colorIntensity = light.color.scale(light.intensity)
+    @type           = light.type
+    @intensity      = light.intensity
+    @point          = light.point.copy().transform(transform)
+    origin          = seen.Points.ZERO.copy().transform(transform)
+    @normal         = light.normal.copy().transform(transform)._subtract(origin)._normalize()
+
 
 
 # ## Geometry
@@ -745,6 +749,7 @@ class seen.Shape extends seen.Transformable
     return @
 
 
+
 class seen.Model extends seen.Transformable
   constructor: () ->
     super()
@@ -765,17 +770,33 @@ class seen.Model extends seen.Transformable
       if child instanceof seen.Shape
         f.call(@, child)
       if child instanceof seen.Model
-        child.eachTransformedShape(f)
+        child.eachShape(f)
+
+  eachRenderable : (lightFn, shapeFn) ->
+    @_eachRenderable(lightFn, shapeFn, [], @m)
+
+  _eachRenderable : (lightFn, shapeFn, lightModels, transform) ->
+
+    if @lights.length > 0 then lightModels = lightModels.slice()
+    for light in @lights
+      lightModels.push lightFn.call(@, light, light.m.multiply(transform))
+
+    for child in @children
+      if child instanceof seen.Shape
+        shapeFn.call(@, child, lightModels, child.m.multiply(transform))
+      if child instanceof seen.Model
+        child._eachRenderable(lightFn, shapeFn, lightModels, child.m.multiply(transform))
 
   eachTransformedShape: (f) ->
-    @_eachTransformedShape(f, @lights, @m)
+    lights = @lights.map((light) => light.matrix(@m))
+    @_eachTransformedShape(f, lights, @m)
 
   _eachTransformedShape: (f, lights, m) ->
     for child in @children
       if child instanceof seen.Shape
         f.call(@, child, lights, child.m.multiply(m))
       if child instanceof seen.Model
-        childLights = if child.lights.length is 0 then lights else lights.concat(child.lights)
+        childLights = if child.lights.length is 0 then lights else lights.concat(child.lights.map((light) -> light.matrix(child.m)))
         # TODO properly chain transforms onto lights
         child._eachTransformedShape(f, childLights, child.m.multiply(m))
 
@@ -791,22 +812,22 @@ class seen.Painter
 class PathPainter extends seen.Painter
   paint : (renderObject, canvas) ->
     canvas.path()
-      .path(renderObject.renderModel.projected.points)
+      .path(renderObject.projected.points)
       .style(
-        fill           : if not renderObject.renderModel.fill? then 'none' else renderObject.renderModel.fill.hex()
-        stroke         : if not renderObject.renderModel.stroke? then 'none' else renderObject.renderModel.stroke.hex()
+        fill           : if not renderObject.fill? then 'none' else renderObject.fill.hex()
+        stroke         : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
         'fill-opacity' : if not renderObject.surface.fill?.a? then 1.0 else (renderObject.surface.fill.a / 255.0)
         'stroke-width' : renderObject.surface['stroke-width'] ? 1
       )
 
 class TextPainter extends seen.Painter
-  paint : (surface, canvas) ->
+  paint : (renderObject, canvas) ->
     canvas.text()
       .text(renderObject.surface.text)
-      .transform(renderObject.renderModel.transform.multiply renderObject.renderModel.projection)
+      .transform(renderObject.transform.multiply renderObject.projection)
       .style(
-        fill          : if not renderObject.renderModel.fill? then 'none' else renderObject.renderModel.fill.hex()
-        stroke        : if not renderObject.renderModel.stroke? then 'none' else renderObject.renderModel.stroke.hex()
+        fill          : if not renderObject.fill? then 'none' else renderObject.fill.hex()
+        stroke        : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
         'text-anchor' : renderObject.surface.anchor ? 'middle'
       )
 
@@ -1193,6 +1214,12 @@ class seen.SvgFillRect
     layer.appendChild(rect)
 
 
+seen.SvgScene = (elementId, scene, width = 400, height = 400) ->
+  new seen.SvgCanvas(document.getElementById(elementId))
+    .layer('background', new seen.SvgFillRect(width, height))
+    .layer('scene', new seen.SvgRenderer(scene))
+
+
 # ## The Scene
 # ------------------
 
@@ -1227,37 +1254,38 @@ class seen.Scene
 
     # build renderable surfaces array
     surfaces = []
-    @model.eachTransformedShape (shape, lights, transform) =>
-      # precompute light data. TODO, reduce re-computation
-      for light in lights
-        light.render()
-      lights = seen.Lights.toHash(lights)
 
-      for surface in shape.surfaces
-        # compute transformed and projected geometry
-        renderModel = @_renderSurface(surface, transform, projection)
+    @model.eachRenderable(
+      (light, transform) ->
+        # precompute light data.
+        new seen.LightRenderModel(light, transform)
 
-        # test for culling
-        if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
-          # apply material shading
-          renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
-          renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
+      (shape, lights, transform) =>
+        for surface in shape.surfaces
+          # compute transformed and projected geometry
+          renderModel = @_renderSurface(surface, transform, projection)
 
-          # add surface to renderable surfaces array
-          surfaces.push
-            renderModel : renderModel
-            surface     : surface
+          # test for culling
+          if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
+            # apply material shading
+            renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
+            renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
+
+            # add surface to renderable surfaces array
+            surfaces.push renderModel
+    )
 
     # sort for painter's algorithm
     surfaces.sort (a, b) ->
-      return  b.renderModel.projected.barycenter.z - a.renderModel.projected.barycenter.z
+      return  b.projected.barycenter.z - a.projected.barycenter.z
 
     return surfaces
+
 
   _renderSurface : (surface, transform, projection) ->
     renderModel = @_renderModelCache[surface.id]
     if not renderModel?
-      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface.points, transform, projection)
+      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection)
     else
       renderModel.update(transform, projection)
     return renderModel

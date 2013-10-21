@@ -40,20 +40,10 @@
       camera     : seen.Matrices.identity.roty(-Math.PI/2)
       projection : seen.Projections.ortho()
 
-  new seen.SvgCanvas(document.getElementById('seen-canvas-1'))
-    .layer('background', new seen.SvgFillRect(w, h))
-    .layer('scene', new seen.SvgRenderer(scene1))
-
-  new seen.SvgCanvas(document.getElementById('seen-canvas-2'))
-    .layer('background', new seen.SvgFillRect(w, h))
-    .layer('scene', new seen.SvgRenderer(scene2))
-
-  new seen.SvgCanvas(document.getElementById('seen-canvas-3'))
-    .layer('background', new seen.SvgFillRect(w, h))
-    .layer('scene', new seen.SvgRenderer(scene3))
-
-  scenes = [scene1, scene2, scene3]
-  s.render() for s in scenes
+  seen.SvgScene('seen-canvas-1', scene1, w, h)
+  seen.SvgScene('seen-canvas-2', scene2, w, h)
+  seen.SvgScene('seen-canvas-3', scene3, w, h)
+  s.render() for s in [scene1, scene2, scene3]
 
 </script>
 {% endblock %}

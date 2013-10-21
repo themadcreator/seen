@@ -114,3 +114,9 @@ class seen.SvgFillRect
     rect.setAttribute('width',  @width)
     rect.setAttribute('height', @width)
     layer.appendChild(rect)
+
+
+seen.SvgScene = (elementId, scene, width = 400, height = 400) ->
+  new seen.SvgCanvas(document.getElementById(elementId))
+    .layer('background', new seen.SvgFillRect(width, height))
+    .layer('scene', new seen.SvgRenderer(scene))

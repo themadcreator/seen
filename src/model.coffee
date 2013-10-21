@@ -1,3 +1,4 @@
+
 class seen.Model extends seen.Transformable
   constructor: () ->
     super()
@@ -18,16 +19,18 @@ class seen.Model extends seen.Transformable
       if child instanceof seen.Shape
         f.call(@, child)
       if child instanceof seen.Model
-        child.eachTransformedShape(f)
+        child.eachShape(f)
 
-  eachTransformedShape: (f) ->
-    @_eachTransformedShape(f, @lights, @m)
+  eachRenderable : (lightFn, shapeFn) ->
+    @_eachRenderable(lightFn, shapeFn, [], @m)
 
-  _eachTransformedShape: (f, lights, m) ->
+  _eachRenderable : (lightFn, shapeFn, lightModels, transform) ->
+    if @lights.length > 0 then lightModels = lightModels.slice()
+    for light in @lights
+      lightModels.push lightFn.call(@, light, light.m.multiply(transform))
+
     for child in @children
       if child instanceof seen.Shape
-        f.call(@, child, lights, child.m.multiply(m))
+        shapeFn.call(@, child, lightModels, child.m.multiply(transform))
       if child instanceof seen.Model
-        childLights = if child.lights.length is 0 then lights else lights.concat(child.lights)
-        # TODO properly chain transforms onto lights
-        child._eachTransformedShape(f, childLights, child.m.multiply(m))
+        child._eachRenderable(lightFn, shapeFn, lightModels, child.m.multiply(transform))

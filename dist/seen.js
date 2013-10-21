@@ -1,8 +1,8 @@
 (function() {
   var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _svg,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     _this = this;
 
   seen = (typeof exports !== "undefined" && exports !== null ? exports : this).seen = {};
@@ -537,16 +537,13 @@
 
     function Light(type, options) {
       this.type = type;
-      this.transform = __bind(this.transform, this);
+      Light.__super__.constructor.apply(this, arguments);
       seen.Util.defaults(this, options, this.defaults);
+      this.id = 'l' + seen.Util.uniqueId();
     }
 
     Light.prototype.render = function() {
       return this.colorIntensity = this.color.scale(this.intensity);
-    };
-
-    Light.prototype.transform = function(m) {
-      return this.point.transform(m);
     };
 
     return Light;
@@ -562,19 +559,6 @@
     },
     ambient: function(opts) {
       return new seen.Light('ambient', opts);
-    },
-    toHash: function(lights) {
-      return {
-        points: lights.filter(function(light) {
-          return light.type === 'point';
-        }),
-        directionals: lights.filter(function(light) {
-          return light.type === 'directional';
-        }),
-        ambients: lights.filter(function(light) {
-          return light.type === 'ambient';
-        })
-      };
     }
   };
 
@@ -620,23 +604,21 @@
     }
 
     Phong.prototype.shade = function(lights, renderModel, material) {
-      var c, light, lightNormal, _i, _j, _k, _len, _len1, _len2, _ref1, _ref2, _ref3;
+      var c, light, lightNormal, _i, _len;
       c = new seen.Color();
-      _ref1 = lights.points;
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        light = _ref1[_i];
-        lightNormal = light.point.subtract(renderModel.barycenter).normalize();
-        seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material);
-      }
-      _ref2 = lights.directionals;
-      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-        light = _ref2[_j];
-        seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material);
-      }
-      _ref3 = lights.ambients;
-      for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
-        light = _ref3[_k];
-        seen.ShaderUtils.applyAmbient(c, light);
+      for (_i = 0, _len = lights.length; _i < _len; _i++) {
+        light = lights[_i];
+        switch (light.type) {
+          case 'point':
+            lightNormal = light.point.subtract(renderModel.barycenter).normalize();
+            seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material);
+            break;
+          case 'directional':
+            seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material);
+            break;
+          case 'ambient':
+            seen.ShaderUtils.applyAmbient(c, light);
+        }
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -655,23 +637,21 @@
     }
 
     DiffusePhong.prototype.shade = function(lights, renderModel, material) {
-      var c, light, lightNormal, _i, _j, _k, _len, _len1, _len2, _ref2, _ref3, _ref4;
+      var c, light, lightNormal, _i, _len;
       c = new seen.Color();
-      _ref2 = lights.points;
-      for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-        light = _ref2[_i];
-        lightNormal = light.point.subtract(renderModel.barycenter).normalize();
-        seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material);
-      }
-      _ref3 = lights.directionals;
-      for (_j = 0, _len1 = _ref3.length; _j < _len1; _j++) {
-        light = _ref3[_j];
-        seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material);
-      }
-      _ref4 = lights.ambients;
-      for (_k = 0, _len2 = _ref4.length; _k < _len2; _k++) {
-        light = _ref4[_k];
-        seen.ShaderUtils.applyAmbient(c, light);
+      for (_i = 0, _len = lights.length; _i < _len; _i++) {
+        light = lights[_i];
+        switch (light.type) {
+          case 'point':
+            lightNormal = light.point.subtract(renderModel.barycenter).normalize();
+            seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material);
+            break;
+          case 'directional':
+            seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material);
+            break;
+          case 'ambient':
+            seen.ShaderUtils.applyAmbient(c, light);
+        }
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -690,12 +670,14 @@
     }
 
     Ambient.prototype.shade = function(lights, renderModel, material) {
-      var c, light, _i, _len, _ref3;
+      var c, light, _i, _len;
       c = new seen.Color();
-      _ref3 = lights.ambients;
-      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-        light = _ref3[_i];
-        seen.ShaderUtils.applyAmbient(c, light);
+      for (_i = 0, _len = lights.length; _i < _len; _i++) {
+        light = lights[_i];
+        switch (light.type) {
+          case 'ambient':
+            seen.ShaderUtils.applyAmbient(c, light);
+        }
       }
       c._multiplyChannels(material.color)._clamp(0, 0xFF);
       return c;
@@ -729,12 +711,10 @@
   };
 
   seen.Renderer = (function() {
-    Renderer.cid = 0;
-
     function Renderer(scene) {
       this.scene = scene;
       this.render = __bind(this.render, this);
-      this.scene.on("render.renderer-" + (seen.Renderer.cid++), this.render);
+      this.scene.on("render.renderer-" + (seen.Util.uniqueId()), this.render);
     }
 
     Renderer.prototype.render = function(renderObjects) {
@@ -756,10 +736,11 @@
   })();
 
   seen.RenderModel = (function() {
-    function RenderModel(points, transform, projection) {
-      this.points = points;
+    function RenderModel(surface, transform, projection) {
+      this.surface = surface;
       this.transform = transform;
       this.projection = projection;
+      this.points = this.surface.points;
       this.transformed = this._initRenderData();
       this.projected = this._initRenderData();
       this._update();
@@ -826,6 +807,21 @@
     };
 
     return RenderModel;
+
+  })();
+
+  seen.LightRenderModel = (function() {
+    function LightRenderModel(light, transform) {
+      var origin;
+      this.colorIntensity = light.color.scale(light.intensity);
+      this.type = light.type;
+      this.intensity = light.intensity;
+      this.point = light.point.copy().transform(transform);
+      origin = seen.Points.ZERO.copy().transform(transform);
+      this.normal = light.normal.copy().transform(transform)._subtract(origin)._normalize();
+    }
+
+    return LightRenderModel;
 
   })();
 
@@ -909,7 +905,37 @@
           f.call(this, child);
         }
         if (child instanceof seen.Model) {
-          _results.push(child.eachTransformedShape(f));
+          _results.push(child.eachShape(f));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    };
+
+    Model.prototype.eachRenderable = function(lightFn, shapeFn) {
+      return this._eachRenderable(lightFn, shapeFn, [], this.m);
+    };
+
+    Model.prototype._eachRenderable = function(lightFn, shapeFn, lightModels, transform) {
+      var child, light, _i, _j, _len, _len1, _ref4, _ref5, _results;
+      if (this.lights.length > 0) {
+        lightModels = lightModels.slice();
+      }
+      _ref4 = this.lights;
+      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+        light = _ref4[_i];
+        lightModels.push(lightFn.call(this, light, light.m.multiply(transform)));
+      }
+      _ref5 = this.children;
+      _results = [];
+      for (_j = 0, _len1 = _ref5.length; _j < _len1; _j++) {
+        child = _ref5[_j];
+        if (child instanceof seen.Shape) {
+          shapeFn.call(this, child, lightModels, child.m.multiply(transform));
+        }
+        if (child instanceof seen.Model) {
+          _results.push(child._eachRenderable(lightFn, shapeFn, lightModels, child.m.multiply(transform)));
         } else {
           _results.push(void 0);
         }
@@ -918,7 +944,12 @@
     };
 
     Model.prototype.eachTransformedShape = function(f) {
-      return this._eachTransformedShape(f, this.lights, this.m);
+      var lights,
+        _this = this;
+      lights = this.lights.map(function(light) {
+        return light.matrix(_this.m);
+      });
+      return this._eachTransformedShape(f, lights, this.m);
     };
 
     Model.prototype._eachTransformedShape = function(f, lights, m) {
@@ -931,7 +962,9 @@
           f.call(this, child, lights, child.m.multiply(m));
         }
         if (child instanceof seen.Model) {
-          childLights = child.lights.length === 0 ? lights : lights.concat(child.lights);
+          childLights = child.lights.length === 0 ? lights : lights.concat(child.lights.map(function(light) {
+            return light.matrix(child.m);
+          }));
           _results.push(child._eachTransformedShape(f, childLights, child.m.multiply(m)));
         } else {
           _results.push(void 0);
@@ -963,9 +996,9 @@
 
     PathPainter.prototype.paint = function(renderObject, canvas) {
       var _ref5, _ref6;
-      return canvas.path().path(renderObject.renderModel.projected.points).style({
-        fill: renderObject.renderModel.fill == null ? 'none' : renderObject.renderModel.fill.hex(),
-        stroke: renderObject.renderModel.stroke == null ? 'none' : renderObject.renderModel.stroke.hex(),
+      return canvas.path().path(renderObject.projected.points).style({
+        fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
+        stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
         'fill-opacity': ((_ref5 = renderObject.surface.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderObject.surface.fill.a / 255.0,
         'stroke-width': (_ref6 = renderObject.surface['stroke-width']) != null ? _ref6 : 1
       });
@@ -983,11 +1016,11 @@
       return _ref5;
     }
 
-    TextPainter.prototype.paint = function(surface, canvas) {
+    TextPainter.prototype.paint = function(renderObject, canvas) {
       var _ref6;
-      return canvas.text().text(renderObject.surface.text).transform(renderObject.renderModel.transform.multiply(renderObject.renderModel.projection)).style({
-        fill: renderObject.renderModel.fill == null ? 'none' : renderObject.renderModel.fill.hex(),
-        stroke: renderObject.renderModel.stroke == null ? 'none' : renderObject.renderModel.stroke.hex(),
+      return canvas.text().text(renderObject.surface.text).transform(renderObject.transform.multiply(renderObject.projection)).style({
+        fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
+        stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
         'text-anchor': (_ref6 = renderObject.surface.anchor) != null ? _ref6 : 'middle'
       });
     };
@@ -1492,6 +1525,16 @@
 
   })();
 
+  seen.SvgScene = function(elementId, scene, width, height) {
+    if (width == null) {
+      width = 400;
+    }
+    if (height == null) {
+      height = 400;
+    }
+    return new seen.SvgCanvas(document.getElementById(elementId)).layer('background', new seen.SvgFillRect(width, height)).layer('scene', new seen.SvgRenderer(scene));
+  };
+
   seen.Scene = (function() {
     Scene.prototype.defaults = {
       cullBackfaces: true,
@@ -1530,25 +1573,19 @@
         _this = this;
       projection = this.camera.getMatrix();
       surfaces = [];
-      this.model.eachTransformedShape(function(shape, lights, transform) {
-        var light, renderModel, surface, _i, _j, _len, _len1, _ref7, _ref8, _ref9, _results;
-        for (_i = 0, _len = lights.length; _i < _len; _i++) {
-          light = lights[_i];
-          light.render();
-        }
-        lights = seen.Lights.toHash(lights);
+      this.model.eachRenderable(function(light, transform) {
+        return new seen.LightRenderModel(light, transform);
+      }, function(shape, lights, transform) {
+        var renderModel, surface, _i, _len, _ref7, _ref8, _ref9, _results;
         _ref7 = shape.surfaces;
         _results = [];
-        for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
-          surface = _ref7[_j];
+        for (_i = 0, _len = _ref7.length; _i < _len; _i++) {
+          surface = _ref7[_i];
           renderModel = _this._renderSurface(surface, transform, projection);
           if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
             renderModel.fill = (_ref8 = surface.fill) != null ? _ref8.render(lights, _this.shader, renderModel.transformed) : void 0;
             renderModel.stroke = (_ref9 = surface.stroke) != null ? _ref9.render(lights, _this.shader, renderModel.transformed) : void 0;
-            _results.push(surfaces.push({
-              renderModel: renderModel,
-              surface: surface
-            }));
+            _results.push(surfaces.push(renderModel));
           } else {
             _results.push(void 0);
           }
@@ -1556,7 +1593,7 @@
         return _results;
       });
       surfaces.sort(function(a, b) {
-        return b.renderModel.projected.barycenter.z - a.renderModel.projected.barycenter.z;
+        return b.projected.barycenter.z - a.projected.barycenter.z;
       });
       return surfaces;
     };
@@ -1565,7 +1602,7 @@
       var renderModel;
       renderModel = this._renderModelCache[surface.id];
       if (renderModel == null) {
-        renderModel = this._renderModelCache[surface.id] = new seen.RenderModel(surface.points, transform, projection);
+        renderModel = this._renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection);
       } else {
         renderModel.update(transform, projection);
       }
