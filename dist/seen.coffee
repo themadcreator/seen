@@ -541,6 +541,8 @@ seen.Lights = {
   ambient     : (opts) -> new seen.Light 'ambient', opts
 }
 
+
+
 seen.ShaderUtils = {
   applyDiffuse : (c, light, lightNormal, surfaceNormal, material) ->
     dot = lightNormal.dot(surfaceNormal)
@@ -1096,9 +1098,8 @@ class seen.Camera
 _svg = (name) ->
   return document.createElementNS('http://www.w3.org/2000/svg', name)
 
-_line = d3.svg.line()
-  .x((d) -> d.x)
-  .y((d) -> d.y)
+_line = (points) ->
+  return 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
 
 class seen.SvgRenderer extends seen.Renderer
   addTo : (layer) ->

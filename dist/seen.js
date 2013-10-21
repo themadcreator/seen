@@ -1333,11 +1333,11 @@
     return document.createElementNS('http://www.w3.org/2000/svg', name);
   };
 
-  _line = d3.svg.line().x(function(d) {
-    return d.x;
-  }).y(function(d) {
-    return d.y;
-  });
+  _line = function(points) {
+    return 'M' + points.map(function(p) {
+      return "" + p.x + " " + p.y;
+    }).join('L');
+  };
 
   seen.SvgRenderer = (function(_super) {
     __extends(SvgRenderer, _super);
