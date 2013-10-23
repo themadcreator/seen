@@ -3,6 +3,7 @@ DISTS = {
   'seen.js' : [
     'src/namespace.coffee'
     'src/util.coffee'
+    'src/events.coffee'
     'src/math.coffee'
     'src/materials.coffee'
     'src/light.coffee'

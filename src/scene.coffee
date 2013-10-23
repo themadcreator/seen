@@ -11,9 +11,8 @@ class seen.Scene
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
 
-    @dispatch = d3.dispatch('beforeRender', 'afterRender', 'render')
-    d3.rebind(@, @dispatch, ['on'])
-
+    @dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render')
+    @on       = @dispatch.on
     @_renderModelCache = {}
 
   startRenderLoop: (msecDelay = 30) ->

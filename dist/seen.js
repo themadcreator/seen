@@ -1,8 +1,8 @@
 (function() {
   var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _svg,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     _this = this;
 
   seen = (typeof exports !== "undefined" && exports !== null ? exports : this).seen = {};
@@ -43,6 +43,69 @@
     uniqueId: function() {
       return NEXT_UNIQUE_ID++;
     }
+  };
+
+  seen.Events = {
+    dispatch: function() {
+      var arg, dispatch, _i, _len;
+      dispatch = new seen.Events.Dispatcher();
+      for (_i = 0, _len = arguments.length; _i < _len; _i++) {
+        arg = arguments[_i];
+        dispatch[arg] = seen.Events.Event();
+      }
+      return dispatch;
+    }
+  };
+
+  seen.Events.Dispatcher = (function() {
+    function Dispatcher() {
+      this.on = __bind(this.on, this);
+    }
+
+    Dispatcher.prototype.on = function(type, listener) {
+      var i, name;
+      i = type.indexOf('.');
+      name = '';
+      if (i > 0) {
+        name = type.substring(i + 1);
+        type = type.substring(0, i);
+      }
+      if (this[type] != null) {
+        this[type].on(name, listener);
+      }
+      return this;
+    };
+
+    return Dispatcher;
+
+  })();
+
+  seen.Events.Event = function() {
+    var event, listenerMap, listeners;
+    listeners = [];
+    listenerMap = {};
+    event = function() {
+      var l, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = listeners.length; _i < _len; _i++) {
+        l = listeners[_i];
+        _results.push(l.apply(this, arguments));
+      }
+      return _results;
+    };
+    event.on = function(name, listener) {
+      var existing, i;
+      existing = listenerMap[name];
+      if (existing) {
+        listeners = listeners.slice(0, i = listeners.indexOf(existing)).concat(listeners.slice(i + 1));
+        delete listenerMap[name];
+      }
+      if (listener) {
+        listeners.push(listener);
+        return listenerMap[name] = listener;
+      }
+    };
+    return event;
   };
 
   ARRAY_POOL = new Array(16);
@@ -1537,8 +1600,8 @@
       this._renderSurfaces = __bind(this._renderSurfaces, this);
       this.render = __bind(this.render, this);
       seen.Util.defaults(this, options, this.defaults);
-      this.dispatch = d3.dispatch('beforeRender', 'afterRender', 'render');
-      d3.rebind(this, this.dispatch, ['on']);
+      this.dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render');
+      this.on = this.dispatch.on;
       this._renderModelCache = {};
     }
 

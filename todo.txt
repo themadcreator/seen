@@ -1,8 +1,5 @@
 TODO before v1.0
   -> Animator has timeout, fires events
-  Non-d3 dispatch and line
-  Scene sharing across canvases
-  Move demo scripts into subdir
   Full documentation and some demos
 
 TODO Demos
