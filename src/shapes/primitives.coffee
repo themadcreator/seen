@@ -86,12 +86,11 @@ seen.Shapes = {
 
   text: (text) ->
     surface = new seen.Surface([
-      seen.P(0,0,-1)
-      seen.P(0,20,-1)
-      seen.P(20,0,-1)
+      seen.P(0,  0, 0)
+      seen.P(20, 0, 0)
+      seen.P(0, 20, 0)
     ], seen.Painters.text)
     surface.text = text
-    surface.cullBackfaces = false
     return new seen.Shape('text', [surface])
 
   extrude : (points, distance = 1) ->

@@ -1133,9 +1133,8 @@
     },
     text: function(text) {
       var surface;
-      surface = new seen.Surface([seen.P(0, 0, -1), seen.P(0, 20, -1), seen.P(20, 0, -1)], seen.Painters.text);
+      surface = new seen.Surface([seen.P(0, 0, 0), seen.P(20, 0, 0), seen.P(0, 20, 0)], seen.Painters.text);
       surface.text = text;
-      surface.cullBackfaces = false;
       return new seen.Shape('text', [surface]);
     },
     extrude: function(points, distance) {
@@ -1458,7 +1457,7 @@
         },
         transform: function(transform) {
           var m;
-          m = transform.m;
+          m = seen.Matrices.flipY.multiply(transform).m;
           el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
           return this;
         }

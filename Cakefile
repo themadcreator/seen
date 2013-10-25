@@ -5,6 +5,7 @@ DISTS = {
     'src/util.coffee'
     'src/events.coffee'
     'src/math.coffee'
+    'src/color.coffee'
     'src/materials.coffee'
     'src/light.coffee'
     'src/shaders.coffee'

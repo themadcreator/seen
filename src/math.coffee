@@ -128,7 +128,7 @@ seen.Matrices = {
   flipZ    : seen.M().scale( 1, 1,-1)
 }
 
-# `Transformable` base class extended by `Shape` and `Group`.
+# `Transformable` base class extended by `Shape` and `Model`.
 #
 # The advantages of keeping transforms in `Matrix` form are (1) lazy computation of point position (2) ability combine hierarchical transformations easily (3) ability to reset transformations to an original state.
 #

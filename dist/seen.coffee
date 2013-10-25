@@ -405,9 +405,6 @@ seen.Points = {
 
 
 
-# ## Materials
-# #### Colors and surface material properties used by shaders.
-# ------------------
 
 # `Color` objects store RGB and Alpha values from 0 to 255.
 class seen.Color
@@ -533,6 +530,12 @@ seen.C = seen.Colors
 seen.C.black = seen.C.hex('#000000')
 seen.C.white = seen.C.hex('#FFFFFF')
 seen.C.gray  = seen.C.hex('#888888')
+
+
+# ## Materials
+# #### Colors and surface material properties used by shaders.
+# ------------------
+
 
 # `Material` objects hold the attributes that desribe the color and finish of a surface.
 class seen.Material
@@ -967,12 +970,11 @@ seen.Shapes = {
 
   text: (text) ->
     surface = new seen.Surface([
-      seen.P(0,0,-1)
-      seen.P(0,20,-1)
-      seen.P(20,0,-1)
+      seen.P(0,  0, 0)
+      seen.P(20, 0, 0)
+      seen.P(0, 20, 0)
     ], seen.Painters.text)
     surface.text = text
-    surface.cullBackfaces = false
     return new seen.Shape('text', [surface])
 
   extrude : (points, distance = 1) ->
@@ -1023,6 +1025,7 @@ seen.Shapes = {
       surfaces.push new seen.Surface((seen.P(p...) for p in f))
     return new seen.Shape('custom', surfaces)
 }
+
 
 # ## Projections
 # #### Projections and viewport tranformations.
@@ -1179,7 +1182,7 @@ class seen.SvgRenderer extends seen.Renderer
         el.setAttribute('style', str)
         return @
       transform : (transform) ->
-        m = transform.m
+        m = seen.Matrices.flipY.multiply(transform).m
         el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
         return @
     }

@@ -13,33 +13,42 @@ seen.demo.model = () ->
     intensity : 0.003
 
   model.lights.push seen.Lights.ambient
-    intensity : 0.002
+    intensity : 0.0015
 
   return model
 
 seen.demo.text = () ->
   model = seen.demo.model()
-  scene.projection = seen.Projections.orthoExtent()
 
-  # shapes!
   rect = seen.Shapes.rectangle(
-    new seen.Point(-50, -20, -20)
-    new seen.Point( 50,  20,  20)
+    new seen.Point(-20, -20, -20)
+    new seen.Point( 20,  20,  20)
   )
+  randomColors(rect)
+  dice = model.append().add(rect)
 
-  text = new seen.Shapes.text('Hello, world!')
-    .scale(1,-1,1)
-    .translate(0,0,25)
 
-  scene.group.append()
-    .add(rect)
-    .add(text)
-  scene.group.eachShape randomColors
+  faces = [1..6].map (i) ->
+    text = new seen.Shapes.text(i).translate(0, 0, 25)
+    text.fill new seen.Material seen.C.black
+    dice.add(text)
+    return text
 
-  scene.group.roty(-0.5).rotz(-0.5)
+  faces[1].roty(-Math.PI/2)
+  faces[2].rotx(Math.PI/2)
+  faces[3].rotx(-Math.PI/2)
+  faces[4].roty(Math.PI/2)
+  faces[5].roty(Math.PI)
+
+  model.scale(3).roty(-0.5).rotz(-0.5)
+
+  scene = new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      projection : seen.Projections.ortho()
+
   scene.on 'beforeRender.animate', () ->
-    rect.rotx(0.02)
-    text.rotx(0.02)
+    model.rotx(0.02)
 
   return scene
 

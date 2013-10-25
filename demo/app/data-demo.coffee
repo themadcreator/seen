@@ -50,8 +50,7 @@ seen.demo.demoChart = () ->
     for t in scaleX.ticks(6)
       x = scaleX(t)
       text = new seen.Shapes.text(fmt(new Date(t)))
-        .scale(-1, -1, 1)
-      text.transform seen.Matrices.identity
+      text.scale(-1, 1, 1).transform seen.Matrices.identity
         .rotz(Math.PI/2)
         .rotx(Math.PI/2)
         .translate(x - 3, 0, 5)
