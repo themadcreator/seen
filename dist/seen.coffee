@@ -225,7 +225,7 @@ seen.Matrices = {
   flipZ    : seen.M().scale( 1, 1,-1)
 }
 
-# `Transformable` base class extended by `Shape` and `Group`.
+# `Transformable` base class extended by `Shape` and `Model`.
 #
 # The advantages of keeping transforms in `Matrix` form are (1) lazy computation of point position (2) ability combine hierarchical transformations easily (3) ability to reset transformations to an original state.
 #
@@ -521,6 +521,13 @@ seen.Colors = {
       b = hue2rgb(p, q, h - 1 / 3)
 
     return new seen.Color(r * 255, g * 255, b * 255, a * 255)
+
+  randomSurfaces : (shape) ->
+    for surface in shape.surfaces
+      surface.fill = new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
+
+  randomShape : (shape) ->
+    shape.fill new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
 }
 
 # Shorten name of `Colors` object for convenience.
@@ -844,6 +851,29 @@ class seen.Model extends seen.Transformable
         shapeFn.call(@, child, lightModels, child.m.multiply(transform))
       if child instanceof seen.Model
         child._eachRenderable(lightFn, shapeFn, lightModels, child.m.multiply(transform))
+
+
+seen.Models = {
+  default : ->
+    model = new seen.Model()
+
+    # Key
+    model.lights.push seen.Lights.directional
+      normal    : seen.P(-1, 1, 1).normalize()
+      color     : seen.C.hsl(0.1, 0.4, 0.7)
+      intensity : 0.004
+
+    # Back
+    model.lights.push seen.Lights.directional
+      normal    : seen.P(1, 1, -1).normalize()
+      intensity : 0.003
+
+    # Fill
+    model.lights.push seen.Lights.ambient
+      intensity : 0.0015
+
+    return model
+}
 
 
 

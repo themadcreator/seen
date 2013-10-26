@@ -10,7 +10,7 @@ seen.demo.stockData = (callback) ->
 
 
 seen.demo.demoChart = () ->
-  model = seen.demo.model()
+  model = seen.Models.default()
 
   scene = new seen.Scene
     model         : model

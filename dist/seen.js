@@ -568,6 +568,19 @@
         b = hue2rgb(p, q, h - 1 / 3);
       }
       return new seen.Color(r * 255, g * 255, b * 255, a * 255);
+    },
+    randomSurfaces: function(shape) {
+      var surface, _i, _len, _ref, _results;
+      _ref = shape.surfaces;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        surface = _ref[_i];
+        _results.push(surface.fill = new seen.Material(seen.Colors.hsl(Math.random(), 0.5, 0.4)));
+      }
+      return _results;
+    },
+    randomShape: function(shape) {
+      return shape.fill(new seen.Material(seen.Colors.hsl(Math.random(), 0.5, 0.4)));
     }
   };
 
@@ -1029,6 +1042,26 @@
     return Model;
 
   })(seen.Transformable);
+
+  seen.Models = {
+    "default": function() {
+      var model;
+      model = new seen.Model();
+      model.lights.push(seen.Lights.directional({
+        normal: seen.P(-1, 1, 1).normalize(),
+        color: seen.C.hsl(0.1, 0.4, 0.7),
+        intensity: 0.004
+      }));
+      model.lights.push(seen.Lights.directional({
+        normal: seen.P(1, 1, -1).normalize(),
+        intensity: 0.003
+      }));
+      model.lights.push(seen.Lights.ambient({
+        intensity: 0.0015
+      }));
+      return model;
+    }
+  };
 
   seen.Painter = (function() {
     function Painter() {}

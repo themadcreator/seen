@@ -1,38 +1,47 @@
 {% extends 'demo-template.html' %}
 
 {% block canvases %}
-  <svg width="400" height="400" id="seen-canvas-1"></svg>
-  <svg width="400" height="400" id="seen-canvas-2"></svg>
-  <svg width="400" height="400" id="seen-canvas-3"></svg>
+  <style>
+  </style>
+
+  <table>
+    <tr>
+      <td rowspan="2"><svg width="600" height="600" id="seen-canvas-0"></svg></td>
+      <td><svg width="300" height="300" id="seen-canvas-1" class="mini"></svg></td>
+      <td><svg width="300" height="300" id="seen-canvas-2" class="mini"></svg></td>
+    </tr>
+    <tr>
+      <td><svg width="300" height="300" id="seen-canvas-3" class="mini"></svg></td>
+      <td><svg width="300" height="300" id="seen-canvas-4" class="mini"></svg></td>
+    </tr>
+  </table>
 {% endblock %}
 
 {% block demo %}
 <script src="/lib/jquery.js"></script>
 <script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
-  w = 400
-  h = 400
+  w = 300
+  h = 300
 
-  model  = seen.demo.model()
+  model  = seen.Models.default()
 
-  scene1 = new seen.Scene
+  scenes = [0...5].map (i) -> new seen.Scene
     model  : model
     camera : new seen.Camera
       viewport : seen.Viewports.center(w,h)
 
-  scene2 = new seen.Scene
-    model  : model
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(w,h)
-      camera   : seen.Matrices.identity.rotx(Math.PI/2)
+  mainModel = new seen.Model
+  mainModel.add model
+  mainModel.scale(2.5)
+  scenes[0].model           = mainModel
+  scenes[0].camera.viewport = seen.Viewports.center(600, 600)
+  scenes[0].camera.camera   = seen.Matrices.identity.copy().rotx(Math.PI/4).roty(-Math.PI/4).rotz(-Math.PI/4)
 
-  scene3 = new seen.Scene
-    model  : model
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(w,h)
-      camera   : seen.Matrices.identity.roty(-Math.PI/2)
-
-  scenes = [scene1, scene2, scene3]
+  scenes[1].camera.camera = seen.Matrices.identity.copy()
+  scenes[2].camera.camera = seen.Matrices.identity.copy().rotx(Math.PI/2)
+  scenes[3].camera.camera = seen.Matrices.identity.copy().rotx(-Math.PI/2)
+  scenes[4].camera.camera = seen.Matrices.identity.copy().roty(-Math.PI/2)
 
   $.getJSON 'assets/teapot.json', {}, (geom) ->
 
@@ -43,16 +52,16 @@
 
     teapot = new seen.Shape('custom', faces)
     teapot.fill new seen.Material seen.C.gray
-    teapot.scale(40).translate(0,-60)
+    teapot.translate(0,-40).scale(30)
 
     model.add(teapot)
 
     s.render() for s in scenes
 
-  seen.SvgScene('seen-canvas-1', scene1, w, h)
-  seen.SvgScene('seen-canvas-2', scene2, w, h)
-  seen.SvgScene('seen-canvas-3', scene3, w, h)
-  s.render() for s in scenes
+  for scene, i in scenes
+    d = if i is 0 then 600 else 300
+    seen.SvgScene("seen-canvas-#{i}", scene, d, d)
+    scene.render()
 
 </script>
 {% endblock %}

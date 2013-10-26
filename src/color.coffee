@@ -114,6 +114,13 @@ seen.Colors = {
       b = hue2rgb(p, q, h - 1 / 3)
 
     return new seen.Color(r * 255, g * 255, b * 255, a * 255)
+
+  randomSurfaces : (shape) ->
+    for surface in shape.surfaces
+      surface.fill = new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
+
+  randomShape : (shape) ->
+    shape.fill new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
 }
 
 # Shorten name of `Colors` object for convenience.

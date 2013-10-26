@@ -14,10 +14,9 @@
 
   cube = seen.Shapes.cube()
   cube.scale(190)
-  for surface in cube.surfaces
-    surface.fill = new seen.Material seen.C.hsl(Math.random(), 0.5, 0.4)
+  seen.Colors.randomSurfaces(cube)
 
-  model = seen.demo.model()
+  model = seen.Models.default()
   model.add(cube)
 
   scene1 = new seen.Scene

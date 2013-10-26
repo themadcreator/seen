@@ -1,30 +1,13 @@
 seen.demo = {}
 
-seen.demo.model = () ->
-  model = new seen.Model()
-
-  model.lights.push seen.Lights.point
-    point     : seen.P(-80, 120, 220)
-    intensity : 0.005
-
-  model.lights.push seen.Lights.directional
-    point     : seen.P(-80, 120, 220)
-    color     : seen.C.hsl(0.1, 0.5, 0.5)
-    intensity : 0.003
-
-  model.lights.push seen.Lights.ambient
-    intensity : 0.0015
-
-  return model
-
 seen.demo.text = () ->
-  model = seen.demo.model()
+  model = seen.Models.default()
 
   rect = seen.Shapes.rectangle(
     new seen.Point(-20, -20, -20)
     new seen.Point( 20,  20,  20)
   )
-  randomColors(rect)
+  seen.Colors.randomShape(rect)
   dice = model.append().add(rect)
 
 
@@ -53,7 +36,7 @@ seen.demo.text = () ->
   return scene
 
 seen.demo.tetrahedra = () ->
-  model = seen.demo.model()
+  model = seen.Models.default()
 
   # shapes!
   model.add(seen.Shapes.unitcube().scale(30))
@@ -65,18 +48,18 @@ seen.demo.tetrahedra = () ->
   faroutside = model.append()
   around     = model.append()
 
-  for i in [0...360] by 4
+  for i in [0...360] by 12
     inside.add     seen.Shapes.tetrahedron().scale(1).translate(-70).roty(i / 180.0 * Math.PI).rotz(0.5 * Math.sin(i / 60  * Math.PI))
     outside.add    seen.Shapes.tetrahedron().scale(2).translate(0,-90).rotz(i / 180.0 * Math.PI).rotx(0.125 * Math.sin(i / 30  * Math.PI))
     faroutside.add seen.Shapes.tetrahedron().scale(3).translate(0,-120).rotz(i / 180.0 * Math.PI).rotx(0.25 * Math.sin(i / 30  * Math.PI))
 
-  for i in [0...360] by 3
+  for i in [0...360] by 8
     around.add seen.Shapes.tetrahedron().scale(1).translate(0,-50)
       .rotz(i / 180.0 * Math.PI).rotx(0.25 * Math.sin(i / 30  * Math.PI))
       .roty(1)
       .rotz(1)
 
-  model.eachShape randomColors
+  model.eachShape seen.Colors.randomShape
   model.scale(1.5)
 
   return {
@@ -86,9 +69,3 @@ seen.demo.tetrahedra = () ->
     faroutside
     around
   }
-
-randomColors = (shape) ->
-  hue = Math.random()
-  for surface in shape.surfaces
-    surface.fill = new seen.Material seen.C.hsl(hue, 0.5, 0.4)
-

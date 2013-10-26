@@ -18,11 +18,8 @@
 
   plate.fill new seen.Material seen.C.hsl(0, 0.5, 0.4)
 
-  model = seen.demo.model()
-  model.add(plate)
-
   scene = new seen.Scene
-    model  : model
+    model  : seen.Models.default().add(plate)
     camera : new seen.Camera
       viewport : seen.Viewports.center(w,h)
 
