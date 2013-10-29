@@ -27,13 +27,13 @@ class seen.Model extends seen.Transformable
   _eachRenderable : (lightFn, shapeFn, lightModels, transform) ->
     if @lights.length > 0 then lightModels = lightModels.slice()
     for light in @lights
-      lightModels.push lightFn.call(@, light, light.m.multiply(transform))
+      lightModels.push lightFn.call(@, light, light.m.copy().multiply(transform))
 
     for child in @children
       if child instanceof seen.Shape
-        shapeFn.call(@, child, lightModels, child.m.multiply(transform))
+        shapeFn.call(@, child, lightModels, child.m.copy().multiply(transform))
       if child instanceof seen.Model
-        child._eachRenderable(lightFn, shapeFn, lightModels, child.m.multiply(transform))
+        child._eachRenderable(lightFn, shapeFn, lightModels, child.m.copy().multiply(transform))
 
 
 seen.Models = {

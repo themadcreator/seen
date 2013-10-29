@@ -16,7 +16,7 @@ seen.demo.demoChart = () ->
     model         : model
     cullBackfaces : false
     camera        : new seen.Camera
-      camera     : seen.Matrices.identity.roty(-0.7).rotz(0.1).rotx(0.7).translate(0,-80)
+      camera     : seen.M().roty(-0.7).rotz(0.1).rotx(0.7).translate(0,-80)
       projection : seen.Projections.ortho()
 
   datagroup = model.append()
@@ -50,7 +50,7 @@ seen.demo.demoChart = () ->
     for t in scaleX.ticks(6)
       x = scaleX(t)
       text = new seen.Shapes.text(fmt(new Date(t)))
-      text.scale(-1, 1, 1).transform seen.Matrices.identity
+      text.scale(-1, 1, 1).transform seen.M()
         .rotz(Math.PI/2)
         .rotx(Math.PI/2)
         .translate(x - 3, 0, 5)
@@ -63,7 +63,7 @@ seen.demo.demoChart = () ->
         new seen.Point(x, 0, 0)
       ]
       line.eachSurface (s) ->
-        s.stroke          = new seen.Material seen.Colors.gray, shader : seen.Shaders.flat
+        s.stroke          = new seen.Material seen.Colors.gray(), shader : seen.Shaders.flat
         s.fill            = null
         s['stroke-width'] = 2
       datagroup.add line

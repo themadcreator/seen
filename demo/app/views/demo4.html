@@ -23,7 +23,7 @@
     model  : model
     camera : new seen.Camera
       viewport   : seen.Viewports.center(w,h)
-      camera     : seen.Matrices.identity.scale(0.5).rotx(Math.PI/6).roty(-Math.PI/4)
+      camera     : seen.M().scale(0.5).rotx(Math.PI/6).roty(-Math.PI/4)
       projection : seen.Projections.perspective()
 
   scene2 = new seen.Scene
@@ -36,7 +36,7 @@
     model  : model
     camera : new seen.Camera
       viewport   : seen.Viewports.center(w,h)
-      camera     : seen.Matrices.identity.roty(-Math.PI/2)
+      camera     : seen.M().roty(-Math.PI/2)
       projection : seen.Projections.ortho()
 
   seen.SvgScene('seen-canvas-1', scene1, w, h)

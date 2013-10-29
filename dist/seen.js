@@ -131,38 +131,10 @@
     };
 
     Matrix.prototype.multiply = function(b) {
-      return this.copy()._multiply(b);
+      return this.multiplyM(b.m);
     };
 
     Matrix.prototype.multiplyM = function(m) {
-      return this.copy()._multiplyM(m);
-    };
-
-    Matrix.prototype.rotx = function(theta) {
-      return this.copy()._rotx(theta);
-    };
-
-    Matrix.prototype.roty = function(theta) {
-      return this.copy()._roty(theta);
-    };
-
-    Matrix.prototype.rotz = function(theta) {
-      return this.copy()._rotz(theta);
-    };
-
-    Matrix.prototype.translate = function(x, y, z) {
-      return this.copy()._translate(x, y, z);
-    };
-
-    Matrix.prototype.scale = function(sx, sy, sz) {
-      return this.copy()._scale(sx, sy, sx);
-    };
-
-    Matrix.prototype._multiply = function(b) {
-      return this._multiplyM(b.m);
-    };
-
-    Matrix.prototype._multiplyM = function(m) {
       var c, i, j, _i, _j;
       c = ARRAY_POOL;
       for (j = _i = 0; _i < 4; j = ++_i) {
@@ -175,31 +147,31 @@
       return this;
     };
 
-    Matrix.prototype._rotx = function(theta) {
+    Matrix.prototype.rotx = function(theta) {
       var ct, rm, st;
       ct = Math.cos(theta);
       st = Math.sin(theta);
       rm = [1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1];
-      return this._multiplyM(rm);
+      return this.multiplyM(rm);
     };
 
-    Matrix.prototype._roty = function(theta) {
+    Matrix.prototype.roty = function(theta) {
       var ct, rm, st;
       ct = Math.cos(theta);
       st = Math.sin(theta);
       rm = [ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1];
-      return this._multiplyM(rm);
+      return this.multiplyM(rm);
     };
 
-    Matrix.prototype._rotz = function(theta) {
+    Matrix.prototype.rotz = function(theta) {
       var ct, rm, st;
       ct = Math.cos(theta);
       st = Math.sin(theta);
       rm = [ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-      return this._multiplyM(rm);
+      return this.multiplyM(rm);
     };
 
-    Matrix.prototype._translate = function(x, y, z) {
+    Matrix.prototype.translate = function(x, y, z) {
       if (x == null) {
         x = 0;
       }
@@ -215,7 +187,7 @@
       return this;
     };
 
-    Matrix.prototype._scale = function(sx, sy, sz) {
+    Matrix.prototype.scale = function(sx, sy, sz) {
       if (sx == null) {
         sx = 1;
       }
@@ -252,37 +224,37 @@
     }
 
     Transformable.prototype.scale = function(sx, sy, sz) {
-      this.m._scale(sx, sy, sz);
+      this.m.scale(sx, sy, sz);
       return this;
     };
 
     Transformable.prototype.translate = function(x, y, z) {
-      this.m._translate(x, y, z);
+      this.m.translate(x, y, z);
       return this;
     };
 
     Transformable.prototype.rotx = function(theta) {
-      this.m._rotx(theta);
+      this.m.rotx(theta);
       return this;
     };
 
     Transformable.prototype.roty = function(theta) {
-      this.m._roty(theta);
+      this.m.roty(theta);
       return this;
     };
 
     Transformable.prototype.rotz = function(theta) {
-      this.m._rotz(theta);
+      this.m.rotz(theta);
       return this;
     };
 
     Transformable.prototype.matrix = function(m) {
-      this.m._multiplyM(m);
+      this.m.multiplyM(m);
       return this;
     };
 
     Transformable.prototype.transform = function(m) {
-      this.m._multiply(m);
+      this.m.multiply(m);
       return this;
     };
 
@@ -985,17 +957,17 @@
       _ref4 = this.lights;
       for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
         light = _ref4[_i];
-        lightModels.push(lightFn.call(this, light, light.m.multiply(transform)));
+        lightModels.push(lightFn.call(this, light, light.m.copy().multiply(transform)));
       }
       _ref5 = this.children;
       _results = [];
       for (_j = 0, _len1 = _ref5.length; _j < _len1; _j++) {
         child = _ref5[_j];
         if (child instanceof seen.Shape) {
-          shapeFn.call(this, child, lightModels, child.m.multiply(transform));
+          shapeFn.call(this, child, lightModels, child.m.copy().multiply(transform));
         }
         if (child instanceof seen.Model) {
-          _results.push(child._eachRenderable(lightFn, shapeFn, lightModels, child.m.multiply(transform)));
+          _results.push(child._eachRenderable(lightFn, shapeFn, lightModels, child.m.copy().multiply(transform)));
         } else {
           _results.push(void 0);
         }
@@ -1068,7 +1040,7 @@
 
     TextPainter.prototype.paint = function(renderObject, canvas) {
       var _ref6;
-      return canvas.text().text(renderObject.surface.text).transform(renderObject.transform.multiply(renderObject.projection)).style({
+      return canvas.text().text(renderObject.surface.text).transform(renderObject.transform.copy().multiply(renderObject.projection)).style({
         fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
         stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
         'text-anchor': (_ref6 = renderObject.surface.anchor) != null ? _ref6 : 'middle'
@@ -1277,7 +1249,7 @@
       m[13] = 0.0;
       m[14] = -1.0;
       m[15] = 0.0;
-      return new seen.Matrix(m);
+      return seen.M(m);
     },
     ortho: function(left, right, bottom, top, near, far) {
       var dx, dy, dz, m, near2;
@@ -1320,7 +1292,7 @@
       m[13] = 0.0;
       m[14] = 0.0;
       m[15] = 1.0;
-      return new seen.Matrix(m);
+      return seen.M(m);
     }
   };
 
@@ -1339,8 +1311,8 @@
       if (y == null) {
         y = 0;
       }
-      prescale = new seen.Matrix().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
-      postscale = new seen.Matrix().scale(width, -height).translate(x + width / 2, y + height / 2);
+      prescale = seen.M().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
+      postscale = seen.M().scale(width, -height, height).translate(x + width / 2, y + height / 2);
       return {
         prescale: prescale,
         postscale: postscale
@@ -1360,8 +1332,8 @@
       if (y == null) {
         y = 0;
       }
-      prescale = new seen.Matrix().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
-      postscale = new seen.Matrix().scale(width, -height).translate(x, y);
+      prescale = seen.M().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
+      postscale = seen.M().scale(width, -height, height).translate(x, y);
       return {
         prescale: prescale,
         postscale: postscale
@@ -1381,7 +1353,7 @@
     }
 
     Camera.prototype.getMatrix = function() {
-      return this.camera.multiply(this.viewport.prescale).multiply(this.projection).multiply(this.viewport.postscale);
+      return this.camera.copy().multiply(this.viewport.prescale).multiply(this.projection).multiply(this.viewport.postscale);
     };
 
     return Camera;

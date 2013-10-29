@@ -131,40 +131,12 @@ class seen.Matrix
     @m = IDENTITY.slice()
     return @
 
-  # Non-destructively multiply by the Matrix argument, returning a new `Matrix` object.
-  multiply: (b) ->
-    return @copy()._multiply(b)
-
-  # Non-destructively multiply by the 16-value Array argument, returning a new `Matrix` object.
-  multiplyM: (m) ->
-    return @copy()._multiplyM(m)
-
-  # Non-destructively apply a rotation about the X axis, returning a new `Matrix` object. `Theta` is measured in Radians
-  rotx: (theta) ->
-    return @copy()._rotx(theta)
-
-  # Non-destructively apply a rotation about the Y axis, returning a new `Matrix` object. `Theta` is measured in Radians
-  roty: (theta) ->
-    return @copy()._roty(theta)
-
-  # Non-destructively apply a rotation about the Z axis, returning a new `Matrix` object. `Theta` is measured in Radians
-  rotz: (theta) ->
-    return @copy()._rotz(theta)
-
-  # Non-destructively apply a translation, returning a new `Matrix` object.
-  translate: (x,y,z) ->
-    return @copy()._translate(x,y,z)
-
-  # Non-destructively apply a scale, returning a new `Matrix` object.
-  scale: (sx,sy,sz) ->
-    return @copy()._scale(sx,sy,sx)
-
   # Destructively multiply by the `Matrix` argument.
-  _multiply: (b) ->
-    return @_multiplyM(b.m)
+  multiply: (b) ->
+    return @multiplyM(b.m)
 
   # Destructively multiply by the 16-value `Array` argument. This method uses the `ARRAY_POOL`, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.
-  _multiplyM: (m) ->
+  multiplyM: (m) ->
     c = ARRAY_POOL
     for j in [0...4]
       for i in [0...16] by 4
@@ -178,35 +150,36 @@ class seen.Matrix
     return @
 
   # Destructively apply a rotation about the X axis. `Theta` is measured in Radians
-  _rotx: (theta) ->
+  rotx: (theta) ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ 1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1 ]
-    return @_multiplyM(rm)
+    return @multiplyM(rm)
 
   # Destructively apply a rotation about the Y axis. `Theta` is measured in Radians
-  _roty: (theta)  ->
+  roty: (theta)  ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1 ]
-    return @_multiplyM(rm)
+    return @multiplyM(rm)
 
   # Destructively apply a rotation about the Z axis. `Theta` is measured in Radians
-  _rotz: (theta) ->
+  rotz: (theta) ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]
-    return @_multiplyM(rm)
+    return @multiplyM(rm)
 
   # Destructively apply a translation. All arguments default to `0`
-  _translate: (x = 0, y = 0, z = 0) ->
+  translate: (x = 0, y = 0, z = 0) ->
     @m[3]  += x
     @m[7]  += y
     @m[11] += z
     return @
 
   # Destructively apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
-  _scale: (sx = 1, sy, sz) ->
+  scale: (sx, sy, sz) ->
+    sx     ?= 1
     sy     ?= sx
     sz     ?= sy
     @m[0]  *= sx
@@ -236,37 +209,37 @@ class seen.Transformable
 
   # Apply a scale. see `Matrix._scale`
   scale: (sx, sy, sz) ->
-    @m._scale(sx, sy, sz)
+    @m.scale(sx, sy, sz)
     return @
 
   # Apply a translation. see `Matrix._translate`
   translate: (x, y, z) ->
-    @m._translate(x,y,z)
+    @m.translate(x,y,z)
     return @
 
   # Apply a rotation about the X axis in Radians. see `Matrix._rotx`
   rotx: (theta) ->
-    @m._rotx(theta)
+    @m.rotx(theta)
     return @
 
   # Apply a rotation about the Y axis in Radians. see `Matrix._roty`
   roty: (theta) ->
-    @m._roty(theta)
+    @m.roty(theta)
     return @
 
   # Apply a rotation about the Z axis in Radians. see `Matrix._rotz`
   rotz: (theta) ->
-    @m._rotz(theta)
+    @m.rotz(theta)
     return @
 
   # Apply a transformation from the supplied 16-value `Array`. see `Matrix._multiplyM`
   matrix: (m) ->
-    @m._multiplyM(m)
+    @m.multiplyM(m)
     return @
 
   # Apply a transformation from the supplied `Matrix`. see `Matrix._multiply`
   transform: (m) ->
-    @m._multiply(m)
+    @m.multiply(m)
     return @
 
   # Resets the transformation.
@@ -804,13 +777,13 @@ class seen.Model extends seen.Transformable
   _eachRenderable : (lightFn, shapeFn, lightModels, transform) ->
     if @lights.length > 0 then lightModels = lightModels.slice()
     for light in @lights
-      lightModels.push lightFn.call(@, light, light.m.multiply(transform))
+      lightModels.push lightFn.call(@, light, light.m.copy().multiply(transform))
 
     for child in @children
       if child instanceof seen.Shape
-        shapeFn.call(@, child, lightModels, child.m.multiply(transform))
+        shapeFn.call(@, child, lightModels, child.m.copy().multiply(transform))
       if child instanceof seen.Model
-        child._eachRenderable(lightFn, shapeFn, lightModels, child.m.multiply(transform))
+        child._eachRenderable(lightFn, shapeFn, lightModels, child.m.copy().multiply(transform))
 
 
 seen.Models = {
@@ -859,7 +832,7 @@ class TextPainter extends seen.Painter
   paint : (renderObject, canvas) ->
     canvas.text()
       .text(renderObject.surface.text)
-      .transform(renderObject.transform.multiply renderObject.projection)
+      .transform(renderObject.transform.copy().multiply renderObject.projection)
       .style(
         fill          : if not renderObject.fill? then 'none' else renderObject.fill.hex()
         stroke        : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
@@ -1066,7 +1039,7 @@ seen.Projections = {
     m[13] = 0.0
     m[14] = -1.0
     m[15] = 0.0
-    return new seen.Matrix(m)
+    return seen.M(m)
 
   ortho : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
     near2 = 2 * near
@@ -1094,25 +1067,25 @@ seen.Projections = {
     m[13] = 0.0
     m[14] = 0.0
     m[15] = 1.0
-    return new seen.Matrix(m)
+    return seen.M(m)
 }
 
 seen.Viewports = {
   center : (width = 500, height = 500, x = 0, y = 0) ->
-    prescale = new seen.Matrix()
+    prescale = seen.M()
       .translate(-x, -y, -1)
       .scale(1/width, 1/height, 1/height)
-    postscale = new seen.Matrix()
-      .scale(width, -height)
+    postscale = seen.M()
+      .scale(width, -height, height)
       .translate(x + width/2, y + height/2)
     return {prescale, postscale}
 
   origin : (width = 500, height = 500, x = 0, y = 0) ->
-    prescale = new seen.Matrix()
+    prescale = seen.M()
       .translate(-x, -y, -1)
       .scale(1/width, 1/height, 1/height)
-    postscale = new seen.Matrix()
-      .scale(width, -height)
+    postscale = seen.M()
+      .scale(width, -height, height)
       .translate(x, y)
     return {prescale, postscale}
 }
@@ -1127,7 +1100,7 @@ class seen.Camera
     seen.Util.defaults(@, options, @defaults)
 
   getMatrix : ->
-    @camera.multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
+    @camera.copy().multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
 
 
 

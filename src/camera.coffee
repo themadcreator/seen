@@ -47,7 +47,7 @@ seen.Projections = {
     m[13] = 0.0
     m[14] = -1.0
     m[15] = 0.0
-    return new seen.Matrix(m)
+    return seen.M(m)
 
   ortho : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
     near2 = 2 * near
@@ -75,25 +75,25 @@ seen.Projections = {
     m[13] = 0.0
     m[14] = 0.0
     m[15] = 1.0
-    return new seen.Matrix(m)
+    return seen.M(m)
 }
 
 seen.Viewports = {
   center : (width = 500, height = 500, x = 0, y = 0) ->
-    prescale = new seen.Matrix()
+    prescale = seen.M()
       .translate(-x, -y, -1)
       .scale(1/width, 1/height, 1/height)
-    postscale = new seen.Matrix()
-      .scale(width, -height)
+    postscale = seen.M()
+      .scale(width, -height, height)
       .translate(x + width/2, y + height/2)
     return {prescale, postscale}
 
   origin : (width = 500, height = 500, x = 0, y = 0) ->
-    prescale = new seen.Matrix()
+    prescale = seen.M()
       .translate(-x, -y, -1)
       .scale(1/width, 1/height, 1/height)
-    postscale = new seen.Matrix()
-      .scale(width, -height)
+    postscale = seen.M()
+      .scale(width, -height, height)
       .translate(x, y)
     return {prescale, postscale}
 }
@@ -108,5 +108,5 @@ class seen.Camera
     seen.Util.defaults(@, options, @defaults)
 
   getMatrix : ->
-    @camera.multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
+    @camera.copy().multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
 

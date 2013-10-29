@@ -31,17 +31,19 @@
     camera : new seen.Camera
       viewport : seen.Viewports.center(w,h)
 
+  # Alter model and camera for large main viewport
   mainModel = new seen.Model
   mainModel.add model
   mainModel.scale(2.5)
   scenes[0].model           = mainModel
   scenes[0].camera.viewport = seen.Viewports.center(600, 600)
-  scenes[0].camera.camera   = seen.Matrices.identity.copy().rotx(Math.PI/4).roty(-Math.PI/4).rotz(-Math.PI/4)
+  scenes[0].camera.camera   = seen.M().rotx(Math.PI/4).roty(-Math.PI/4).rotz(-Math.PI/4)
 
-  scenes[1].camera.camera = seen.Matrices.identity.copy()
-  scenes[2].camera.camera = seen.Matrices.identity.copy().rotx(Math.PI/2)
-  scenes[3].camera.camera = seen.Matrices.identity.copy().rotx(-Math.PI/2)
-  scenes[4].camera.camera = seen.Matrices.identity.copy().roty(-Math.PI/2)
+  # Rotate mini viewports
+  scenes[1].camera.camera = seen.M()
+  scenes[2].camera.camera = seen.M().rotx(Math.PI/2)
+  scenes[3].camera.camera = seen.M().rotx(-Math.PI/2)
+  scenes[4].camera.camera = seen.M().roty(-Math.PI/2)
 
   $.getJSON 'assets/teapot.json', {}, (geom) ->
 

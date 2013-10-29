@@ -21,7 +21,7 @@ class TextPainter extends seen.Painter
   paint : (renderObject, canvas) ->
     canvas.text()
       .text(renderObject.surface.text)
-      .transform(renderObject.transform.multiply renderObject.projection)
+      .transform(renderObject.transform.copy().multiply renderObject.projection)
       .style(
         fill          : if not renderObject.fill? then 'none' else renderObject.fill.hex()
         stroke        : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
