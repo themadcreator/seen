@@ -36,10 +36,10 @@ class seen.Matrix
 
   # Destructively multiply by the `Matrix` argument.
   multiply: (b) ->
-    return @multiplyM(b.m)
+    return @matrix(b.m)
 
   # Destructively multiply by the 16-value `Array` argument. This method uses the `ARRAY_POOL`, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.
-  multiplyM: (m) ->
+  matrix: (m) ->
     c = ARRAY_POOL
     for j in [0...4]
       for i in [0...16] by 4
@@ -57,21 +57,21 @@ class seen.Matrix
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ 1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1 ]
-    return @multiplyM(rm)
+    return @matrix(rm)
 
   # Destructively apply a rotation about the Y axis. `Theta` is measured in Radians
   roty: (theta)  ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1 ]
-    return @multiplyM(rm)
+    return @matrix(rm)
 
   # Destructively apply a rotation about the Z axis. `Theta` is measured in Radians
   rotz: (theta) ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]
-    return @multiplyM(rm)
+    return @matrix(rm)
 
   # Destructively apply a translation. All arguments default to `0`
   translate: (x = 0, y = 0, z = 0) ->
@@ -109,45 +109,14 @@ seen.Matrices = {
 class seen.Transformable
   constructor: ->
     @m = new seen.Matrix()
-
-  # Apply a scale. see `Matrix._scale`
-  scale: (sx, sy, sz) ->
-    @m.scale(sx, sy, sz)
-    return @
-
-  # Apply a translation. see `Matrix._translate`
-  translate: (x, y, z) ->
-    @m.translate(x,y,z)
-    return @
-
-  # Apply a rotation about the X axis in Radians. see `Matrix._rotx`
-  rotx: (theta) ->
-    @m.rotx(theta)
-    return @
-
-  # Apply a rotation about the Y axis in Radians. see `Matrix._roty`
-  roty: (theta) ->
-    @m.roty(theta)
-    return @
-
-  # Apply a rotation about the Z axis in Radians. see `Matrix._rotz`
-  rotz: (theta) ->
-    @m.rotz(theta)
-    return @
-
-  # Apply a transformation from the supplied 16-value `Array`. see `Matrix._multiplyM`
-  matrix: (m) ->
-    @m.multiplyM(m)
-    return @
+    for method in ['scale', 'translate', 'rotx', 'roty', 'rotz', 'matrix', 'reset'] then do (method) =>
+      @[method] = ->
+        @m[method].call(@m, arguments...)
+        return @
 
   # Apply a transformation from the supplied `Matrix`. see `Matrix._multiply`
   transform: (m) ->
     @m.multiply(m)
-    return @
-
-  # Resets the transformation.
-  reset: () ->
-    @m.reset()
     return @
 
 # The `Point` object contains x,y,z, and w coordinates. `Points` support various arithmetic operations with other `Points`, scalars, or `Matrices`.
@@ -156,16 +125,9 @@ class seen.Transformable
 class seen.Point
   constructor: (@x = 0, @y = 0, @z = 0, @w = 1) ->
 
-  # Apply a transformation from the supplied `Matrix`.
-  transform: (matrix) ->
-    r = POINT_POOL
-    r.x = @x * matrix.m[0] + @y * matrix.m[1] + @z * matrix.m[2] + @w * matrix.m[3]
-    r.y = @x * matrix.m[4] + @y * matrix.m[5] + @z * matrix.m[6] + @w * matrix.m[7]
-    r.z = @x * matrix.m[8] + @y * matrix.m[9] + @z * matrix.m[10] + @w * matrix.m[11]
-    r.w = @x * matrix.m[12] + @y * matrix.m[13] + @z * matrix.m[14] + @w * matrix.m[15]
-
-    @set(r)
-    return @
+  # Creates and returns a new `Point` with the same values as this object.
+  copy: () ->
+    return new seen.Point(@x, @y, @z, @w)
 
   # Copies the values of the supplied `Point` into this object.
   set: (p) ->
@@ -175,30 +137,25 @@ class seen.Point
     @w = p.w
     return @
 
-  # Creates and returns a new `Point` with the same values as this object.
-  copy: () ->
-    return new seen.Point(@x, @y, @z, @w)
+  # Destructively performs parameter-wise addition with the supplied `Point`.
+  add: (q) ->
+    @x += q.x
+    @y += q.y
+    @z += q.z
+    return @
+
+  # Destructively performs parameter-wise subtraction with the supplied `Point`.
+  subtract: (q) ->
+    @x -= q.x
+    @y -= q.y
+    @z -= q.z
+    return @
 
   # Apply a translation
   translate: (x, y, z) ->
-    p = @copy()
-    p.x += x
-    p.y += y
-    p.z += z
-    return p
-
-  # Computes the dot product with the supplied `Point`.
-  dot: (q) ->
-    return @x * q.x + @y * q.y + @z * q.z
-
-  # Destructively computes the cross product with the supplied `Point`.
-  cross: (q) ->
-    r = POINT_POOL
-    r.x = @y * q.z - @z * q.y
-    r.y = @z * q.x - @x * q.z
-    r.z = @x * q.y - @y * q.x
-
-    @set(r)
+    @x += x
+    @y += y
+    @z += z
     return @
 
   # Destructively multiplies each parameters by the supplied scalar value.
@@ -224,18 +181,29 @@ class seen.Point
       @divide(n)
     return @
 
-  # Destructively performs parameter-wise addition with the supplied `Point`.
-  add: (q) ->
-    @x += q.x
-    @y += q.y
-    @z += q.z
+  # Apply a transformation from the supplied `Matrix`.
+  transform: (matrix) ->
+    r = POINT_POOL
+    r.x = @x * matrix.m[0] + @y * matrix.m[1] + @z * matrix.m[2] + @w * matrix.m[3]
+    r.y = @x * matrix.m[4] + @y * matrix.m[5] + @z * matrix.m[6] + @w * matrix.m[7]
+    r.z = @x * matrix.m[8] + @y * matrix.m[9] + @z * matrix.m[10] + @w * matrix.m[11]
+    r.w = @x * matrix.m[12] + @y * matrix.m[13] + @z * matrix.m[14] + @w * matrix.m[15]
+
+    @set(r)
     return @
 
-  # Destructively performs parameter-wise subtraction with the supplied `Point`.
-  subtract: (q) ->
-    @x -= q.x
-    @y -= q.y
-    @z -= q.z
+  # Computes the dot product with the supplied `Point`.
+  dot: (q) ->
+    return @x * q.x + @y * q.y + @z * q.z
+
+  # Destructively computes the cross product with the supplied `Point`.
+  cross: (q) ->
+    r = POINT_POOL
+    r.x = @y * q.z - @z * q.y
+    r.y = @z * q.x - @x * q.z
+    r.z = @x * q.y - @y * q.x
+
+    @set(r)
     return @
 
   toJSON: () ->

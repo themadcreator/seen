@@ -1,6 +1,7 @@
 (function() {
   var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     _this = this;
@@ -131,10 +132,10 @@
     };
 
     Matrix.prototype.multiply = function(b) {
-      return this.multiplyM(b.m);
+      return this.matrix(b.m);
     };
 
-    Matrix.prototype.multiplyM = function(m) {
+    Matrix.prototype.matrix = function(m) {
       var c, i, j, _i, _j;
       c = ARRAY_POOL;
       for (j = _i = 0; _i < 4; j = ++_i) {
@@ -152,7 +153,7 @@
       ct = Math.cos(theta);
       st = Math.sin(theta);
       rm = [1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1];
-      return this.multiplyM(rm);
+      return this.matrix(rm);
     };
 
     Matrix.prototype.roty = function(theta) {
@@ -160,7 +161,7 @@
       ct = Math.cos(theta);
       st = Math.sin(theta);
       rm = [ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1];
-      return this.multiplyM(rm);
+      return this.matrix(rm);
     };
 
     Matrix.prototype.rotz = function(theta) {
@@ -168,7 +169,7 @@
       ct = Math.cos(theta);
       st = Math.sin(theta);
       rm = [ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-      return this.multiplyM(rm);
+      return this.matrix(rm);
     };
 
     Matrix.prototype.translate = function(x, y, z) {
@@ -228,46 +229,25 @@
 
   seen.Transformable = (function() {
     function Transformable() {
+      var method, _fn, _i, _len, _ref,
+        _this = this;
       this.m = new seen.Matrix();
+      _ref = ['scale', 'translate', 'rotx', 'roty', 'rotz', 'matrix', 'reset'];
+      _fn = function(method) {
+        return _this[method] = function() {
+          var _ref1;
+          (_ref1 = this.m[method]).call.apply(_ref1, [this.m].concat(__slice.call(arguments)));
+          return this;
+        };
+      };
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        method = _ref[_i];
+        _fn(method);
+      }
     }
-
-    Transformable.prototype.scale = function(sx, sy, sz) {
-      this.m.scale(sx, sy, sz);
-      return this;
-    };
-
-    Transformable.prototype.translate = function(x, y, z) {
-      this.m.translate(x, y, z);
-      return this;
-    };
-
-    Transformable.prototype.rotx = function(theta) {
-      this.m.rotx(theta);
-      return this;
-    };
-
-    Transformable.prototype.roty = function(theta) {
-      this.m.roty(theta);
-      return this;
-    };
-
-    Transformable.prototype.rotz = function(theta) {
-      this.m.rotz(theta);
-      return this;
-    };
-
-    Transformable.prototype.matrix = function(m) {
-      this.m.multiplyM(m);
-      return this;
-    };
 
     Transformable.prototype.transform = function(m) {
       this.m.multiply(m);
-      return this;
-    };
-
-    Transformable.prototype.reset = function() {
-      this.m.reset();
       return this;
     };
 
@@ -283,15 +263,8 @@
       this.w = w != null ? w : 1;
     }
 
-    Point.prototype.transform = function(matrix) {
-      var r;
-      r = POINT_POOL;
-      r.x = this.x * matrix.m[0] + this.y * matrix.m[1] + this.z * matrix.m[2] + this.w * matrix.m[3];
-      r.y = this.x * matrix.m[4] + this.y * matrix.m[5] + this.z * matrix.m[6] + this.w * matrix.m[7];
-      r.z = this.x * matrix.m[8] + this.y * matrix.m[9] + this.z * matrix.m[10] + this.w * matrix.m[11];
-      r.w = this.x * matrix.m[12] + this.y * matrix.m[13] + this.z * matrix.m[14] + this.w * matrix.m[15];
-      this.set(r);
-      return this;
+    Point.prototype.copy = function() {
+      return new seen.Point(this.x, this.y, this.z, this.w);
     };
 
     Point.prototype.set = function(p) {
@@ -302,30 +275,24 @@
       return this;
     };
 
-    Point.prototype.copy = function() {
-      return new seen.Point(this.x, this.y, this.z, this.w);
+    Point.prototype.add = function(q) {
+      this.x += q.x;
+      this.y += q.y;
+      this.z += q.z;
+      return this;
+    };
+
+    Point.prototype.subtract = function(q) {
+      this.x -= q.x;
+      this.y -= q.y;
+      this.z -= q.z;
+      return this;
     };
 
     Point.prototype.translate = function(x, y, z) {
-      var p;
-      p = this.copy();
-      p.x += x;
-      p.y += y;
-      p.z += z;
-      return p;
-    };
-
-    Point.prototype.dot = function(q) {
-      return this.x * q.x + this.y * q.y + this.z * q.z;
-    };
-
-    Point.prototype.cross = function(q) {
-      var r;
-      r = POINT_POOL;
-      r.x = this.y * q.z - this.z * q.y;
-      r.y = this.z * q.x - this.x * q.z;
-      r.z = this.x * q.y - this.y * q.x;
-      this.set(r);
+      this.x += x;
+      this.y += y;
+      this.z += z;
       return this;
     };
 
@@ -354,17 +321,28 @@
       return this;
     };
 
-    Point.prototype.add = function(q) {
-      this.x += q.x;
-      this.y += q.y;
-      this.z += q.z;
+    Point.prototype.transform = function(matrix) {
+      var r;
+      r = POINT_POOL;
+      r.x = this.x * matrix.m[0] + this.y * matrix.m[1] + this.z * matrix.m[2] + this.w * matrix.m[3];
+      r.y = this.x * matrix.m[4] + this.y * matrix.m[5] + this.z * matrix.m[6] + this.w * matrix.m[7];
+      r.z = this.x * matrix.m[8] + this.y * matrix.m[9] + this.z * matrix.m[10] + this.w * matrix.m[11];
+      r.w = this.x * matrix.m[12] + this.y * matrix.m[13] + this.z * matrix.m[14] + this.w * matrix.m[15];
+      this.set(r);
       return this;
     };
 
-    Point.prototype.subtract = function(q) {
-      this.x -= q.x;
-      this.y -= q.y;
-      this.z -= q.z;
+    Point.prototype.dot = function(q) {
+      return this.x * q.x + this.y * q.y + this.z * q.z;
+    };
+
+    Point.prototype.cross = function(q) {
+      var r;
+      r = POINT_POOL;
+      r.x = this.y * q.z - this.z * q.y;
+      r.y = this.z * q.x - this.x * q.z;
+      r.z = this.x * q.y - this.y * q.x;
+      this.set(r);
       return this;
     };
 
@@ -517,23 +495,20 @@
     },
     randomShape: function(shape) {
       return shape.fill(new seen.Material(seen.Colors.hsl(Math.random(), 0.5, 0.4)));
+    },
+    black: function() {
+      return this.hex('#000000');
+    },
+    white: function() {
+      return this.hex('#FFFFFF');
+    },
+    gray: function() {
+      return this.hex('#888888');
     }
   };
 
   seen.C = function(r, g, b, a) {
     return new seen.Color(r, g, b, a);
-  };
-
-  seen.Colors.black = function() {
-    return seen.Colors.hex('#000000');
-  };
-
-  seen.Colors.white = function() {
-    return seen.Colors.hex('#FFFFFF');
-  };
-
-  seen.Colors.gray = function() {
-    return seen.Colors.hex('#888888');
   };
 
   seen.Material = (function() {
@@ -924,15 +899,19 @@
     }
 
     Model.prototype.add = function(child) {
-      this.children.push(child);
+      if (child instanceof seen.Shape || child instanceof seen.Model) {
+        this.children.push(child);
+      } else if (child instanceof seen.Light) {
+        this.lights.push(child);
+      }
       return this;
     };
 
     Model.prototype.append = function() {
-      var group;
-      group = new seen.Model;
-      this.add(group);
-      return group;
+      var model;
+      model = new seen.Model;
+      this.add(model);
+      return model;
     };
 
     Model.prototype.eachShape = function(f) {
@@ -991,16 +970,16 @@
     "default": function() {
       var model;
       model = new seen.Model();
-      model.lights.push(seen.Lights.directional({
+      model.add(seen.Lights.directional({
         normal: seen.P(-1, 1, 1).normalize(),
         color: seen.Colors.hsl(0.1, 0.4, 0.7),
         intensity: 0.004
       }));
-      model.lights.push(seen.Lights.directional({
+      model.add(seen.Lights.directional({
         normal: seen.P(1, 1, -1).normalize(),
         intensity: 0.003
       }));
-      model.lights.push(seen.Lights.ambient({
+      model.add(seen.Lights.ambient({
         intensity: 0.0015
       }));
       return model;
@@ -1203,18 +1182,6 @@
       }
       tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0);
       return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2 * front);
-    },
-    orthoExtent: function(extentX, extentY, extentZ) {
-      if (extentX == null) {
-        extentX = 100;
-      }
-      if (extentY == null) {
-        extentY = extentX;
-      }
-      if (extentZ == null) {
-        extentZ = extentY;
-      }
-      return seen.Projections.ortho(-extentX, extentX, -extentY, extentY, extentY, 2 * extentY);
     },
     perspective: function(left, right, bottom, top, near, far) {
       var dx, dy, dz, m, near2;

@@ -2,9 +2,6 @@ TODO before v1.0
   -> Animator has timeout, fires events
   Full documentation and some demos
 
-TODO Bugs
-  Make all shortcut usage consistent. Add shortcut for material?
-  Make all destructive/non-destructive calls consistent Point, Matrix, Transformable
 
 TODO Demos
   All shapes

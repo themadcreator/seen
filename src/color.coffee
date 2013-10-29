@@ -105,12 +105,13 @@ seen.Colors = {
 
   randomShape : (shape) ->
     shape.fill new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
+
+  # A few `Color`s are supplied for convenience.
+  black : -> @hex('#000000')
+  white : -> @hex('#FFFFFF')
+  gray  : -> @hex('#888888')
 }
 
 # Convenience constructor.
 seen.C = (r,g,b,a) -> new seen.Color(r,g,b,a)
 
-# A few `Color`s are supplied for convenience.
-seen.Colors.black = -> seen.Colors.hex('#000000')
-seen.Colors.white = -> seen.Colors.hex('#FFFFFF')
-seen.Colors.gray  = -> seen.Colors.hex('#888888')

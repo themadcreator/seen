@@ -7,19 +7,6 @@ seen.Projections = {
     tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0)
     return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2*front)
 
-  orthoExtent : (extentX, extentY, extentZ) ->
-    extentX ?= 100
-    extentY ?= extentX
-    extentZ ?= extentY
-    return seen.Projections.ortho(
-      -extentX
-      extentX
-      -extentY
-      extentY
-      extentY
-      2*extentY
-    )
-
   # Creates a perspective projection matrix assuming camera is at (0,0,0)
   perspective : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
     near2 = 2 * near
