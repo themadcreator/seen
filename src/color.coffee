@@ -7,51 +7,36 @@ class seen.Color
   copy: () ->
     return new seen.Color(@r, @g, @b, @a)
 
-  scale: (n) ->
-    return @copy()._scale(n)
-
-  offset: (n) ->
-    return @copy()._offset(c)
-
-  clamp: (min, max) ->
-    return @copy()._clamp(min, max)
-
-  addChannels: (c) ->
-    return @copy()._addChannels(c)
-
-  multiplyChannels: (c) ->
-    return @copy()._multiplyChannels(c)
-
   # Scales the rgb channels by the supplied scalar value.
-  _scale: (n) ->
+  scale: (n) ->
     @r *= n
     @g *= n
     @b *= n
     return @
 
   # Offsets each rgb channel by the supplied scalar value.
-  _offset: (n) ->
+  offset: (n) ->
     @r += n
     @g += n
     @b += n
     return @
 
   # Clamps each rgb channel to the supplied minimum and maximum scalar values.
-  _clamp: (min = 0, max = 0xFF) ->
+  clamp: (min = 0, max = 0xFF) ->
     @r = Math.min(max, Math.max(min, @r))
     @g = Math.min(max, Math.max(min, @g))
     @b = Math.min(max, Math.max(min, @b))
     return @
 
   # Adds the channels of the current `Color` with each respective channel from the supplied `Color` object.
-  _addChannels: (c) ->
+  addChannels: (c) ->
     @r += c.r
     @g += c.g
     @b += c.b
     return @
 
   # Multiplies the channels of the current `Color` with each respective channel from the supplied `Color` object.
-  _multiplyChannels: (c) ->
+  multiplyChannels: (c) ->
     @r *= c.r
     @g *= c.g
     @b *= c.b
@@ -66,7 +51,6 @@ class seen.Color
   # Converts the `Color` into a CSS-style string of the form "rgba(RR, GG, BB, AA)"
   style: () ->
     return "rgba(#{@r},#{@g},#{@b},#{@a})"
-
 
 seen.Colors = {
   # Creates a new `Color` using the supplied rgb and alpha values.
@@ -123,10 +107,10 @@ seen.Colors = {
     shape.fill new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
 }
 
-# Shorten name of `Colors` object for convenience.
-seen.C = seen.Colors
+# Convenience constructor.
+seen.C = (r,g,b,a) -> new seen.Color(r,g,b,a)
 
 # A few `Color`s are supplied for convenience.
-seen.C.black = seen.C.hex('#000000')
-seen.C.white = seen.C.hex('#FFFFFF')
-seen.C.gray  = seen.C.hex('#888888')
+seen.Colors.black = -> seen.Colors.hex('#000000')
+seen.Colors.white = -> seen.Colors.hex('#FFFFFF')
+seen.Colors.gray  = -> seen.Colors.hex('#888888')

@@ -6,7 +6,7 @@
 class seen.Light extends seen.Transformable
   defaults :
     point     : seen.P()
-    color     : seen.C.white
+    color     : seen.Colors.white()
     intensity : 0.01
     normal    : seen.P(1, -1, -1).normalize()
 
@@ -16,7 +16,7 @@ class seen.Light extends seen.Transformable
     @id = 'l' + seen.Util.uniqueId()
 
   render : ->
-    @colorIntensity = @color.scale(@intensity)
+    @colorIntensity = @color.copy().scale(@intensity)
 
 seen.Lights = {
   point       : (opts) -> new seen.Light 'point', opts

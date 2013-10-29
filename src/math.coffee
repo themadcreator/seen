@@ -206,10 +206,6 @@ class seen.Point
   copy: () ->
     return new seen.Point(@x, @y, @z, @w)
 
-  # Non-destructively scales this `Point` by its magnitude.
-  normalize: () ->
-    return @copy()._normalize()
-
   # Apply a translation
   translate: (x, y, z) ->
     p = @copy()
@@ -218,75 +214,55 @@ class seen.Point
     p.z += z
     return p
 
-  # Non-destructively performs parameter-wise addition with the supplied `Point`.
-  add: (q) ->
-    return @copy()._add(q)
-
-  # Non-destructively performs parameter-wise subtraction with the supplied `Point`.
-  subtract: (q) ->
-    return @copy()._subtract(q)
-
-  # Non-destructively computes the cross product with the supplied `Point`.
-  cross: (q) ->
-    return @copy()._cross(q)
-
   # Computes the dot product with the supplied `Point`.
   dot: (q) ->
     return @x * q.x + @y * q.y + @z * q.z
 
-  # Non-destructively multiplies each parameters by the supplied scalar value.
-  multiply: (n) ->
-    return @copy()._multiply(n)
-
-  # Non-destructively divides each parameters by the supplied scalar value.
-  divide: (n) ->
-    return @copy()._divide(n)
-
-  # Destructively multiplies each parameters by the supplied scalar value.
-  _multiply: (n) ->
-    @x *= n
-    @y *= n
-    @z *= n
-    return @
-
-  # Destructively divides each parameters by the supplied scalar value.
-  _divide: (n) ->
-    @x /= n
-    @y /= n
-    @z /= n
-    return @
-
-  # Destructively scales this `Point` by its magnitude.
-  _normalize: () ->
-    n = Math.sqrt(@dot(@))
-    if n == 0
-      @set(seen.Points.Z)
-    else
-      @_divide(n)
-    return @
-
-  # Destructively performs parameter-wise addition with the supplied `Point`.
-  _add: (q) ->
-    @x += q.x
-    @y += q.y
-    @z += q.z
-    return @
-
-  # Destructively performs parameter-wise subtraction with the supplied `Point`.
-  _subtract: (q) ->
-    @x -= q.x
-    @y -= q.y
-    @z -= q.z
-    return @
-
   # Destructively computes the cross product with the supplied `Point`.
-  _cross: (q) ->
+  cross: (q) ->
     r = POINT_POOL
     r.x = @y * q.z - @z * q.y
     r.y = @z * q.x - @x * q.z
     r.z = @x * q.y - @y * q.x
 
     @set(r)
+    return @
+
+  # Destructively multiplies each parameters by the supplied scalar value.
+  multiply: (n) ->
+    @x *= n
+    @y *= n
+    @z *= n
+    return @
+
+  # Destructively divides each parameters by the supplied scalar value.
+  divide: (n) ->
+    @x /= n
+    @y /= n
+    @z /= n
+    return @
+
+  # Destructively scales this `Point` by its magnitude.
+  normalize: () ->
+    n = Math.sqrt(@dot(@))
+    if n == 0
+      @set(seen.Points.Z)
+    else
+      @divide(n)
+    return @
+
+  # Destructively performs parameter-wise addition with the supplied `Point`.
+  add: (q) ->
+    @x += q.x
+    @y += q.y
+    @z += q.z
+    return @
+
+  # Destructively performs parameter-wise subtraction with the supplied `Point`.
+  subtract: (q) ->
+    @x -= q.x
+    @y -= q.y
+    @z -= q.z
     return @
 
   toJSON: () ->

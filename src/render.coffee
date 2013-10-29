@@ -56,24 +56,24 @@ class seen.RenderModel
       sp = set.points[i]
       sp.set(p).transform(transform)
       # Applying the clip is what ultimately scales the x and y coordinates in a perpsective projection
-      if applyClip then sp._divide(sp.w)
+      if applyClip then sp.divide(sp.w)
 
     # Compute barycenter, which is used in aligning shapes in the painters algorithm
     set.barycenter.set(seen.Points.ZERO)
     for p in set.points
-      set.barycenter._add(p)
-    set.barycenter._divide(set.points.length)
+      set.barycenter.add(p)
+    set.barycenter.divide(set.points.length)
 
     # Compute normal, which is used for backface culling (when enabled)
-    set.v0.set(set.points[1])._subtract(set.points[0])
-    set.v1.set(set.points[points.length - 1])._subtract(set.points[0])
-    set.normal.set(set.v0._cross(set.v1)._normalize())
+    set.v0.set(set.points[1]).subtract(set.points[0])
+    set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
+    set.normal.set(set.v0).cross(set.v1).normalize()
 
 class seen.LightRenderModel
   constructor: (light, transform) ->
-    @colorIntensity = light.color.scale(light.intensity)
+    @colorIntensity = light.color.copy().scale(light.intensity)
     @type           = light.type
     @intensity      = light.intensity
     @point          = light.point.copy().transform(transform)
     origin          = seen.Points.ZERO.copy().transform(transform)
-    @normal         = light.normal.copy().transform(transform)._subtract(origin)._normalize()
+    @normal         = light.normal.copy().transform(transform).subtract(origin).normalize()

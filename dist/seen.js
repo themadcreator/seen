@@ -326,10 +326,6 @@
       return new seen.Point(this.x, this.y, this.z, this.w);
     };
 
-    Point.prototype.normalize = function() {
-      return this.copy()._normalize();
-    };
-
     Point.prototype.translate = function(x, y, z) {
       var p;
       p = this.copy();
@@ -339,76 +335,56 @@
       return p;
     };
 
-    Point.prototype.add = function(q) {
-      return this.copy()._add(q);
-    };
-
-    Point.prototype.subtract = function(q) {
-      return this.copy()._subtract(q);
-    };
-
-    Point.prototype.cross = function(q) {
-      return this.copy()._cross(q);
-    };
-
     Point.prototype.dot = function(q) {
       return this.x * q.x + this.y * q.y + this.z * q.z;
     };
 
-    Point.prototype.multiply = function(n) {
-      return this.copy()._multiply(n);
-    };
-
-    Point.prototype.divide = function(n) {
-      return this.copy()._divide(n);
-    };
-
-    Point.prototype._multiply = function(n) {
-      this.x *= n;
-      this.y *= n;
-      this.z *= n;
-      return this;
-    };
-
-    Point.prototype._divide = function(n) {
-      this.x /= n;
-      this.y /= n;
-      this.z /= n;
-      return this;
-    };
-
-    Point.prototype._normalize = function() {
-      var n;
-      n = Math.sqrt(this.dot(this));
-      if (n === 0) {
-        this.set(seen.Points.Z);
-      } else {
-        this._divide(n);
-      }
-      return this;
-    };
-
-    Point.prototype._add = function(q) {
-      this.x += q.x;
-      this.y += q.y;
-      this.z += q.z;
-      return this;
-    };
-
-    Point.prototype._subtract = function(q) {
-      this.x -= q.x;
-      this.y -= q.y;
-      this.z -= q.z;
-      return this;
-    };
-
-    Point.prototype._cross = function(q) {
+    Point.prototype.cross = function(q) {
       var r;
       r = POINT_POOL;
       r.x = this.y * q.z - this.z * q.y;
       r.y = this.z * q.x - this.x * q.z;
       r.z = this.x * q.y - this.y * q.x;
       this.set(r);
+      return this;
+    };
+
+    Point.prototype.multiply = function(n) {
+      this.x *= n;
+      this.y *= n;
+      this.z *= n;
+      return this;
+    };
+
+    Point.prototype.divide = function(n) {
+      this.x /= n;
+      this.y /= n;
+      this.z /= n;
+      return this;
+    };
+
+    Point.prototype.normalize = function() {
+      var n;
+      n = Math.sqrt(this.dot(this));
+      if (n === 0) {
+        this.set(seen.Points.Z);
+      } else {
+        this.divide(n);
+      }
+      return this;
+    };
+
+    Point.prototype.add = function(q) {
+      this.x += q.x;
+      this.y += q.y;
+      this.z += q.z;
+      return this;
+    };
+
+    Point.prototype.subtract = function(q) {
+      this.x -= q.x;
+      this.y -= q.y;
+      this.z -= q.z;
       return this;
     };
 
@@ -446,40 +422,20 @@
     };
 
     Color.prototype.scale = function(n) {
-      return this.copy()._scale(n);
-    };
-
-    Color.prototype.offset = function(n) {
-      return this.copy()._offset(c);
-    };
-
-    Color.prototype.clamp = function(min, max) {
-      return this.copy()._clamp(min, max);
-    };
-
-    Color.prototype.addChannels = function(c) {
-      return this.copy()._addChannels(c);
-    };
-
-    Color.prototype.multiplyChannels = function(c) {
-      return this.copy()._multiplyChannels(c);
-    };
-
-    Color.prototype._scale = function(n) {
       this.r *= n;
       this.g *= n;
       this.b *= n;
       return this;
     };
 
-    Color.prototype._offset = function(n) {
+    Color.prototype.offset = function(n) {
       this.r += n;
       this.g += n;
       this.b += n;
       return this;
     };
 
-    Color.prototype._clamp = function(min, max) {
+    Color.prototype.clamp = function(min, max) {
       if (min == null) {
         min = 0;
       }
@@ -492,14 +448,14 @@
       return this;
     };
 
-    Color.prototype._addChannels = function(c) {
+    Color.prototype.addChannels = function(c) {
       this.r += c.r;
       this.g += c.g;
       this.b += c.b;
       return this;
     };
 
-    Color.prototype._multiplyChannels = function(c) {
+    Color.prototype.multiplyChannels = function(c) {
       this.r *= c.r;
       this.g *= c.g;
       this.b *= c.b;
@@ -584,19 +540,27 @@
     }
   };
 
-  seen.C = seen.Colors;
+  seen.C = function(r, g, b, a) {
+    return new seen.Color(r, g, b, a);
+  };
 
-  seen.C.black = seen.C.hex('#000000');
+  seen.Colors.black = function() {
+    return seen.Colors.hex('#000000');
+  };
 
-  seen.C.white = seen.C.hex('#FFFFFF');
+  seen.Colors.white = function() {
+    return seen.Colors.hex('#FFFFFF');
+  };
 
-  seen.C.gray = seen.C.hex('#888888');
+  seen.Colors.gray = function() {
+    return seen.Colors.hex('#888888');
+  };
 
   seen.Material = (function() {
     Material.prototype.defaults = {
-      color: seen.C.gray,
+      color: seen.Colors.gray(),
       metallic: false,
-      specularColor: seen.C.white,
+      specularColor: seen.Colors.white(),
       specularExponent: 8,
       shader: null
     };
@@ -626,7 +590,7 @@
 
     Light.prototype.defaults = {
       point: seen.P(),
-      color: seen.C.white,
+      color: seen.Colors.white(),
       intensity: 0.01,
       normal: seen.P(1, -1, -1).normalize()
     };
@@ -639,7 +603,7 @@
     }
 
     Light.prototype.render = function() {
-      return this.colorIntensity = this.color.scale(this.intensity);
+      return this.colorIntensity = this.color.copy().scale(this.intensity);
     };
 
     return Light;
@@ -663,22 +627,22 @@
       var dot;
       dot = lightNormal.dot(surfaceNormal);
       if (dot > 0) {
-        return c._addChannels(light.colorIntensity.scale(dot));
+        return c.addChannels(light.colorIntensity.copy().scale(dot));
       }
     },
     applyDiffuseAndSpecular: function(c, light, lightNormal, surfaceNormal, material) {
       var dot, eyeNormal, reflectionNormal, specularIntensity;
       dot = lightNormal.dot(surfaceNormal);
       if (dot > 0) {
-        c._addChannels(light.colorIntensity.scale(dot));
+        c.addChannels(light.colorIntensity.copy().scale(dot));
         eyeNormal = seen.Points.Z;
-        reflectionNormal = surfaceNormal.multiply(dot * 2).subtract(lightNormal);
+        reflectionNormal = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal);
         specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent);
-        return c._offset(specularIntensity * light.intensity);
+        return c.offset(specularIntensity * light.intensity);
       }
     },
     applyAmbient: function(c, light) {
-      return c._addChannels(light.colorIntensity);
+      return c.addChannels(light.colorIntensity);
     }
   };
 
@@ -706,7 +670,7 @@
         light = lights[_i];
         switch (light.type) {
           case 'point':
-            lightNormal = light.point.subtract(renderModel.barycenter).normalize();
+            lightNormal = light.point.copy().subtract(renderModel.barycenter).normalize();
             seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material);
             break;
           case 'directional':
@@ -716,7 +680,7 @@
             seen.ShaderUtils.applyAmbient(c, light);
         }
       }
-      c._multiplyChannels(material.color)._clamp(0, 0xFF);
+      c.multiplyChannels(material.color).clamp(0, 0xFF);
       return c;
     };
 
@@ -739,7 +703,7 @@
         light = lights[_i];
         switch (light.type) {
           case 'point':
-            lightNormal = light.point.subtract(renderModel.barycenter).normalize();
+            lightNormal = light.point.copy().subtract(renderModel.barycenter).normalize();
             seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material);
             break;
           case 'directional':
@@ -749,7 +713,7 @@
             seen.ShaderUtils.applyAmbient(c, light);
         }
       }
-      c._multiplyChannels(material.color)._clamp(0, 0xFF);
+      c.multiplyChannels(material.color).clamp(0, 0xFF);
       return c;
     };
 
@@ -775,7 +739,7 @@
             seen.ShaderUtils.applyAmbient(c, light);
         }
       }
-      c._multiplyChannels(material.color)._clamp(0, 0xFF);
+      c.multiplyChannels(material.color).clamp(0, 0xFF);
       return c;
     };
 
@@ -887,19 +851,19 @@
         sp = set.points[i];
         sp.set(p).transform(transform);
         if (applyClip) {
-          sp._divide(sp.w);
+          sp.divide(sp.w);
         }
       }
       set.barycenter.set(seen.Points.ZERO);
       _ref4 = set.points;
       for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
         p = _ref4[_j];
-        set.barycenter._add(p);
+        set.barycenter.add(p);
       }
-      set.barycenter._divide(set.points.length);
-      set.v0.set(set.points[1])._subtract(set.points[0]);
-      set.v1.set(set.points[points.length - 1])._subtract(set.points[0]);
-      return set.normal.set(set.v0._cross(set.v1)._normalize());
+      set.barycenter.divide(set.points.length);
+      set.v0.set(set.points[1]).subtract(set.points[0]);
+      set.v1.set(set.points[points.length - 1]).subtract(set.points[0]);
+      return set.normal.set(set.v0).cross(set.v1).normalize();
     };
 
     return RenderModel;
@@ -909,12 +873,12 @@
   seen.LightRenderModel = (function() {
     function LightRenderModel(light, transform) {
       var origin;
-      this.colorIntensity = light.color.scale(light.intensity);
+      this.colorIntensity = light.color.copy().scale(light.intensity);
       this.type = light.type;
       this.intensity = light.intensity;
       this.point = light.point.copy().transform(transform);
       origin = seen.Points.ZERO.copy().transform(transform);
-      this.normal = light.normal.copy().transform(transform)._subtract(origin)._normalize();
+      this.normal = light.normal.copy().transform(transform).subtract(origin).normalize();
     }
 
     return LightRenderModel;
@@ -1049,7 +1013,7 @@
       model = new seen.Model();
       model.lights.push(seen.Lights.directional({
         normal: seen.P(-1, 1, 1).normalize(),
-        color: seen.C.hsl(0.1, 0.4, 0.7),
+        color: seen.Colors.hsl(0.1, 0.4, 0.7),
         intensity: 0.004
       }));
       model.lights.push(seen.Lights.directional({

@@ -11,7 +11,7 @@
   model.rotx(Math.PI/6).roty(-Math.PI/4)
   model.lights.push seen.Lights.directional
     normal    : seen.P(0, 0, 1)
-    color     : seen.C.hsl(0.4, 1, 0.5)
+    color     : seen.Colors.hsl(0.4, 1, 0.5)
     intensity : 0.005
 
   model.lights.push seen.Lights.ambient
@@ -23,11 +23,11 @@
   lightGroup = geomGroup.append()
   lightGroup.lights.push seen.Lights.directional
     normal : seen.P(1, 0, 0)
-    color  : seen.C.hsl(0, 1, 0.5)
+    color  : seen.Colors.hsl(0, 1, 0.5)
 
   lightGroup.lights.push seen.Lights.directional
     normal : seen.P(-1, 0, 0)
-    color  : seen.C.hsl(0.6, 1, 0.5)
+    color  : seen.Colors.hsl(0.6, 1, 0.5)
 
   for i in [0..5]
     y = 140 + i*50

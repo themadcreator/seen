@@ -13,7 +13,7 @@ seen.demo.text = () ->
 
   faces = [1..6].map (i) ->
     text = new seen.Shapes.text(i).translate(0, 0, 25)
-    text.fill new seen.Material seen.C.black
+    text.fill new seen.Material seen.Colors.black()
     dice.add(text)
     return text
 

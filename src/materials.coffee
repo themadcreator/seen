@@ -7,11 +7,11 @@
 class seen.Material
   defaults :
     # The base color of the material
-    color            : seen.C.gray
+    color            : seen.Colors.gray()
     # The `metallic` attribute determines how the specular highlights are calculated. Normally, specular highlights are the color of the light source. If metallic is true, specular highlight colors are determined from the `specularColor` attribute.
     metallic         : false
     # The color used for specular highlights when `metallic` is true
-    specularColor    : seen.C.white
+    specularColor    : seen.Colors.white()
     # The `specularExponent` determines how "shiny" the material is. A low exponent will create a low-intesity, diffuse specular shine. A high exponent will create an intense, point-like specular shine.
     specularExponent : 8
     # A `Shader` object may be supplied to override the shader used for this material. For example, if you want to apply a flat color to text or other shapes, set this value to `seen.Shaders.Flat`.

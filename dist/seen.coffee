@@ -303,10 +303,6 @@ class seen.Point
   copy: () ->
     return new seen.Point(@x, @y, @z, @w)
 
-  # Non-destructively scales this `Point` by its magnitude.
-  normalize: () ->
-    return @copy()._normalize()
-
   # Apply a translation
   translate: (x, y, z) ->
     p = @copy()
@@ -315,75 +311,55 @@ class seen.Point
     p.z += z
     return p
 
-  # Non-destructively performs parameter-wise addition with the supplied `Point`.
-  add: (q) ->
-    return @copy()._add(q)
-
-  # Non-destructively performs parameter-wise subtraction with the supplied `Point`.
-  subtract: (q) ->
-    return @copy()._subtract(q)
-
-  # Non-destructively computes the cross product with the supplied `Point`.
-  cross: (q) ->
-    return @copy()._cross(q)
-
   # Computes the dot product with the supplied `Point`.
   dot: (q) ->
     return @x * q.x + @y * q.y + @z * q.z
 
-  # Non-destructively multiplies each parameters by the supplied scalar value.
-  multiply: (n) ->
-    return @copy()._multiply(n)
-
-  # Non-destructively divides each parameters by the supplied scalar value.
-  divide: (n) ->
-    return @copy()._divide(n)
-
-  # Destructively multiplies each parameters by the supplied scalar value.
-  _multiply: (n) ->
-    @x *= n
-    @y *= n
-    @z *= n
-    return @
-
-  # Destructively divides each parameters by the supplied scalar value.
-  _divide: (n) ->
-    @x /= n
-    @y /= n
-    @z /= n
-    return @
-
-  # Destructively scales this `Point` by its magnitude.
-  _normalize: () ->
-    n = Math.sqrt(@dot(@))
-    if n == 0
-      @set(seen.Points.Z)
-    else
-      @_divide(n)
-    return @
-
-  # Destructively performs parameter-wise addition with the supplied `Point`.
-  _add: (q) ->
-    @x += q.x
-    @y += q.y
-    @z += q.z
-    return @
-
-  # Destructively performs parameter-wise subtraction with the supplied `Point`.
-  _subtract: (q) ->
-    @x -= q.x
-    @y -= q.y
-    @z -= q.z
-    return @
-
   # Destructively computes the cross product with the supplied `Point`.
-  _cross: (q) ->
+  cross: (q) ->
     r = POINT_POOL
     r.x = @y * q.z - @z * q.y
     r.y = @z * q.x - @x * q.z
     r.z = @x * q.y - @y * q.x
 
     @set(r)
+    return @
+
+  # Destructively multiplies each parameters by the supplied scalar value.
+  multiply: (n) ->
+    @x *= n
+    @y *= n
+    @z *= n
+    return @
+
+  # Destructively divides each parameters by the supplied scalar value.
+  divide: (n) ->
+    @x /= n
+    @y /= n
+    @z /= n
+    return @
+
+  # Destructively scales this `Point` by its magnitude.
+  normalize: () ->
+    n = Math.sqrt(@dot(@))
+    if n == 0
+      @set(seen.Points.Z)
+    else
+      @divide(n)
+    return @
+
+  # Destructively performs parameter-wise addition with the supplied `Point`.
+  add: (q) ->
+    @x += q.x
+    @y += q.y
+    @z += q.z
+    return @
+
+  # Destructively performs parameter-wise subtraction with the supplied `Point`.
+  subtract: (q) ->
+    @x -= q.x
+    @y -= q.y
+    @z -= q.z
     return @
 
   toJSON: () ->
@@ -414,51 +390,36 @@ class seen.Color
   copy: () ->
     return new seen.Color(@r, @g, @b, @a)
 
-  scale: (n) ->
-    return @copy()._scale(n)
-
-  offset: (n) ->
-    return @copy()._offset(c)
-
-  clamp: (min, max) ->
-    return @copy()._clamp(min, max)
-
-  addChannels: (c) ->
-    return @copy()._addChannels(c)
-
-  multiplyChannels: (c) ->
-    return @copy()._multiplyChannels(c)
-
   # Scales the rgb channels by the supplied scalar value.
-  _scale: (n) ->
+  scale: (n) ->
     @r *= n
     @g *= n
     @b *= n
     return @
 
   # Offsets each rgb channel by the supplied scalar value.
-  _offset: (n) ->
+  offset: (n) ->
     @r += n
     @g += n
     @b += n
     return @
 
   # Clamps each rgb channel to the supplied minimum and maximum scalar values.
-  _clamp: (min = 0, max = 0xFF) ->
+  clamp: (min = 0, max = 0xFF) ->
     @r = Math.min(max, Math.max(min, @r))
     @g = Math.min(max, Math.max(min, @g))
     @b = Math.min(max, Math.max(min, @b))
     return @
 
   # Adds the channels of the current `Color` with each respective channel from the supplied `Color` object.
-  _addChannels: (c) ->
+  addChannels: (c) ->
     @r += c.r
     @g += c.g
     @b += c.b
     return @
 
   # Multiplies the channels of the current `Color` with each respective channel from the supplied `Color` object.
-  _multiplyChannels: (c) ->
+  multiplyChannels: (c) ->
     @r *= c.r
     @g *= c.g
     @b *= c.b
@@ -473,7 +434,6 @@ class seen.Color
   # Converts the `Color` into a CSS-style string of the form "rgba(RR, GG, BB, AA)"
   style: () ->
     return "rgba(#{@r},#{@g},#{@b},#{@a})"
-
 
 seen.Colors = {
   # Creates a new `Color` using the supplied rgb and alpha values.
@@ -530,13 +490,13 @@ seen.Colors = {
     shape.fill new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
 }
 
-# Shorten name of `Colors` object for convenience.
-seen.C = seen.Colors
+# Convenience constructor.
+seen.C = (r,g,b,a) -> new seen.Color(r,g,b,a)
 
 # A few `Color`s are supplied for convenience.
-seen.C.black = seen.C.hex('#000000')
-seen.C.white = seen.C.hex('#FFFFFF')
-seen.C.gray  = seen.C.hex('#888888')
+seen.Colors.black = -> seen.Colors.hex('#000000')
+seen.Colors.white = -> seen.Colors.hex('#FFFFFF')
+seen.Colors.gray  = -> seen.Colors.hex('#888888')
 
 
 # ## Materials
@@ -548,11 +508,11 @@ seen.C.gray  = seen.C.hex('#888888')
 class seen.Material
   defaults :
     # The base color of the material
-    color            : seen.C.gray
+    color            : seen.Colors.gray()
     # The `metallic` attribute determines how the specular highlights are calculated. Normally, specular highlights are the color of the light source. If metallic is true, specular highlight colors are determined from the `specularColor` attribute.
     metallic         : false
     # The color used for specular highlights when `metallic` is true
-    specularColor    : seen.C.white
+    specularColor    : seen.Colors.white()
     # The `specularExponent` determines how "shiny" the material is. A low exponent will create a low-intesity, diffuse specular shine. A high exponent will create an intense, point-like specular shine.
     specularExponent : 8
     # A `Shader` object may be supplied to override the shader used for this material. For example, if you want to apply a flat color to text or other shapes, set this value to `seen.Shaders.Flat`.
@@ -577,7 +537,7 @@ class seen.Material
 class seen.Light extends seen.Transformable
   defaults :
     point     : seen.P()
-    color     : seen.C.white
+    color     : seen.Colors.white()
     intensity : 0.01
     normal    : seen.P(1, -1, -1).normalize()
 
@@ -587,7 +547,7 @@ class seen.Light extends seen.Transformable
     @id = 'l' + seen.Util.uniqueId()
 
   render : ->
-    @colorIntensity = @color.scale(@intensity)
+    @colorIntensity = @color.copy().scale(@intensity)
 
 seen.Lights = {
   point       : (opts) -> new seen.Light 'point', opts
@@ -603,27 +563,27 @@ seen.ShaderUtils = {
 
     if (dot > 0)
       # Apply diffuse phong shading
-      c._addChannels(light.colorIntensity.scale(dot))
+      c.addChannels(light.colorIntensity.copy().scale(dot))
 
   applyDiffuseAndSpecular : (c, light, lightNormal, surfaceNormal, material) ->
     dot = lightNormal.dot(surfaceNormal)
 
     if (dot > 0)
       # Apply diffuse phong shading
-      c._addChannels(light.colorIntensity.scale(dot))
+      c.addChannels(light.colorIntensity.copy().scale(dot))
 
       # Apply specular phong shading
       eyeNormal         = seen.Points.Z
-      reflectionNormal  = surfaceNormal.multiply(dot * 2).subtract(lightNormal)
+      reflectionNormal  = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
       specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent)
       # TODO scale by specular color from material if available
       # specularColor     = seen.C.white #material.specularColor ? seen.C.white
       # c._addChannels(specularColor.scale(specularIntensity * light.intensity))
-      c._offset(specularIntensity * light.intensity)
+      c.offset(specularIntensity * light.intensity)
 
   applyAmbient : (c, light) ->
     # Apply ambient shading
-    c._addChannels(light.colorIntensity)
+    c.addChannels(light.colorIntensity)
 }
 
 # The `Shader` class is the base class for all shader objects.
@@ -646,14 +606,14 @@ class Phong extends seen.Shader
     for light in lights
       switch light.type
         when 'point'
-          lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+          lightNormal = light.point.copy().subtract(renderModel.barycenter).normalize()
           seen.ShaderUtils.applyDiffuseAndSpecular(c, light, lightNormal, renderModel.normal, material)
         when 'directional'
           seen.ShaderUtils.applyDiffuseAndSpecular(c, light, light.normal, renderModel.normal, material)
         when 'ambient'
           seen.ShaderUtils.applyAmbient(c, light)
 
-    c._multiplyChannels(material.color)._clamp(0, 0xFF)
+    c.multiplyChannels(material.color).clamp(0, 0xFF)
     return c
 
 # The `DiffusePhong` shader implements the Phong shading model with a diffuse and ambient term (no specular).
@@ -664,14 +624,14 @@ class DiffusePhong extends seen.Shader
     for light in lights
       switch light.type
         when 'point'
-          lightNormal = light.point.subtract(renderModel.barycenter).normalize()
+          lightNormal = light.point.copy().subtract(renderModel.barycenter).normalize()
           seen.ShaderUtils.applyDiffuse(c, light, lightNormal, renderModel.normal, material)
         when 'directional'
           seen.ShaderUtils.applyDiffuse(c, light, light.normal, renderModel.normal, material)
         when 'ambient'
           seen.ShaderUtils.applyAmbient(c, light)
 
-    c._multiplyChannels(material.color)._clamp(0, 0xFF)
+    c.multiplyChannels(material.color).clamp(0, 0xFF)
     return c
 
 # The `Ambient` shader colors surfaces from ambient light only.
@@ -684,7 +644,7 @@ class Ambient extends seen.Shader
         when 'ambient'
           seen.ShaderUtils.applyAmbient(c, light)
 
-    c._multiplyChannels(material.color)._clamp(0, 0xFF)
+    c.multiplyChannels(material.color).clamp(0, 0xFF)
     return c
 
 # The `Flat` shader colors surfaces with the material color, disregarding all light sources.
@@ -758,27 +718,27 @@ class seen.RenderModel
       sp = set.points[i]
       sp.set(p).transform(transform)
       # Applying the clip is what ultimately scales the x and y coordinates in a perpsective projection
-      if applyClip then sp._divide(sp.w)
+      if applyClip then sp.divide(sp.w)
 
     # Compute barycenter, which is used in aligning shapes in the painters algorithm
     set.barycenter.set(seen.Points.ZERO)
     for p in set.points
-      set.barycenter._add(p)
-    set.barycenter._divide(set.points.length)
+      set.barycenter.add(p)
+    set.barycenter.divide(set.points.length)
 
     # Compute normal, which is used for backface culling (when enabled)
-    set.v0.set(set.points[1])._subtract(set.points[0])
-    set.v1.set(set.points[points.length - 1])._subtract(set.points[0])
-    set.normal.set(set.v0._cross(set.v1)._normalize())
+    set.v0.set(set.points[1]).subtract(set.points[0])
+    set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
+    set.normal.set(set.v0).cross(set.v1).normalize()
 
 class seen.LightRenderModel
   constructor: (light, transform) ->
-    @colorIntensity = light.color.scale(light.intensity)
+    @colorIntensity = light.color.copy().scale(light.intensity)
     @type           = light.type
     @intensity      = light.intensity
     @point          = light.point.copy().transform(transform)
     origin          = seen.Points.ZERO.copy().transform(transform)
-    @normal         = light.normal.copy().transform(transform)._subtract(origin)._normalize()
+    @normal         = light.normal.copy().transform(transform).subtract(origin).normalize()
 
 
 
@@ -860,7 +820,7 @@ seen.Models = {
     # Key
     model.lights.push seen.Lights.directional
       normal    : seen.P(-1, 1, 1).normalize()
-      color     : seen.C.hsl(0.1, 0.4, 0.7)
+      color     : seen.Colors.hsl(0.1, 0.4, 0.7)
       intensity : 0.004
 
     # Back
