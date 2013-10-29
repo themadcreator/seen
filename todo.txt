@@ -1,17 +1,18 @@
 TODO before v1.0
-  -> Animator has timeout, fires events
   Full documentation and some demos
 
 
-TODO Demos
-  All shapes
-  front,side,top,iso view
-  Materials parameter sliders
-  Bar Chart
+1.0 Demos
+  Shape Gallery with origin and units
+  front,side,top orth + persp views
+  Lights/Material/Shader gallery with parameter sliders
+  Area Chart
+  Canvas vs. SVG renderers
 
+Other Demos
   Picture in Picture
   Perspective projection diagrams w/ FOV slider
-  Area Chart
+  Bar Chart
 
 TODO Features
   Quaternion Mouse Rotation
@@ -20,7 +21,7 @@ TODO Features
   Physics
   Animation
   Human-Scale Articulated Skeleton
-  Directional lights
+  (/) Directional lights
 
   isometric projection
 
@@ -28,13 +29,10 @@ TODO Features
     Image Textures
 
   Alternate Renderers
-    HTML5 Canvas
+    (/) HTML5 Canvas
 
   Shapes
     Triangulated Torus
     Pipes
     (/) JSON format objects
 
-Features
-
-  Viewport-aligned projection
