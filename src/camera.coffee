@@ -102,7 +102,7 @@ class seen.Camera
   defaults :
     projection : seen.Projections.perspective()
     viewport   : seen.Viewports.center()
-    camera     : seen.Matrices.identity.copy()
+    camera     : seen.Matrices.identity()
 
   constructor : (options) ->
     seen.Util.defaults(@, options, @defaults)

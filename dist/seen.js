@@ -212,10 +212,18 @@
   };
 
   seen.Matrices = {
-    identity: seen.M(),
-    flipX: seen.M().scale(-1, 1, 1),
-    flipY: seen.M().scale(1, -1, 1),
-    flipZ: seen.M().scale(1, 1, -1)
+    identity: function() {
+      return seen.M();
+    },
+    flipX: function() {
+      return seen.M().scale(-1, 1, 1);
+    },
+    flipY: function() {
+      return seen.M().scale(1, -1, 1);
+    },
+    flipZ: function() {
+      return seen.M().scale(1, 1, -1);
+    }
   };
 
   seen.Transformable = (function() {
@@ -1345,7 +1353,7 @@
     Camera.prototype.defaults = {
       projection: seen.Projections.perspective(),
       viewport: seen.Viewports.center(),
-      camera: seen.Matrices.identity.copy()
+      camera: seen.Matrices.identity()
     };
 
     function Camera(options) {
@@ -1426,7 +1434,7 @@
         },
         transform: function(transform) {
           var m;
-          m = seen.Matrices.flipY.multiply(transform).m;
+          m = seen.Matrices.flipY().multiply(transform).m;
           el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
           return this;
         }

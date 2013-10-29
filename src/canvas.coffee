@@ -39,7 +39,7 @@ class seen.SvgRenderer extends seen.Renderer
         el.setAttribute('style', str)
         return @
       transform : (transform) ->
-        m = seen.Matrices.flipY.multiply(transform).m
+        m = seen.Matrices.flipY().multiply(transform).m
         el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
         return @
     }

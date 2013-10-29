@@ -95,10 +95,10 @@ seen.M = (m) -> new seen.Matrix(m)
 
 # A few useful Matrix objects. Be careful not to apply destructive operations to these objects.
 seen.Matrices = {
-  identity : seen.M()
-  flipX    : seen.M().scale(-1, 1, 1)
-  flipY    : seen.M().scale( 1,-1, 1)
-  flipZ    : seen.M().scale( 1, 1,-1)
+  identity : -> seen.M()
+  flipX    : -> seen.M().scale(-1, 1, 1)
+  flipY    : -> seen.M().scale( 1,-1, 1)
+  flipZ    : -> seen.M().scale( 1, 1,-1)
 }
 
 # `Transformable` base class extended by `Shape` and `Model`.

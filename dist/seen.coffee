@@ -192,10 +192,10 @@ seen.M = (m) -> new seen.Matrix(m)
 
 # A few useful Matrix objects. Be careful not to apply destructive operations to these objects.
 seen.Matrices = {
-  identity : seen.M()
-  flipX    : seen.M().scale(-1, 1, 1)
-  flipY    : seen.M().scale( 1,-1, 1)
-  flipZ    : seen.M().scale( 1, 1,-1)
+  identity : -> seen.M()
+  flipX    : -> seen.M().scale(-1, 1, 1)
+  flipY    : -> seen.M().scale( 1,-1, 1)
+  flipZ    : -> seen.M().scale( 1, 1,-1)
 }
 
 # `Transformable` base class extended by `Shape` and `Model`.
@@ -1094,7 +1094,7 @@ class seen.Camera
   defaults :
     projection : seen.Projections.perspective()
     viewport   : seen.Viewports.center()
-    camera     : seen.Matrices.identity.copy()
+    camera     : seen.Matrices.identity()
 
   constructor : (options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -1145,7 +1145,7 @@ class seen.SvgRenderer extends seen.Renderer
         el.setAttribute('style', str)
         return @
       transform : (transform) ->
-        m = seen.Matrices.flipY.multiply(transform).m
+        m = seen.Matrices.flipY().multiply(transform).m
         el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
         return @
     }
