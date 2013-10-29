@@ -20,6 +20,6 @@ seen.Util = {
     return true
 
   # Returns an ID which is unique to this instance of the library
-  uniqueId: () ->
-    return NEXT_UNIQUE_ID++
+  uniqueId: (prefix = '') ->
+    return prefix + NEXT_UNIQUE_ID++
 }

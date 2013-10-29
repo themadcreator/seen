@@ -13,9 +13,9 @@
     camera : new seen.Camera
       viewport : seen.Viewports.center(w, h)
 
-  new seen.SvgCanvas(document.getElementById('seen-canvas'))
+  new seen.SvgCanvas(scene, document.getElementById('seen-canvas'))
     .layer('background', new seen.SvgFillRect(w,h))
-    .layer('scene',      new seen.SvgRenderer(scene))
+    .layer('scene',      new seen.SvgRenderer())
     .layer('foreground', new seen.SvgRenderDebug(scene))
 
   scene.on 'beforeRender.animate', () ->

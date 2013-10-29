@@ -1,5 +1,5 @@
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _svg,
+  var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _styleElement, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -41,8 +41,11 @@
       }
       return true;
     },
-    uniqueId: function() {
-      return NEXT_UNIQUE_ID++;
+    uniqueId: function(prefix) {
+      if (prefix == null) {
+        prefix = '';
+      }
+      return prefix + NEXT_UNIQUE_ID++;
     }
   };
 
@@ -729,24 +732,53 @@
     function Renderer(scene) {
       this.scene = scene;
       this.render = __bind(this.render, this);
-      this.scene.on("render.renderer-" + (seen.Util.uniqueId()), this.render);
+      this.layers = {};
+      this.scene.on("render." + (seen.Util.uniqueId('renderer-')), this.render);
     }
 
     Renderer.prototype.render = function(renderObjects) {
+      var key, layer, _ref4;
+      this.reset();
+      _ref4 = this.layers;
+      for (key in _ref4) {
+        layer = _ref4[key];
+        layer.render(renderObjects);
+      }
+      return this.cleanup();
+    };
+
+    Renderer.prototype.reset = function() {};
+
+    Renderer.prototype.cleanup = function() {};
+
+    return Renderer;
+
+  })();
+
+  seen.RenderLayer = (function() {
+    function RenderLayer() {
+      this.render = __bind(this.render, this);
+    }
+
+    RenderLayer.prototype.render = function(renderObjects) {
       var renderObject, _i, _len;
       this.reset();
       for (_i = 0, _len = renderObjects.length; _i < _len; _i++) {
         renderObject = renderObjects[_i];
         renderObject.surface.painter.paint(renderObject, this);
       }
-      return this.hideUnused();
+      return this.cleanup();
     };
 
-    Renderer.prototype.path = function() {};
+    RenderLayer.prototype.path = function() {};
 
-    Renderer.prototype.text = function() {};
+    RenderLayer.prototype.text = function() {};
 
-    return Renderer;
+    RenderLayer.prototype.reset = function() {};
+
+    RenderLayer.prototype.cleanup = function() {};
+
+    return RenderLayer;
 
   })();
 
@@ -1005,12 +1037,12 @@
 
     PathPainter.prototype.paint = function(renderObject, canvas) {
       var _ref5, _ref6;
-      return canvas.path().path(renderObject.projected.points).style({
+      return canvas.path().style({
         fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
         stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
         'fill-opacity': ((_ref5 = renderObject.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderObject.fill.a / 255.0,
         'stroke-width': (_ref6 = renderObject.surface['stroke-width']) != null ? _ref6 : 1
-      });
+      }).path(renderObject.projected.points);
     };
 
     return PathPainter;
@@ -1027,11 +1059,11 @@
 
     TextPainter.prototype.paint = function(renderObject, canvas) {
       var _ref6;
-      return canvas.text().text(renderObject.surface.text).transform(renderObject.transform.copy().multiply(renderObject.projection)).style({
+      return canvas.text().style({
         fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
         stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
         'text-anchor': (_ref6 = renderObject.surface.anchor) != null ? _ref6 : 'middle'
-      });
+      }).transform(renderObject.transform.copy().multiply(renderObject.projection)).text(renderObject.surface.text);
     };
 
     return TextPainter;
@@ -1086,6 +1118,14 @@
       points = [seen.P(1, 1, 1), seen.P(-1, -1, 1), seen.P(-1, 1, -1), seen.P(1, -1, -1)];
       coordinateMap = [[0, 2, 1], [0, 1, 3], [3, 2, 0], [1, 2, 3]];
       return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
+    },
+    icosahedron: function() {
+      var X, Z, coordinateMap, points;
+      X = 0.525731112119133606;
+      Z = 0.850650808352039932;
+      points = [seen.P(-X, 0.0, -Z), seen.P(X, 0.0, -Z), seen.P(-X, 0.0, Z), seen.P(X, 0.0, Z), seen.P(0.0, Z, -X), seen.P(0.0, Z, X), seen.P(0.0, -Z, -X), seen.P(0.0, -Z, X), seen.P(Z, X, 0.0), seen.P(-Z, X, 0.0), seen.P(Z, -X, 0.0), seen.P(-Z, -X, 0.0)];
+      coordinateMap = [[0, 4, 1], [0, 9, 4], [9, 5, 4], [4, 5, 8], [4, 8, 1], [8, 10, 1], [8, 3, 10], [5, 3, 8], [5, 2, 3], [2, 7, 3], [7, 10, 3], [7, 6, 10], [7, 11, 6], [11, 0, 6], [0, 1, 6], [6, 1, 10], [9, 0, 11], [9, 11, 2], [9, 2, 5], [7, 2, 11]];
+      return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
     },
     text: function(text) {
       var surface;
@@ -1345,6 +1385,16 @@
     }).join('L');
   };
 
+  _styleElement = function(el, style) {
+    var key, str, val;
+    str = '';
+    for (key in style) {
+      val = style[key];
+      str += "" + key + ":" + val + ";";
+    }
+    return el.setAttribute('style', str);
+  };
+
   seen.SvgRenderer = (function(_super) {
     __extends(SvgRenderer, _super);
 
@@ -1353,8 +1403,8 @@
       return _ref6;
     }
 
-    SvgRenderer.prototype.addTo = function(layer) {
-      return this._g = layer;
+    SvgRenderer.prototype.setGroup = function(group) {
+      this.group = group;
     };
 
     SvgRenderer.prototype.path = function() {
@@ -1362,18 +1412,12 @@
       el = this._manifest('path');
       return {
         el: el,
-        path: function(points) {
-          el.setAttribute('d', _line(points));
+        style: function(style) {
+          _styleElement(el, style);
           return this;
         },
-        style: function(style) {
-          var key, str, val;
-          str = '';
-          for (key in style) {
-            val = style[key];
-            str += "" + key + ":" + val + ";";
-          }
-          el.setAttribute('style', str);
+        path: function(points) {
+          el.setAttribute('d', _line(points));
           return this;
         }
       };
@@ -1385,24 +1429,18 @@
       el.setAttribute('font-family', 'Roboto');
       return {
         el: el,
-        text: function(text) {
-          el.textContent = text;
-          return this;
-        },
         style: function(style) {
-          var key, str, val;
-          str = '';
-          for (key in style) {
-            val = style[key];
-            str += "" + key + ":" + val + ";";
-          }
-          el.setAttribute('style', str);
+          _styleElement(el, style);
           return this;
         },
         transform: function(transform) {
           var m;
           m = seen.Matrices.flipY().multiply(transform).m;
           el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
+          return this;
+        },
+        text: function(text) {
+          el.textContent = text;
           return this;
         }
       };
@@ -1412,9 +1450,9 @@
       return this._i = 0;
     };
 
-    SvgRenderer.prototype.hideUnused = function() {
+    SvgRenderer.prototype.cleanup = function() {
       var children, _results;
-      children = this._g.childNodes;
+      children = this.group.childNodes;
       _results = [];
       while (this._i < children.length) {
         children[this._i].setAttribute('style', 'display: none;');
@@ -1425,10 +1463,10 @@
 
     SvgRenderer.prototype._manifest = function(type) {
       var children, current, path;
-      children = this._g.childNodes;
+      children = this.group.childNodes;
       if (this._i >= children.length) {
         path = _svg(type);
-        this._g.appendChild(path);
+        this.group.appendChild(path);
         this._i++;
         return path;
       }
@@ -1438,7 +1476,7 @@
         return current;
       } else {
         path = _svg(type);
-        this._g.replaceChild(path, current);
+        this.group.replaceChild(path, current);
         this._i++;
         return path;
       }
@@ -1446,29 +1484,11 @@
 
     return SvgRenderer;
 
-  })(seen.Renderer);
+  })(seen.RenderLayer);
 
-  seen.SvgCanvas = (function() {
-    function SvgCanvas(svg) {
-      this.svg = svg;
-      this.layers = {};
-    }
+  seen.SvgRenderDebug = (function(_super) {
+    __extends(SvgRenderDebug, _super);
 
-    SvgCanvas.prototype.layer = function(name, component) {
-      var layer;
-      layer = this.layers[name] = _svg('g');
-      this.svg.appendChild(layer);
-      if (component != null) {
-        component.addTo(layer);
-      }
-      return this;
-    };
-
-    return SvgCanvas;
-
-  })();
-
-  seen.SvgRenderDebug = (function() {
     function SvgRenderDebug(scene) {
       this._renderEnd = __bind(this._renderEnd, this);
       this._renderStart = __bind(this._renderStart, this);
@@ -1481,8 +1501,10 @@
       scene.on('afterRender.debug', this._renderEnd);
     }
 
-    SvgRenderDebug.prototype.addTo = function(layer) {
-      return layer.appendChild(this._text);
+    SvgRenderDebug.prototype.render = function() {};
+
+    SvgRenderDebug.prototype.setGroup = function(group) {
+      return group.appendChild(this._text);
     };
 
     SvgRenderDebug.prototype._renderStart = function() {
@@ -1500,26 +1522,52 @@
 
     return SvgRenderDebug;
 
-  })();
+  })(seen.RenderLayer);
 
-  seen.SvgFillRect = (function() {
+  seen.SvgFillRect = (function(_super) {
+    __extends(SvgFillRect, _super);
+
     function SvgFillRect(width, height) {
       this.width = width != null ? width : 500;
       this.height = height != null ? height : 500;
     }
 
-    SvgFillRect.prototype.addTo = function(layer) {
+    SvgFillRect.prototype.render = function() {};
+
+    SvgFillRect.prototype.setGroup = function(group) {
       var rect;
       rect = _svg('rect');
       rect.setAttribute('fill', '#EEE');
       rect.setAttribute('width', this.width);
       rect.setAttribute('height', this.width);
-      return layer.appendChild(rect);
+      return group.appendChild(rect);
     };
 
     return SvgFillRect;
 
-  })();
+  })(seen.RenderLayer);
+
+  seen.SvgCanvas = (function(_super) {
+    __extends(SvgCanvas, _super);
+
+    function SvgCanvas(scene, svg) {
+      this.svg = svg;
+      SvgCanvas.__super__.constructor.call(this, scene);
+    }
+
+    SvgCanvas.prototype.layer = function(name, component) {
+      var group;
+      this.layers[name] = component;
+      this.svg.appendChild(group = _svg('g'));
+      if (component != null) {
+        component.setGroup(group);
+      }
+      return this;
+    };
+
+    return SvgCanvas;
+
+  })(seen.Renderer);
 
   seen.SvgScene = function(elementId, scene, width, height) {
     if (width == null) {
@@ -1528,7 +1576,149 @@
     if (height == null) {
       height = 400;
     }
-    return new seen.SvgCanvas(document.getElementById(elementId)).layer('background', new seen.SvgFillRect(width, height)).layer('scene', new seen.SvgRenderer(scene));
+    return new seen.SvgCanvas(scene, document.getElementById(elementId)).layer('background', new seen.SvgFillRect(width, height)).layer('scene', new seen.SvgRenderer());
+  };
+
+  seen.CanvasRenderer = (function(_super) {
+    __extends(CanvasRenderer, _super);
+
+    function CanvasRenderer(width, height) {
+      this.width = width;
+      this.height = height;
+    }
+
+    CanvasRenderer.prototype.setContext = function(ctx) {
+      this.ctx = ctx;
+    };
+
+    CanvasRenderer.prototype.path = function() {
+      var ctx;
+      ctx = this.ctx;
+      return {
+        style: function(style) {
+          var key, val;
+          for (key in style) {
+            val = style[key];
+            switch (key) {
+              case 'fill':
+                ctx.fillStyle = val;
+                break;
+              case 'stroke':
+                ctx.strokeStyle = val;
+            }
+          }
+          return this;
+        },
+        path: function(points) {
+          var i, p, _i, _len;
+          ctx.beginPath();
+          for (i = _i = 0, _len = points.length; _i < _len; i = ++_i) {
+            p = points[i];
+            if (i === 0) {
+              ctx.moveTo(p.x, p.y);
+            } else {
+              ctx.lineTo(p.x, p.y);
+            }
+          }
+          ctx.closePath();
+          ctx.fill();
+          return this;
+        }
+      };
+    };
+
+    CanvasRenderer.prototype.text = function() {
+      var ctx;
+      ctx = this.ctx;
+      return {
+        style: function(style) {
+          var key, val;
+          for (key in style) {
+            val = style[key];
+            switch (key) {
+              case 'fill':
+                ctx.fillStyle = val;
+                break;
+              case 'stroke':
+                ctx.strokeStyle = val;
+            }
+          }
+          ctx.font = '16px Roboto';
+          return this;
+        },
+        text: function(text) {
+          ctx.fillText(text, 0, 0);
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          return this;
+        },
+        transform: function(transform) {
+          var m;
+          m = seen.Matrices.flipY().multiply(transform).m;
+          ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7]);
+          return this;
+        }
+      };
+    };
+
+    return CanvasRenderer;
+
+  })(seen.RenderLayer);
+
+  seen.CanvasFillRect = (function(_super) {
+    __extends(CanvasFillRect, _super);
+
+    function CanvasFillRect(width, height) {
+      this.width = width != null ? width : 500;
+      this.height = height != null ? height : 500;
+      this.render = __bind(this.render, this);
+    }
+
+    CanvasFillRect.prototype.setContext = function(ctx) {
+      this.ctx = ctx;
+    };
+
+    CanvasFillRect.prototype.render = function() {
+      this.ctx.fillStyle = '#EEE';
+      return this.ctx.fillRect(0, 0, this.width, this.height);
+    };
+
+    return CanvasFillRect;
+
+  })(seen.RenderLayer);
+
+  seen.CanvasCanvas = (function(_super) {
+    __extends(CanvasCanvas, _super);
+
+    function CanvasCanvas(scene, element) {
+      this.element = element;
+      CanvasCanvas.__super__.constructor.call(this, scene);
+      this.ctx = this.element.getContext('2d');
+    }
+
+    CanvasCanvas.prototype.layer = function(name, component) {
+      this.layers[name] = component;
+      if (component != null) {
+        component.setContext(this.ctx);
+      }
+      return this;
+    };
+
+    CanvasCanvas.prototype.reset = function() {
+      return this.ctx.clearRect(0, 0, this.width, this.height);
+    };
+
+    return CanvasCanvas;
+
+  })(seen.Renderer);
+
+  seen.CanvasScene = function(elementId, scene, width, height) {
+    if (width == null) {
+      width = 400;
+    }
+    if (height == null) {
+      height = 400;
+    }
+    return new seen.CanvasCanvas(scene, document.getElementById(elementId)).layer('background', new seen.CanvasFillRect(width, height)).layer('scene', new seen.CanvasRenderer(width, height));
   };
 
   seen.Scene = (function() {

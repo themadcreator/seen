@@ -1,13 +1,24 @@
 
 class seen.Renderer
   constructor: (@scene) ->
-    @scene.on "render.renderer-#{seen.Util.uniqueId()}", @render
+    @layers = {}
+    @scene.on "render.#{seen.Util.uniqueId('renderer-')}", @render
 
+  render: (renderObjects) =>
+    @reset()
+    for key, layer of @layers
+      layer.render(renderObjects)
+    @cleanup()
+
+  reset   : ->
+  cleanup : ->
+
+class seen.RenderLayer
   render: (renderObjects) =>
     @reset()
     for renderObject in renderObjects
       renderObject.surface.painter.paint(renderObject, @)
-    @hideUnused()
+    @cleanup()
 
   path : ->
     # override should return a path renderer
@@ -15,6 +26,9 @@ class seen.Renderer
   text : ->
     # override should return a text renderer
 
+  reset : ->
+
+  cleanup : ->
 
 # The `RenderModel` object contains the transformed and projected points as well as various data
 # needed to render scene shapes.

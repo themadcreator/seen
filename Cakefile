@@ -15,6 +15,7 @@ DISTS = {
     'src/painters.coffee'
     'src/shapes/primitives.coffee'
     'src/camera.coffee'
+    'src/svg.coffee'
     'src/canvas.coffee'
     'src/scene.coffee'
   ]

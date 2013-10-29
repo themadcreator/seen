@@ -1,0 +1,40 @@
+{% extends 'demo-template.html' %}
+
+{% block canvases %}
+  <table>
+    <tr>
+      <td rowspan="2"><svg width="600" height="600" id="seen-canvas-0"></svg></td>
+    </tr>
+    <tr>
+      <td rowspan="2"><canvas width="600" height="600" id="seen-canvas-1"></canvas></td>
+    </tr>
+  </table>
+{% endblock %}
+
+{% block demo %}
+<script src="/lib/jquery.js"></script>
+<script type="text/coffeescript" src="/demo.coffee"></script>
+<script type="text/coffeescript">
+  dim = 600
+
+  model = seen.Models.default()
+  model.add shape = seen.Shapes.icosahedron().scale(200)
+  model.add text  = seen.Shapes.text('Icosahedron').translate(0,250,0)
+
+  scenes = [0...2].map (i) -> new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      projection : seen.Projections.ortho()
+      viewport   : seen.Viewports.center(dim, dim)
+
+  seen.SvgScene('seen-canvas-0', scenes[0], dim, dim)
+  seen.CanvasScene('seen-canvas-1', scenes[1], dim, dim)
+
+  scenes[0].on 'beforeRender.animate', ->
+    shape.roty(0.02).rotx(0.003)
+    text.rotz(0.01)
+  scenes[0].startRenderLoop(20)
+  scenes[1].startRenderLoop(20)
+
+</script>
+{% endblock %}
