@@ -11,37 +11,50 @@ _styleElement = (el, style) ->
     str += "#{key}:#{val};"
   el.setAttribute('style', str)
 
+class seen.SvgPathPainter
+  setElement: (@el) ->
+
+  style: (style) ->
+    _styleElement(@el, style)
+    return @
+
+  path: (points) ->
+    @el.setAttribute('d', _line(points))
+    return @
+
+class seen.SvgTextPainter
+  setElement: (@el) ->
+
+  style: (style) ->
+    _styleElement(@el, style)
+    return @
+
+  transform: (transform) ->
+    m = seen.Matrices.flipY().multiply(transform).m
+    @el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
+    return @
+
+  text: (text) ->
+    @el.textContent = text
+    return @
+
 class seen.SvgRenderer extends seen.RenderLayer
+  constructor : ->
+    @pathPainter = new seen.SvgPathPainter()
+    @textPainter = new seen.SvgTextPainter()
+
   setGroup : (@group) ->
 
   path : () ->
     el = @_manifest('path')
-    return {
-      el    : el
-      style : (style) ->
-        _styleElement(el, style)
-        return @
-      path  : (points) ->
-        el.setAttribute('d', _line(points))
-        return @
-    }
+    @pathPainter.setElement el
+    return @pathPainter
 
   text : () ->
     el = @_manifest('text')
     el.setAttribute 'font-family', 'Roboto'
-    return {
-      el        : el
-      style     : (style) ->
-        _styleElement(el, style)
-        return @
-      transform : (transform) ->
-        m = seen.Matrices.flipY().multiply(transform).m
-        el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
-        return @
-      text      : (text) ->
-        el.textContent = text
-        return @
-    }
+    @textPainter.setElement el
+    return @textPainter
 
   reset : ->
     @_i = 0

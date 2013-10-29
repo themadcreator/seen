@@ -609,20 +609,20 @@ class seen.Renderer
     @layers = {}
     @scene.on "render.#{seen.Util.uniqueId('renderer-')}", @render
 
-  render: (renderObjects) =>
+  render: (renderModels) =>
     @reset()
     for key, layer of @layers
-      layer.render(renderObjects)
+      layer.render(renderModels)
     @cleanup()
 
   reset   : ->
   cleanup : ->
 
 class seen.RenderLayer
-  render: (renderObjects) =>
+  render: (renderModels) =>
     @reset()
-    for renderObject in renderObjects
-      renderObject.surface.painter.paint(renderObject, @)
+    for renderModel in renderModels
+      renderModel.surface.painter.paint(renderModel, @)
     @cleanup()
 
   path : ->
@@ -1134,37 +1134,50 @@ _styleElement = (el, style) ->
     str += "#{key}:#{val};"
   el.setAttribute('style', str)
 
+class seen.SvgPathPainter
+  setElement: (@el) ->
+
+  style: (style) ->
+    _styleElement(@el, style)
+    return @
+
+  path: (points) ->
+    @el.setAttribute('d', _line(points))
+    return @
+
+class seen.SvgTextPainter
+  setElement: (@el) ->
+
+  style: (style) ->
+    _styleElement(@el, style)
+    return @
+
+  transform: (transform) ->
+    m = seen.Matrices.flipY().multiply(transform).m
+    @el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
+    return @
+
+  text: (text) ->
+    @el.textContent = text
+    return @
+
 class seen.SvgRenderer extends seen.RenderLayer
+  constructor : ->
+    @pathPainter = new seen.SvgPathPainter()
+    @textPainter = new seen.SvgTextPainter()
+
   setGroup : (@group) ->
 
   path : () ->
     el = @_manifest('path')
-    return {
-      el    : el
-      style : (style) ->
-        _styleElement(el, style)
-        return @
-      path  : (points) ->
-        el.setAttribute('d', _line(points))
-        return @
-    }
+    @pathPainter.setElement el
+    return @pathPainter
 
   text : () ->
     el = @_manifest('text')
     el.setAttribute 'font-family', 'Roboto'
-    return {
-      el        : el
-      style     : (style) ->
-        _styleElement(el, style)
-        return @
-      transform : (transform) ->
-        m = seen.Matrices.flipY().multiply(transform).m
-        el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
-        return @
-      text      : (text) ->
-        el.textContent = text
-        return @
-    }
+    @textPainter.setElement el
+    return @textPainter
 
   reset : ->
     @_i = 0
@@ -1249,54 +1262,67 @@ seen.SvgScene = (elementId, scene, width = 400, height = 400) ->
 
 
 
+class seen.CanvasPathPainter
+  setContext: (@ctx) ->
+
+  style: (style) ->
+    for key, val of style
+      switch key
+        when 'fill' then @ctx.fillStyle = val
+        when 'stroke' then @ctx.strokeStyle = val
+    return @
+
+  path: (points) ->
+    @ctx.beginPath()
+
+    for p, i in points
+      if i is 0
+        @ctx.moveTo(p.x, p.y)
+      else
+        @ctx.lineTo(p.x, p.y)
+
+    @ctx.closePath()
+    @ctx.fill()
+    return @
+
+
+class seen.CanvasTextPainter
+  setContext: (@ctx) ->
+
+  style: (style) ->
+    for key, val of style
+      switch key
+        when 'fill' then @ctx.fillStyle = val
+        when 'stroke' then @ctx.strokeStyle = val
+
+    @ctx.font = '16px Roboto'
+    return @
+
+  text: (text) ->
+    @ctx.fillText(text, 0, 0)
+    @ctx.setTransform(1, 0, 0, 1, 0, 0)
+    return @
+
+  transform: (transform) ->
+    m = seen.Matrices.flipY().multiply(transform).m
+    @ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
+    return @
+
+
 class seen.CanvasRenderer extends seen.RenderLayer
   constructor : (@width, @height) ->
+    @pathPainter = new seen.CanvasPathPainter()
+    @textPainter = new seen.CanvasTextPainter()
 
   setContext : (@ctx) ->
 
   path : () ->
-    ctx = @ctx
-    return {
-      style : (style) ->
-        for key, val of style
-          switch key
-            when 'fill' then ctx.fillStyle = val
-            when 'stroke' then ctx.strokeStyle = val
-        return @
-      path  : (points) ->
-        ctx.beginPath()
-
-        for p, i in points
-          if i is 0
-            ctx.moveTo(p.x, p.y)
-          else
-            ctx.lineTo(p.x, p.y)
-
-        ctx.closePath()
-        ctx.fill()
-        return @
-    }
+    @pathPainter.setContext @ctx
+    return @pathPainter
 
   text : () ->
-    ctx = @ctx
-    return {
-      style : (style) ->
-        for key, val of style
-          switch key
-            when 'fill' then ctx.fillStyle = val
-            when 'stroke' then ctx.strokeStyle = val
-
-        ctx.font = '16px Roboto'
-        return @
-      text  : (text) ->
-        ctx.fillText(text, 0, 0)
-        ctx.setTransform(1, 0, 0, 1, 0, 0)
-        return @
-      transform : (transform) ->
-        m = seen.Matrices.flipY().multiply(transform).m
-        ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
-        return @
-    }
+    @textPainter.setContext @ctx
+    return @textPainter
 
 
 class seen.CanvasFillRect extends seen.RenderLayer
@@ -1307,6 +1333,7 @@ class seen.CanvasFillRect extends seen.RenderLayer
   render: =>
     @ctx.fillStyle = '#EEE'
     @ctx.fillRect(0, 0, @width, @height)
+
 
 class seen.CanvasCanvas extends seen.Renderer
   constructor: (scene, @element) ->

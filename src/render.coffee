@@ -4,20 +4,20 @@ class seen.Renderer
     @layers = {}
     @scene.on "render.#{seen.Util.uniqueId('renderer-')}", @render
 
-  render: (renderObjects) =>
+  render: (renderModels) =>
     @reset()
     for key, layer of @layers
-      layer.render(renderObjects)
+      layer.render(renderModels)
     @cleanup()
 
   reset   : ->
   cleanup : ->
 
 class seen.RenderLayer
-  render: (renderObjects) =>
+  render: (renderModels) =>
     @reset()
-    for renderObject in renderObjects
-      renderObject.surface.painter.paint(renderObject, @)
+    for renderModel in renderModels
+      renderModel.surface.painter.paint(renderModel, @)
     @cleanup()
 
   path : ->
