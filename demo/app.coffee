@@ -11,7 +11,7 @@ app.set 'view engine', 'html'
 app.set 'views', path.join(__dirname, 'app', 'views')
 app.engine '.html', consolidate.swig
 
-for i in [1..8] then do (i) ->
+for i in [1..9] then do (i) ->
   app.get "/#{i}", (req, res) -> res.render "demo#{i}"
 
 app.listen(5000)

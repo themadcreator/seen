@@ -1,5 +1,5 @@
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, Flat, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _styleElement, _svg,
+  var ARRAY_POOL, Ambient, DiffusePhong, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _styleElement, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -1075,6 +1075,14 @@
     text: new TextPainter()
   };
 
+  ICOS_X = 0.525731112119133606;
+
+  ICOS_Z = 0.850650808352039932;
+
+  ICOSAHEDRON_POINTS = [seen.P(-ICOS_X, 0.0, -ICOS_Z), seen.P(ICOS_X, 0.0, -ICOS_Z), seen.P(-ICOS_X, 0.0, ICOS_Z), seen.P(ICOS_X, 0.0, ICOS_Z), seen.P(0.0, ICOS_Z, -ICOS_X), seen.P(0.0, ICOS_Z, ICOS_X), seen.P(0.0, -ICOS_Z, -ICOS_X), seen.P(0.0, -ICOS_Z, ICOS_X), seen.P(ICOS_Z, ICOS_X, 0.0), seen.P(-ICOS_Z, ICOS_X, 0.0), seen.P(ICOS_Z, -ICOS_X, 0.0), seen.P(-ICOS_Z, -ICOS_X, 0.0)];
+
+  ICOSAHEDRON_COORDINATE_MAP = [[0, 4, 1], [0, 9, 4], [9, 5, 4], [4, 5, 8], [4, 8, 1], [8, 10, 1], [8, 3, 10], [5, 3, 8], [5, 2, 3], [2, 7, 3], [7, 10, 3], [7, 6, 10], [7, 11, 6], [11, 0, 6], [0, 1, 6], [6, 1, 10], [9, 0, 11], [9, 11, 2], [9, 2, 5], [7, 2, 11]];
+
   seen.Shapes = {
     _cubeCoordinateMap: [[0, 1, 3, 2], [5, 4, 6, 7], [1, 0, 4, 5], [2, 3, 7, 6], [3, 1, 5, 7], [0, 2, 6, 4]],
     _mapPointsToSurfaces: function(points, coordinateMap) {
@@ -1094,6 +1102,21 @@
         surfaces.push(new seen.Surface(spts));
       }
       return surfaces;
+    },
+    _subdivideTriangles: function(triangles) {
+      var newTriangles, tri, v01, v12, v20, _i, _len;
+      newTriangles = [];
+      for (_i = 0, _len = triangles.length; _i < _len; _i++) {
+        tri = triangles[_i];
+        v01 = tri[0].copy().add(tri[1]).normalize();
+        v12 = tri[1].copy().add(tri[2]).normalize();
+        v20 = tri[2].copy().add(tri[0]).normalize();
+        newTriangles.push([tri[0], v01, v20]);
+        newTriangles.push([tri[1], v12, v01]);
+        newTriangles.push([tri[2], v20, v12]);
+        newTriangles.push([v01, v12, v20]);
+      }
+      return newTriangles;
     },
     cube: function() {
       var points;
@@ -1120,12 +1143,26 @@
       return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
     },
     icosahedron: function() {
-      var X, Z, coordinateMap, points;
-      X = 0.525731112119133606;
-      Z = 0.850650808352039932;
-      points = [seen.P(-X, 0.0, -Z), seen.P(X, 0.0, -Z), seen.P(-X, 0.0, Z), seen.P(X, 0.0, Z), seen.P(0.0, Z, -X), seen.P(0.0, Z, X), seen.P(0.0, -Z, -X), seen.P(0.0, -Z, X), seen.P(Z, X, 0.0), seen.P(-Z, X, 0.0), seen.P(Z, -X, 0.0), seen.P(-Z, -X, 0.0)];
-      coordinateMap = [[0, 4, 1], [0, 9, 4], [9, 5, 4], [4, 5, 8], [4, 8, 1], [8, 10, 1], [8, 3, 10], [5, 3, 8], [5, 2, 3], [2, 7, 3], [7, 10, 3], [7, 6, 10], [7, 11, 6], [11, 0, 6], [0, 1, 6], [6, 1, 10], [9, 0, 11], [9, 11, 2], [9, 2, 5], [7, 2, 11]];
-      return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
+      return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
+    },
+    sphere: function(subdivisions) {
+      var i, triangles, _i;
+      if (subdivisions == null) {
+        subdivisions = 1;
+      }
+      triangles = ICOSAHEDRON_COORDINATE_MAP.map(function(coords) {
+        return coords.map(function(c) {
+          return ICOSAHEDRON_POINTS[c];
+        });
+      });
+      for (i = _i = 0; 0 <= subdivisions ? _i < subdivisions : _i > subdivisions; i = 0 <= subdivisions ? ++_i : --_i) {
+        triangles = seen.Shapes._subdivideTriangles(triangles);
+      }
+      return new seen.Shape('sphere', triangles.map(function(triangle) {
+        return new seen.Surface(triangle.map(function(v) {
+          return v.copy();
+        }));
+      }));
     },
     text: function(text) {
       var surface;

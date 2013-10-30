@@ -1,0 +1,23 @@
+{% extends 'demo-template.html' %}
+
+{% block demo %}
+<script type="text/coffeescript" src="/demo.coffee"></script>
+<script type="text/coffeescript">
+  dim = 400
+
+  model = seen.Models.default()
+  model.add shape = seen.Shapes.sphere(3).scale(100)
+
+  scene = new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      viewport   : seen.Viewports.center(dim, dim)
+
+  seen.SvgScene('seen-canvas', scene, dim, dim)
+
+  scene.on 'beforeRender.animate', ->
+    shape.roty(0.02).rotx(0.003)
+  scene.startRenderLoop(20)
+
+</script>
+{% endblock %}
