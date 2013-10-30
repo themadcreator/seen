@@ -1248,6 +1248,79 @@
     }
   };
 
+  seen.ObjParser = (function() {
+    function ObjParser() {
+      var _this = this;
+      this.vertices = [];
+      this.faces = [];
+      this.commands = {
+        v: function(data) {
+          return _this.vertices.push(data.map(function(d) {
+            return parseFloat(d);
+          }));
+        },
+        f: function(data) {
+          return _this.faces.push(data.map(function(d) {
+            return parseInt(d);
+          }));
+        }
+      };
+    }
+
+    ObjParser.prototype.parse = function(contents) {
+      var command, data, line, _i, _len, _ref6, _results;
+      _ref6 = contents.split(/[\r\n]+/);
+      _results = [];
+      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+        line = _ref6[_i];
+        data = line.trim().split(/[ ]+/);
+        if (data.length < 2) {
+          continue;
+        }
+        command = data.slice(0, 1)[0];
+        data = data.slice(1);
+        if (command.charAt(0) === '#') {
+          continue;
+        }
+        if (this.commands[command] == null) {
+          console.log("OBJ Parser: Skipping unknown command '" + command + "'");
+          continue;
+        }
+        _results.push(this.commands[command](data));
+      }
+      return _results;
+    };
+
+    ObjParser.prototype.mapFacePoints = function(faceMap) {
+      var _this = this;
+      return this.faces.map(function(face) {
+        var points;
+        points = face.map(function(v) {
+          return seen.P.apply(seen, _this.vertices[v - 1]);
+        });
+        return faceMap.call(_this, points);
+      });
+    };
+
+    return ObjParser;
+
+  })();
+
+  seen.Shapes.obj = function(objContents, cullBackfaces) {
+    var parser;
+    if (cullBackfaces == null) {
+      cullBackfaces = true;
+    }
+    parser = new seen.ObjParser();
+    parser.parse(objContents);
+    return new seen.Shape('obj', parser.mapFacePoints(function(points) {
+      var surface;
+      surface = new seen.Surface(points);
+      surface.cullBackfaces = cullBackfaces;
+      return surface;
+    }));
+  };
+
   seen.Projections = {
     perspectiveFov: function(fovyInDegrees, front) {
       var tan;

@@ -45,14 +45,8 @@
   scenes[3].camera.camera = seen.M().rotx(-Math.PI/2)
   scenes[4].camera.camera = seen.M().roty(-Math.PI/2)
 
-  $.getJSON 'assets/teapot.json', {}, (geom) ->
-
-    faces = geom.faces.map (face) ->
-      surface = new seen.Surface face.map (v) -> seen.P(geom.vertices[v - 1]...)
-      surface.cullBackfaces = false
-      return surface
-
-    teapot = new seen.Shape('custom', faces)
+  $.get 'assets/teapot.obj', {}, (contents) ->
+    teapot = seen.Shapes.obj(contents, false)
     teapot.fill new seen.Material seen.C.gray
     teapot.translate(0,-40).scale(30)
 

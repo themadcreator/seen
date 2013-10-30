@@ -1,0 +1,32 @@
+{% extends 'demo-template.html' %}
+
+{% block canvases %}
+  <table>
+    <tr>
+      <td><canvas width="600" height="600" id="seen-canvas-0"></canvas></td>
+      <td><canvas width="600" height="600" id="seen-canvas-1"></canvas></td>
+    </tr>
+  </table>
+{% endblock %}
+
+{% block demo %}
+<script src="/lib/jquery.js"></script>
+<script type="text/coffeescript">
+  dim = 600
+
+  for objFile, i in ['assets/teapot-low.obj', 'assets/bunny-low.obj'] then do ->
+    scene = new seen.Scene
+      model  : seen.Models.default()
+      camera : new seen.Camera
+        viewport : seen.Viewports.center(dim, dim)
+
+    seen.CanvasScene("seen-canvas-#{i}", scene, dim, dim)
+    scene.render()
+
+    $.get objFile, {}, (contents) ->
+      shape = seen.Shapes.obj(contents).scale(30).translate(0,-100,100)
+      scene.model.add(shape)
+      scene.render()
+
+</script>
+{% endblock %}
