@@ -24,9 +24,13 @@
     scene.render()
 
     $.get objFile, {}, (contents) ->
-      shape = seen.Shapes.obj(contents).scale(30).translate(0,-100,100)
+      shape = seen.Shapes.obj(contents).scale(30).translate(0,-80)
       scene.model.add(shape)
-      scene.render()
+
+      scene.on 'beforeRender.animate', ->
+        shape.roty(0.01).rotx(0.003)
+      scene.startRenderLoop(20)
+
 
 </script>
 {% endblock %}

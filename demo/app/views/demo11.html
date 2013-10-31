@@ -1,0 +1,71 @@
+{% extends 'demo-template.html' %}
+
+{% block canvases %}
+  <style>
+    td.caption {
+      font-family : 'Roboto';
+      text-align  : center;
+      color       : #888;
+    }
+  </style>
+
+  <table>
+    <tr>
+      <td><canvas width="300" height="300" id="seen-canvas-0"></canvas></td>
+      <td><canvas width="300" height="300" id="seen-canvas-1"></canvas></td>
+      <td><canvas width="300" height="300" id="seen-canvas-2"></canvas></td>
+      <td><canvas width="300" height="300" id="seen-canvas-3"></canvas></td>
+      <td><canvas width="300" height="300" id="seen-canvas-4"></canvas></td>
+    </tr><tr>
+      <td class="caption">0 Subdivisions</td>
+      <td class="caption">1 Subdivision</td>
+      <td class="caption">2 Subdivisions</td>
+      <td class="caption">3 Subdivisions</td>
+      <td class="caption">4 Subdivisions</td>
+    </tr>
+  </table>
+
+  <canvas width="1500" height="300" id="seen-canvas-all"></canvas></td>
+{% endblock %}
+
+{% block demo %}
+<script type="text/coffeescript" src="/demo.coffee"></script>
+<script type="text/coffeescript">
+  dim = 300
+
+  shapes = []
+  for depth in [0...5] then do ->
+    model = seen.Models.default()
+    shape = seen.Shapes.sphere(depth).scale(100)
+    model.add shape
+    shapes.push shape
+
+    scene = new seen.Scene
+      model  : model
+      camera : new seen.Camera
+        viewport : seen.Viewports.center(dim, dim)
+
+    seen.CanvasScene("seen-canvas-#{depth}", scene, dim, dim)
+
+    scene.on 'beforeRender.animate', ->
+      shape.roty(0.01).rotx(0.003)
+    scene.startRenderLoop(50)
+
+  # All Shapes in one
+
+  model = seen.Models.default()
+  for shape,i in shapes
+    model.append().translate(i*dim + dim/2, -dim/2).add(shape)
+
+  scene = new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      viewport   : seen.Viewports.origin(1500, dim)
+      projection : seen.Projections.ortho()
+
+  seen.CanvasScene('seen-canvas-all', scene, 1500, dim)
+  scene.startRenderLoop(50)
+
+
+</script>
+{% endblock %}
