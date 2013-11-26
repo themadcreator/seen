@@ -19,7 +19,6 @@
 
 {% block demo %}
 <script src="/lib/jquery.js"></script>
-<script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
   w = 300
   h = 300
@@ -52,12 +51,11 @@
 
     model.add(teapot)
 
-    s.render() for s in scenes
+    c.render() for c in contexts
 
-  for scene, i in scenes
+  contexts = scenes.map (scene,i) ->
     d = if i is 0 then 600 else 300
-    seen.SvgScene("seen-canvas-#{i}", scene, d, d)
-    scene.render()
+    return seen.SvgScene("seen-canvas-#{i}", scene, d, d)
 
 </script>
 {% endblock %}

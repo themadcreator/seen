@@ -3,29 +3,17 @@
 
 class seen.Scene
   defaults:
-    cullBackfaces : true
-    camera        : new seen.Camera()
-    model         : new seen.Model()
-    shader        : seen.Shaders.phong
+    model            : new seen.Model()
+    camera           : new seen.Camera()
+    shader           : seen.Shaders.phong
+    cullBackfaces    : true
+    fractionalPoints : false
 
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
-
-    @dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render')
-    @on       = @dispatch.on
     @_renderModelCache = {}
 
-  startRenderLoop: (msecDelay = 30) ->
-    setInterval(@render, msecDelay)
-
-  render: () =>
-    @dispatch.beforeRender()
-    renderModels = @_renderSurfaces()
-    @dispatch.render(renderModels)
-    @dispatch.afterRender(renderModels)
-    return @
-
-  _renderSurfaces: () =>
+  render : () =>
     # compute projection matrix
     projection = @camera.getMatrix()
 
@@ -48,6 +36,11 @@ class seen.Scene
             renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
             renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
 
+            # Rounding the coordinates for display speeds up path drawing at the cost of
+            # a slight jittering effect when animating
+            if @fractionalPoints isnt true
+              p.round() for p in renderModel.projected.points
+
             # add surface to renderable surfaces array
             renderModels.push renderModel
     )
@@ -57,7 +50,6 @@ class seen.Scene
       return  b.projected.barycenter.z - a.projected.barycenter.z
 
     return renderModels
-
 
   _renderSurface : (surface, transform, projection) ->
     renderModel = @_renderModelCache[surface.id]

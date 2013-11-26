@@ -29,11 +29,11 @@
 {% endblock %}
 
 {% block demo %}
-<script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
   dim = 300
 
   shapes = []
+  contexts = []
   for depth in [0...5] then do ->
     model = seen.Models.default()
     shape = seen.Shapes.sphere(depth).scale(100)
@@ -45,11 +45,7 @@
       camera : new seen.Camera
         viewport : seen.Viewports.center(dim, dim)
 
-    seen.CanvasScene("seen-canvas-#{depth}", scene, dim, dim)
-
-    scene.on 'beforeRender.animate', ->
-      shape.roty(0.01).rotx(0.003)
-    scene.startRenderLoop(50)
+    contexts.push seen.CanvasScene("seen-canvas-#{depth}", scene, dim, dim)
 
   # All Shapes in one
 
@@ -63,8 +59,16 @@
       viewport   : seen.Viewports.origin(1500, dim)
       projection : seen.Projections.ortho()
 
-  seen.CanvasScene('seen-canvas-all', scene, 1500, dim)
-  scene.startRenderLoop(50)
+  contexts.push seen.CanvasScene('seen-canvas-all', scene, 1500, dim)
+
+  new seen.Animator()
+    .onBefore( ->
+      shape.roty(0.01).rotx(0.003) for shape in shapes
+    )
+    .onRender( ->
+      context.render() for context in contexts
+    )
+    .startRenderLoop(50)
 
 
 </script>

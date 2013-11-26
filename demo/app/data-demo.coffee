@@ -9,7 +9,7 @@ seen.demo.stockData = (callback) ->
   $.getJSON(url, "q=#{query}&env=#{env}&format=json", callback)
 
 
-seen.demo.demoChart = () ->
+seen.demo.demoChart = (loaded) ->
   model = seen.Models.default()
 
   scene = new seen.Scene
@@ -68,7 +68,7 @@ seen.demo.demoChart = () ->
         s['stroke-width'] = 2
       datagroup.add line
 
-    scene.render()
+    loaded()
 
 
 

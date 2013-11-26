@@ -12,7 +12,6 @@
 {% endblock %}
 
 {% block demo %}
-<script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
   dim = 600
 
@@ -26,14 +25,21 @@
       projection : seen.Projections.ortho()
       viewport   : seen.Viewports.center(dim, dim)
 
-  seen.SvgScene('seen-canvas-0', scenes[0], dim, dim)
-  seen.CanvasScene('seen-canvas-1', scenes[1], dim, dim)
+  contexts = [
+    seen.SvgScene('seen-canvas-0', scenes[0], dim, dim)
+    seen.CanvasScene('seen-canvas-1', scenes[1], dim, dim)
+  ]
 
-  scenes[0].on 'beforeRender.animate', ->
-    shape.roty(0.02).rotx(0.003)
-    text.rotz(0.01)
-  scenes[0].startRenderLoop(20)
-  scenes[1].startRenderLoop(20)
+  new seen.Animator()
+    .onBefore( ->
+      shape.roty(0.02).rotx(0.003)
+      text.rotz(0.01)
+    )
+    .onRender( ->
+      contexts[0].render()
+      contexts[1].render()
+    )
+    .startRenderLoop(20)
 
 </script>
 {% endblock %}

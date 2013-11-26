@@ -38,12 +38,24 @@ class seen.SvgTextPainter
     @el.textContent = text
     return @
 
-class seen.SvgRenderer extends seen.RenderLayer
-  constructor : ->
+class seen.SvgRectPainter
+  setElement: (@el) ->
+
+  style: (style) ->
+    _styleElement(@el, style)
+    return @
+
+  size: ({width, height}) ->
+    @el.setAttribute('width', width)
+    @el.setAttribute('height', height)
+    return @
+
+class seen.SvgLayerRenderContext extends seen.RenderLayerContext
+  constructor : (@group) ->
     @pathPainter = new seen.SvgPathPainter()
     @textPainter = new seen.SvgTextPainter()
-
-  setGroup : (@group) ->
+    @rectPainter = new seen.SvgRectPainter()
+    @_i = 0
 
   path : () ->
     el = @_manifest('path')
@@ -55,6 +67,11 @@ class seen.SvgRenderer extends seen.RenderLayer
     el.setAttribute 'font-family', 'Roboto'
     @textPainter.setElement el
     return @textPainter
+
+  rect : (dims) ->
+    el = @_manifest('rect')
+    @rectPainter.setElement el
+    return @rectPainter
 
   reset : ->
     @_i = 0
@@ -83,56 +100,18 @@ class seen.SvgRenderer extends seen.RenderLayer
       @_i++
       return path
 
+class seen.SvgRenderContext extends seen.RenderContext
+  constructor : (@svg) ->
+    super()
 
-class seen.SvgRenderDebug extends seen.RenderLayer
-  constructor: (scene) ->
-    @_text = _svg('text')
-    @_text.setAttribute('style', 'text-anchor:end;')
-    @_text.setAttribute('x', 500 - 10)
-    @_text.setAttribute('y', '20')
-
-    @_fps = 30
-    scene.on 'beforeRender.debug', @_renderStart
-    scene.on 'afterRender.debug', @_renderEnd
-
-  render : ->
-
-  setGroup: (group) ->
-    group.appendChild(@_text)
-
-  _renderStart: =>
-    @_renderStartTime = new Date()
-
-  _renderEnd: (e) =>
-    frameTime = 1000 / (new Date() - @_renderStartTime)
-    if frameTime != NaN then @_fps += (frameTime - @_fps) / 20
-    @_text.textContent = "fps: #{@_fps.toFixed(1)} surfaces: #{e.length}"
-
-
-class seen.SvgFillRect extends seen.RenderLayer
-  constructor : (@width = 500, @height = 500) ->
-
-  render : ->
-
-  setGroup: (group) ->
-    rect = _svg('rect')
-    rect.setAttribute('fill', '#EEE')
-    rect.setAttribute('width',  @width)
-    rect.setAttribute('height', @width)
-    group.appendChild(rect)
-
-
-class seen.SvgCanvas extends seen.Renderer
-  constructor: (scene, @svg) ->
-    super(scene)
-
-  layer : (name, component) ->
-    @layers[name] = component
+  layer : (name, layer) ->
     @svg.appendChild(group = _svg('g'))
-    component?.setGroup group
+    @layers[name] = {
+      layer   : layer
+      context : new seen.SvgLayerRenderContext(group)
+    }
     return @
 
-seen.SvgScene = (elementId, scene, width = 400, height = 400) ->
-  new seen.SvgCanvas(scene, document.getElementById(elementId))
-    .layer('background', new seen.SvgFillRect(width, height))
-    .layer('scene', new seen.SvgRenderer())
+seen.SvgScene = (elementId, scene, width, height) ->
+  context = new seen.SvgRenderContext(document.getElementById(elementId))
+  return seen.LayersScene(context, scene, width, height)

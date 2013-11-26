@@ -30,9 +30,6 @@ seen.demo.text = () ->
     camera : new seen.Camera
       projection : seen.Projections.ortho()
 
-  scene.on 'beforeRender.animate', () ->
-    model.rotx(0.02)
-
   return scene
 
 seen.demo.tetrahedra = () ->

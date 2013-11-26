@@ -172,6 +172,13 @@ class seen.Point
     @z /= n
     return @
 
+  # Destructively rounds each coordinate to the nearest integer.
+  round: () ->
+    @x = Math.round(@x)
+    @y = Math.round(@y)
+    @z = Math.round(@z)
+    return @
+
   # Destructively scales this `Point` by its magnitude.
   normalize: () ->
     n = Math.sqrt(@dot(@))

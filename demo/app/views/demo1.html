@@ -1,5 +1,9 @@
 {% extends 'demo-template.html' %}
 
+{% block canvases %}
+ <svg width="500" height="500" id="seen-canvas"></svg>
+{% endblock %}
+
 {% block demo %}
 <script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
@@ -13,12 +17,17 @@
     camera : new seen.Camera
       viewport : seen.Viewports.center(w, h)
 
-  new seen.SvgCanvas(scene, document.getElementById('seen-canvas'))
-    .layer('background', new seen.SvgFillRect(w,h))
-    .layer('scene',      new seen.SvgRenderer())
-    .layer('foreground', new seen.SvgRenderDebug(scene))
 
-  scene.on 'beforeRender.animate', () ->
+  context = new seen.SvgRenderContext(document.getElementById('seen-canvas'))
+  context
+    .layer('background', new seen.FillLayer(w, h))
+    .layer('scene', new seen.SceneLayer(scene))
+
+  anim = new seen.Animator()
+
+  context.layer('debug', new seen.DebugLayer(anim))
+
+  anim.onBefore(->
     for i in [0...3]
       demo.model.children[i].rotx(0.01 * (i+1))
       demo.model.children[i].roty(0.02).rotx(0.015)
@@ -26,7 +35,9 @@
     demo.inside.roty(-0.01).rotx(-0.02)
     demo.faroutside.roty(0.02).rotz(0.02)
     demo.around.roty(0.01)
+  )
+  .onRender(context.render)
+  .startRenderLoop(20)
 
-  scene.startRenderLoop(20)
 </script>
 {% endblock %}

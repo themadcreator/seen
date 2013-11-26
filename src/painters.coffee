@@ -3,12 +3,12 @@
 # ------------------
 
 class seen.Painter
-  paint : (renderObject, canvas) ->
+  paint : (renderObject, context) ->
     # Override this
 
 class PathPainter extends seen.Painter
-  paint : (renderObject, canvas) ->
-    canvas.path()
+  paint : (renderObject, context) ->
+    context.path()
       .style(
         fill           : if not renderObject.fill? then 'none' else renderObject.fill.hex()
         stroke         : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
@@ -17,8 +17,8 @@ class PathPainter extends seen.Painter
       ).path(renderObject.projected.points)
 
 class TextPainter extends seen.Painter
-  paint : (renderObject, canvas) ->
-    canvas.text()
+  paint : (renderObject, context) ->
+    context.text()
       .style(
         fill          : if not renderObject.fill? then 'none' else renderObject.fill.hex()
         stroke        : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()

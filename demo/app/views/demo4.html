@@ -7,7 +7,6 @@
 {% endblock %}
 
 {% block demo %}
-<script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
   w = 400
   h = 400
@@ -39,10 +38,8 @@
       camera     : seen.M().roty(-Math.PI/2)
       projection : seen.Projections.ortho()
 
-  seen.SvgScene('seen-canvas-1', scene1, w, h)
-  seen.SvgScene('seen-canvas-2', scene2, w, h)
-  seen.SvgScene('seen-canvas-3', scene3, w, h)
-  s.render() for s in [scene1, scene2, scene3]
+  for s,i in [scene1, scene2, scene3]
+    seen.SvgScene("seen-canvas-#{i + 1}", s, w, h).render()
 
 </script>
 {% endblock %}

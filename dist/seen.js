@@ -313,6 +313,13 @@
       return this;
     };
 
+    Point.prototype.round = function() {
+      this.x = Math.round(this.x);
+      this.y = Math.round(this.y);
+      this.z = Math.round(this.z);
+      return this;
+    };
+
     Point.prototype.normalize = function() {
       var n;
       n = Math.sqrt(this.dot(this));
@@ -728,60 +735,6 @@
     flat: new Flat()
   };
 
-  seen.Renderer = (function() {
-    function Renderer(scene) {
-      this.scene = scene;
-      this.render = __bind(this.render, this);
-      this.layers = {};
-      this.scene.on("render." + (seen.Util.uniqueId('renderer-')), this.render);
-    }
-
-    Renderer.prototype.render = function(renderModels) {
-      var key, layer, _ref4;
-      this.reset();
-      _ref4 = this.layers;
-      for (key in _ref4) {
-        layer = _ref4[key];
-        layer.render(renderModels);
-      }
-      return this.cleanup();
-    };
-
-    Renderer.prototype.reset = function() {};
-
-    Renderer.prototype.cleanup = function() {};
-
-    return Renderer;
-
-  })();
-
-  seen.RenderLayer = (function() {
-    function RenderLayer() {
-      this.render = __bind(this.render, this);
-    }
-
-    RenderLayer.prototype.render = function(renderModels) {
-      var renderModel, _i, _len;
-      this.reset();
-      for (_i = 0, _len = renderModels.length; _i < _len; _i++) {
-        renderModel = renderModels[_i];
-        renderModel.surface.painter.paint(renderModel, this);
-      }
-      return this.cleanup();
-    };
-
-    RenderLayer.prototype.path = function() {};
-
-    RenderLayer.prototype.text = function() {};
-
-    RenderLayer.prototype.reset = function() {};
-
-    RenderLayer.prototype.cleanup = function() {};
-
-    return RenderLayer;
-
-  })();
-
   seen.RenderModel = (function() {
     function RenderModel(surface, transform, projection) {
       this.surface = surface;
@@ -871,6 +824,528 @@
     return LightRenderModel;
 
   })();
+
+  seen.RenderContext = (function() {
+    function RenderContext() {
+      this.render = __bind(this.render, this);
+      this.layers = {};
+    }
+
+    RenderContext.prototype.render = function() {
+      var key, layer, _ref4;
+      this.reset();
+      _ref4 = this.layers;
+      for (key in _ref4) {
+        layer = _ref4[key];
+        layer.context.reset();
+        layer.layer.render(layer.context);
+        layer.context.cleanup();
+      }
+      return this.cleanup();
+    };
+
+    RenderContext.prototype.animate = function() {
+      return new seen.Animator().onRender(this.render);
+    };
+
+    RenderContext.prototype.layer = function(name, layer) {
+      this.layers[name] = {
+        layer: layer,
+        context: this
+      };
+      return this;
+    };
+
+    RenderContext.prototype.reset = function() {};
+
+    RenderContext.prototype.cleanup = function() {};
+
+    return RenderContext;
+
+  })();
+
+  seen.RenderLayerContext = (function() {
+    function RenderLayerContext() {}
+
+    RenderLayerContext.prototype.path = function() {};
+
+    RenderLayerContext.prototype.text = function() {};
+
+    RenderLayerContext.prototype.rect = function() {};
+
+    RenderLayerContext.prototype.reset = function() {};
+
+    RenderLayerContext.prototype.cleanup = function() {};
+
+    return RenderLayerContext;
+
+  })();
+
+  seen.RenderLayer = (function() {
+    function RenderLayer() {
+      this.render = __bind(this.render, this);
+    }
+
+    RenderLayer.prototype.render = function(context) {};
+
+    return RenderLayer;
+
+  })();
+
+  seen.FillLayer = (function(_super) {
+    __extends(FillLayer, _super);
+
+    function FillLayer(width, height, fill) {
+      this.width = width != null ? width : 500;
+      this.height = height != null ? height : 500;
+      this.fill = fill != null ? fill : '#EEE';
+      this.render = __bind(this.render, this);
+    }
+
+    FillLayer.prototype.render = function(context) {
+      return context.rect().style({
+        fill: this.fill
+      }).size({
+        width: this.width,
+        height: this.height
+      });
+    };
+
+    return FillLayer;
+
+  })(seen.RenderLayer);
+
+  seen.SceneLayer = (function(_super) {
+    __extends(SceneLayer, _super);
+
+    function SceneLayer(scene) {
+      this.scene = scene;
+      this.render = __bind(this.render, this);
+    }
+
+    SceneLayer.prototype.render = function(context) {
+      var renderModel, _i, _len, _ref4, _results;
+      _ref4 = this.scene.render();
+      _results = [];
+      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+        renderModel = _ref4[_i];
+        _results.push(renderModel.surface.painter.paint(renderModel, context));
+      }
+      return _results;
+    };
+
+    return SceneLayer;
+
+  })(seen.RenderLayer);
+
+  seen.DebugLayer = (function(_super) {
+    __extends(DebugLayer, _super);
+
+    function DebugLayer(animator) {
+      this._renderEnd = __bind(this._renderEnd, this);
+      this._renderStart = __bind(this._renderStart, this);
+      this.render = __bind(this.render, this);
+      this._msg = '';
+      this._fps = 30;
+      animator.onBefore(this._renderStart);
+      animator.onAfter(this._renderEnd);
+    }
+
+    DebugLayer.prototype.render = function(context) {
+      return context.text().style({
+        'fill': '#000'
+      }).transform(seen.M().translate(10, 20).scale(1, -1, 1)).text(this._msg);
+    };
+
+    DebugLayer.prototype._renderStart = function() {
+      return this._renderStartTime = new Date();
+    };
+
+    DebugLayer.prototype._renderEnd = function() {
+      var frameTime;
+      frameTime = 1000 / (new Date() - this._renderStartTime);
+      if (frameTime !== NaN) {
+        this._fps += (frameTime - this._fps) / 20;
+      }
+      return this._msg = "fps: " + (this._fps.toFixed(1));
+    };
+
+    return DebugLayer;
+
+  })(seen.RenderLayer);
+
+  seen.LayersScene = function(context, scene, width, height) {
+    if (width == null) {
+      width = 400;
+    }
+    if (height == null) {
+      height = 400;
+    }
+    context.layer('background', new seen.FillLayer(width, height)).layer('scene', new seen.SceneLayer(scene));
+    return context;
+  };
+
+  _svg = function(name) {
+    return document.createElementNS('http://www.w3.org/2000/svg', name);
+  };
+
+  _line = function(points) {
+    return 'M' + points.map(function(p) {
+      return "" + p.x + " " + p.y;
+    }).join('L');
+  };
+
+  _styleElement = function(el, style) {
+    var key, str, val;
+    str = '';
+    for (key in style) {
+      val = style[key];
+      str += "" + key + ":" + val + ";";
+    }
+    return el.setAttribute('style', str);
+  };
+
+  seen.SvgPathPainter = (function() {
+    function SvgPathPainter() {}
+
+    SvgPathPainter.prototype.setElement = function(el) {
+      this.el = el;
+    };
+
+    SvgPathPainter.prototype.style = function(style) {
+      _styleElement(this.el, style);
+      return this;
+    };
+
+    SvgPathPainter.prototype.path = function(points) {
+      this.el.setAttribute('d', _line(points));
+      return this;
+    };
+
+    return SvgPathPainter;
+
+  })();
+
+  seen.SvgTextPainter = (function() {
+    function SvgTextPainter() {}
+
+    SvgTextPainter.prototype.setElement = function(el) {
+      this.el = el;
+    };
+
+    SvgTextPainter.prototype.style = function(style) {
+      _styleElement(this.el, style);
+      return this;
+    };
+
+    SvgTextPainter.prototype.transform = function(transform) {
+      var m;
+      m = seen.Matrices.flipY().multiply(transform).m;
+      this.el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
+      return this;
+    };
+
+    SvgTextPainter.prototype.text = function(text) {
+      this.el.textContent = text;
+      return this;
+    };
+
+    return SvgTextPainter;
+
+  })();
+
+  seen.SvgRectPainter = (function() {
+    function SvgRectPainter() {}
+
+    SvgRectPainter.prototype.setElement = function(el) {
+      this.el = el;
+    };
+
+    SvgRectPainter.prototype.style = function(style) {
+      _styleElement(this.el, style);
+      return this;
+    };
+
+    SvgRectPainter.prototype.size = function(_arg) {
+      var height, width;
+      width = _arg.width, height = _arg.height;
+      this.el.setAttribute('width', width);
+      this.el.setAttribute('height', height);
+      return this;
+    };
+
+    return SvgRectPainter;
+
+  })();
+
+  seen.SvgLayerRenderContext = (function(_super) {
+    __extends(SvgLayerRenderContext, _super);
+
+    function SvgLayerRenderContext(group) {
+      this.group = group;
+      this.pathPainter = new seen.SvgPathPainter();
+      this.textPainter = new seen.SvgTextPainter();
+      this.rectPainter = new seen.SvgRectPainter();
+      this._i = 0;
+    }
+
+    SvgLayerRenderContext.prototype.path = function() {
+      var el;
+      el = this._manifest('path');
+      this.pathPainter.setElement(el);
+      return this.pathPainter;
+    };
+
+    SvgLayerRenderContext.prototype.text = function() {
+      var el;
+      el = this._manifest('text');
+      el.setAttribute('font-family', 'Roboto');
+      this.textPainter.setElement(el);
+      return this.textPainter;
+    };
+
+    SvgLayerRenderContext.prototype.rect = function(dims) {
+      var el;
+      el = this._manifest('rect');
+      this.rectPainter.setElement(el);
+      return this.rectPainter;
+    };
+
+    SvgLayerRenderContext.prototype.reset = function() {
+      return this._i = 0;
+    };
+
+    SvgLayerRenderContext.prototype.cleanup = function() {
+      var children, _results;
+      children = this.group.childNodes;
+      _results = [];
+      while (this._i < children.length) {
+        children[this._i].setAttribute('style', 'display: none;');
+        _results.push(this._i++);
+      }
+      return _results;
+    };
+
+    SvgLayerRenderContext.prototype._manifest = function(type) {
+      var children, current, path;
+      children = this.group.childNodes;
+      if (this._i >= children.length) {
+        path = _svg(type);
+        this.group.appendChild(path);
+        this._i++;
+        return path;
+      }
+      current = children[this._i];
+      if (current.tagName === type) {
+        this._i++;
+        return current;
+      } else {
+        path = _svg(type);
+        this.group.replaceChild(path, current);
+        this._i++;
+        return path;
+      }
+    };
+
+    return SvgLayerRenderContext;
+
+  })(seen.RenderLayerContext);
+
+  seen.SvgRenderContext = (function(_super) {
+    __extends(SvgRenderContext, _super);
+
+    function SvgRenderContext(svg) {
+      this.svg = svg;
+      SvgRenderContext.__super__.constructor.call(this);
+    }
+
+    SvgRenderContext.prototype.layer = function(name, layer) {
+      var group;
+      this.svg.appendChild(group = _svg('g'));
+      this.layers[name] = {
+        layer: layer,
+        context: new seen.SvgLayerRenderContext(group)
+      };
+      return this;
+    };
+
+    return SvgRenderContext;
+
+  })(seen.RenderContext);
+
+  seen.SvgScene = function(elementId, scene, width, height) {
+    var context;
+    context = new seen.SvgRenderContext(document.getElementById(elementId));
+    return seen.LayersScene(context, scene, width, height);
+  };
+
+  seen.CanvasPathPainter = (function() {
+    function CanvasPathPainter(ctx) {
+      this.ctx = ctx;
+    }
+
+    CanvasPathPainter.prototype.style = function(style) {
+      var key, val;
+      for (key in style) {
+        val = style[key];
+        switch (key) {
+          case 'fill':
+            this.ctx.fillStyle = val;
+            break;
+          case 'stroke':
+            this.ctx.strokeStyle = val;
+        }
+      }
+      return this;
+    };
+
+    CanvasPathPainter.prototype.path = function(points) {
+      var i, p, _i, _len;
+      this.ctx.beginPath();
+      for (i = _i = 0, _len = points.length; _i < _len; i = ++_i) {
+        p = points[i];
+        if (i === 0) {
+          this.ctx.moveTo(p.x, p.y);
+        } else {
+          this.ctx.lineTo(p.x, p.y);
+        }
+      }
+      this.ctx.closePath();
+      this.ctx.fill();
+      return this;
+    };
+
+    return CanvasPathPainter;
+
+  })();
+
+  seen.CanvasTextPainter = (function() {
+    function CanvasTextPainter(ctx) {
+      this.ctx = ctx;
+    }
+
+    CanvasTextPainter.prototype.style = function(style) {
+      var key, val;
+      for (key in style) {
+        val = style[key];
+        switch (key) {
+          case 'fill':
+            this.ctx.fillStyle = val;
+            break;
+          case 'stroke':
+            this.ctx.strokeStyle = val;
+        }
+      }
+      this.ctx.font = '16px Roboto';
+      return this;
+    };
+
+    CanvasTextPainter.prototype.text = function(text) {
+      this.ctx.fillText(text, 0, 0);
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      return this;
+    };
+
+    CanvasTextPainter.prototype.transform = function(transform) {
+      var m;
+      m = seen.Matrices.flipY().multiply(transform).m;
+      this.ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7]);
+      return this;
+    };
+
+    return CanvasTextPainter;
+
+  })();
+
+  seen.CanvasRectPainter = (function() {
+    function CanvasRectPainter(ctx) {
+      this.ctx = ctx;
+    }
+
+    CanvasRectPainter.prototype.style = function(style) {
+      var key, val;
+      for (key in style) {
+        val = style[key];
+        switch (key) {
+          case 'fill':
+            this.ctx.fillStyle = val;
+            break;
+          case 'stroke':
+            this.ctx.strokeStyle = val;
+        }
+      }
+      return this;
+    };
+
+    CanvasRectPainter.prototype.size = function(_arg) {
+      var height, width;
+      width = _arg.width, height = _arg.height;
+      this.ctx.fillRect(0, 0, width, height);
+      return this;
+    };
+
+    return CanvasRectPainter;
+
+  })();
+
+  seen.CanvasLayerRenderContext = (function(_super) {
+    __extends(CanvasLayerRenderContext, _super);
+
+    function CanvasLayerRenderContext(ctx) {
+      this.ctx = ctx;
+      this.pathPainter = new seen.CanvasPathPainter(this.ctx);
+      this.textPainter = new seen.CanvasTextPainter(this.ctx);
+      this.rectPainter = new seen.CanvasRectPainter(this.ctx);
+    }
+
+    CanvasLayerRenderContext.prototype.path = function() {
+      return this.pathPainter;
+    };
+
+    CanvasLayerRenderContext.prototype.text = function() {
+      return this.textPainter;
+    };
+
+    CanvasLayerRenderContext.prototype.rect = function() {
+      return this.rectPainter;
+    };
+
+    return CanvasLayerRenderContext;
+
+  })(seen.RenderLayerContext);
+
+  seen.CanvasRenderContext = (function(_super) {
+    __extends(CanvasRenderContext, _super);
+
+    function CanvasRenderContext(element, width, height) {
+      this.element = element;
+      this.width = width;
+      this.height = height;
+      CanvasRenderContext.__super__.constructor.call(this);
+      this.ctx = this.element.getContext('2d');
+    }
+
+    CanvasRenderContext.prototype.layer = function(name, layer) {
+      this.layers[name] = {
+        layer: layer,
+        context: new seen.CanvasLayerRenderContext(this.ctx)
+      };
+      return this;
+    };
+
+    CanvasRenderContext.prototype.reset = function() {
+      return this.ctx.clearRect(0, 0, this.width, this.height);
+    };
+
+    return CanvasRenderContext;
+
+  })(seen.RenderContext);
+
+  seen.CanvasScene = function(elementId, scene, width, height) {
+    var context;
+    context = new seen.CanvasRenderContext(document.getElementById(elementId), width, height);
+    return seen.LayersScene(context, scene, width, height);
+  };
 
   seen.Surface = (function() {
     Surface.prototype.cullBackfaces = true;
@@ -1021,7 +1496,7 @@
   seen.Painter = (function() {
     function Painter() {}
 
-    Painter.prototype.paint = function(renderObject, canvas) {};
+    Painter.prototype.paint = function(renderObject, context) {};
 
     return Painter;
 
@@ -1035,9 +1510,9 @@
       return _ref4;
     }
 
-    PathPainter.prototype.paint = function(renderObject, canvas) {
+    PathPainter.prototype.paint = function(renderObject, context) {
       var _ref5, _ref6;
-      return canvas.path().style({
+      return context.path().style({
         fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
         stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
         'fill-opacity': ((_ref5 = renderObject.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderObject.fill.a / 255.0,
@@ -1057,9 +1532,9 @@
       return _ref5;
     }
 
-    TextPainter.prototype.paint = function(renderObject, canvas) {
+    TextPainter.prototype.paint = function(renderObject, context) {
       var _ref6;
-      return canvas.text().style({
+      return context.text().style({
         fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
         stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
         'text-anchor': (_ref6 = renderObject.surface.anchor) != null ? _ref6 : 'middle'
@@ -1321,6 +1796,47 @@
     }));
   };
 
+  seen.Animator = (function() {
+    function Animator() {
+      this.render = __bind(this.render, this);
+      this.dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render');
+      this.on = this.dispatch.on;
+    }
+
+    Animator.prototype.startRenderLoop = function(msecDelay) {
+      if (msecDelay == null) {
+        msecDelay = 30;
+      }
+      setInterval(this.render, msecDelay);
+      return this;
+    };
+
+    Animator.prototype.render = function() {
+      this.dispatch.beforeRender();
+      this.dispatch.render();
+      this.dispatch.afterRender();
+      return this;
+    };
+
+    Animator.prototype.onBefore = function(handler) {
+      this.on("beforeRender." + (seen.Util.uniqueId('animator-')), handler);
+      return this;
+    };
+
+    Animator.prototype.onAfter = function(handler) {
+      this.on("afterRender." + (seen.Util.uniqueId('animator-')), handler);
+      return this;
+    };
+
+    Animator.prototype.onRender = function(handler) {
+      this.on("render." + (seen.Util.uniqueId('animator-')), handler);
+      return this;
+    };
+
+    return Animator;
+
+  })();
+
   seen.Projections = {
     perspectiveFov: function(fovyInDegrees, front) {
       var tan;
@@ -1485,436 +2001,22 @@
 
   })();
 
-  _svg = function(name) {
-    return document.createElementNS('http://www.w3.org/2000/svg', name);
-  };
-
-  _line = function(points) {
-    return 'M' + points.map(function(p) {
-      return "" + p.x + " " + p.y;
-    }).join('L');
-  };
-
-  _styleElement = function(el, style) {
-    var key, str, val;
-    str = '';
-    for (key in style) {
-      val = style[key];
-      str += "" + key + ":" + val + ";";
-    }
-    return el.setAttribute('style', str);
-  };
-
-  seen.SvgPathPainter = (function() {
-    function SvgPathPainter() {}
-
-    SvgPathPainter.prototype.setElement = function(el) {
-      this.el = el;
-    };
-
-    SvgPathPainter.prototype.style = function(style) {
-      _styleElement(this.el, style);
-      return this;
-    };
-
-    SvgPathPainter.prototype.path = function(points) {
-      this.el.setAttribute('d', _line(points));
-      return this;
-    };
-
-    return SvgPathPainter;
-
-  })();
-
-  seen.SvgTextPainter = (function() {
-    function SvgTextPainter() {}
-
-    SvgTextPainter.prototype.setElement = function(el) {
-      this.el = el;
-    };
-
-    SvgTextPainter.prototype.style = function(style) {
-      _styleElement(this.el, style);
-      return this;
-    };
-
-    SvgTextPainter.prototype.transform = function(transform) {
-      var m;
-      m = seen.Matrices.flipY().multiply(transform).m;
-      this.el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
-      return this;
-    };
-
-    SvgTextPainter.prototype.text = function(text) {
-      this.el.textContent = text;
-      return this;
-    };
-
-    return SvgTextPainter;
-
-  })();
-
-  seen.SvgRenderer = (function(_super) {
-    __extends(SvgRenderer, _super);
-
-    function SvgRenderer() {
-      this.pathPainter = new seen.SvgPathPainter();
-      this.textPainter = new seen.SvgTextPainter();
-    }
-
-    SvgRenderer.prototype.setGroup = function(group) {
-      this.group = group;
-    };
-
-    SvgRenderer.prototype.path = function() {
-      var el;
-      el = this._manifest('path');
-      this.pathPainter.setElement(el);
-      return this.pathPainter;
-    };
-
-    SvgRenderer.prototype.text = function() {
-      var el;
-      el = this._manifest('text');
-      el.setAttribute('font-family', 'Roboto');
-      this.textPainter.setElement(el);
-      return this.textPainter;
-    };
-
-    SvgRenderer.prototype.reset = function() {
-      return this._i = 0;
-    };
-
-    SvgRenderer.prototype.cleanup = function() {
-      var children, _results;
-      children = this.group.childNodes;
-      _results = [];
-      while (this._i < children.length) {
-        children[this._i].setAttribute('style', 'display: none;');
-        _results.push(this._i++);
-      }
-      return _results;
-    };
-
-    SvgRenderer.prototype._manifest = function(type) {
-      var children, current, path;
-      children = this.group.childNodes;
-      if (this._i >= children.length) {
-        path = _svg(type);
-        this.group.appendChild(path);
-        this._i++;
-        return path;
-      }
-      current = children[this._i];
-      if (current.tagName === type) {
-        this._i++;
-        return current;
-      } else {
-        path = _svg(type);
-        this.group.replaceChild(path, current);
-        this._i++;
-        return path;
-      }
-    };
-
-    return SvgRenderer;
-
-  })(seen.RenderLayer);
-
-  seen.SvgRenderDebug = (function(_super) {
-    __extends(SvgRenderDebug, _super);
-
-    function SvgRenderDebug(scene) {
-      this._renderEnd = __bind(this._renderEnd, this);
-      this._renderStart = __bind(this._renderStart, this);
-      this._text = _svg('text');
-      this._text.setAttribute('style', 'text-anchor:end;');
-      this._text.setAttribute('x', 500 - 10);
-      this._text.setAttribute('y', '20');
-      this._fps = 30;
-      scene.on('beforeRender.debug', this._renderStart);
-      scene.on('afterRender.debug', this._renderEnd);
-    }
-
-    SvgRenderDebug.prototype.render = function() {};
-
-    SvgRenderDebug.prototype.setGroup = function(group) {
-      return group.appendChild(this._text);
-    };
-
-    SvgRenderDebug.prototype._renderStart = function() {
-      return this._renderStartTime = new Date();
-    };
-
-    SvgRenderDebug.prototype._renderEnd = function(e) {
-      var frameTime;
-      frameTime = 1000 / (new Date() - this._renderStartTime);
-      if (frameTime !== NaN) {
-        this._fps += (frameTime - this._fps) / 20;
-      }
-      return this._text.textContent = "fps: " + (this._fps.toFixed(1)) + " surfaces: " + e.length;
-    };
-
-    return SvgRenderDebug;
-
-  })(seen.RenderLayer);
-
-  seen.SvgFillRect = (function(_super) {
-    __extends(SvgFillRect, _super);
-
-    function SvgFillRect(width, height) {
-      this.width = width != null ? width : 500;
-      this.height = height != null ? height : 500;
-    }
-
-    SvgFillRect.prototype.render = function() {};
-
-    SvgFillRect.prototype.setGroup = function(group) {
-      var rect;
-      rect = _svg('rect');
-      rect.setAttribute('fill', '#EEE');
-      rect.setAttribute('width', this.width);
-      rect.setAttribute('height', this.width);
-      return group.appendChild(rect);
-    };
-
-    return SvgFillRect;
-
-  })(seen.RenderLayer);
-
-  seen.SvgCanvas = (function(_super) {
-    __extends(SvgCanvas, _super);
-
-    function SvgCanvas(scene, svg) {
-      this.svg = svg;
-      SvgCanvas.__super__.constructor.call(this, scene);
-    }
-
-    SvgCanvas.prototype.layer = function(name, component) {
-      var group;
-      this.layers[name] = component;
-      this.svg.appendChild(group = _svg('g'));
-      if (component != null) {
-        component.setGroup(group);
-      }
-      return this;
-    };
-
-    return SvgCanvas;
-
-  })(seen.Renderer);
-
-  seen.SvgScene = function(elementId, scene, width, height) {
-    if (width == null) {
-      width = 400;
-    }
-    if (height == null) {
-      height = 400;
-    }
-    return new seen.SvgCanvas(scene, document.getElementById(elementId)).layer('background', new seen.SvgFillRect(width, height)).layer('scene', new seen.SvgRenderer());
-  };
-
-  seen.CanvasPathPainter = (function() {
-    function CanvasPathPainter() {}
-
-    CanvasPathPainter.prototype.setContext = function(ctx) {
-      this.ctx = ctx;
-    };
-
-    CanvasPathPainter.prototype.style = function(style) {
-      var key, val;
-      for (key in style) {
-        val = style[key];
-        switch (key) {
-          case 'fill':
-            this.ctx.fillStyle = val;
-            break;
-          case 'stroke':
-            this.ctx.strokeStyle = val;
-        }
-      }
-      return this;
-    };
-
-    CanvasPathPainter.prototype.path = function(points) {
-      var i, p, _i, _len;
-      this.ctx.beginPath();
-      for (i = _i = 0, _len = points.length; _i < _len; i = ++_i) {
-        p = points[i];
-        if (i === 0) {
-          this.ctx.moveTo(p.x, p.y);
-        } else {
-          this.ctx.lineTo(p.x, p.y);
-        }
-      }
-      this.ctx.closePath();
-      this.ctx.fill();
-      return this;
-    };
-
-    return CanvasPathPainter;
-
-  })();
-
-  seen.CanvasTextPainter = (function() {
-    function CanvasTextPainter() {}
-
-    CanvasTextPainter.prototype.setContext = function(ctx) {
-      this.ctx = ctx;
-    };
-
-    CanvasTextPainter.prototype.style = function(style) {
-      var key, val;
-      for (key in style) {
-        val = style[key];
-        switch (key) {
-          case 'fill':
-            this.ctx.fillStyle = val;
-            break;
-          case 'stroke':
-            this.ctx.strokeStyle = val;
-        }
-      }
-      this.ctx.font = '16px Roboto';
-      return this;
-    };
-
-    CanvasTextPainter.prototype.text = function(text) {
-      this.ctx.fillText(text, 0, 0);
-      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-      return this;
-    };
-
-    CanvasTextPainter.prototype.transform = function(transform) {
-      var m;
-      m = seen.Matrices.flipY().multiply(transform).m;
-      this.ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7]);
-      return this;
-    };
-
-    return CanvasTextPainter;
-
-  })();
-
-  seen.CanvasRenderer = (function(_super) {
-    __extends(CanvasRenderer, _super);
-
-    function CanvasRenderer(width, height) {
-      this.width = width;
-      this.height = height;
-      this.pathPainter = new seen.CanvasPathPainter();
-      this.textPainter = new seen.CanvasTextPainter();
-    }
-
-    CanvasRenderer.prototype.setContext = function(ctx) {
-      this.ctx = ctx;
-    };
-
-    CanvasRenderer.prototype.path = function() {
-      this.pathPainter.setContext(this.ctx);
-      return this.pathPainter;
-    };
-
-    CanvasRenderer.prototype.text = function() {
-      this.textPainter.setContext(this.ctx);
-      return this.textPainter;
-    };
-
-    return CanvasRenderer;
-
-  })(seen.RenderLayer);
-
-  seen.CanvasFillRect = (function(_super) {
-    __extends(CanvasFillRect, _super);
-
-    function CanvasFillRect(width, height) {
-      this.width = width != null ? width : 500;
-      this.height = height != null ? height : 500;
-      this.render = __bind(this.render, this);
-    }
-
-    CanvasFillRect.prototype.setContext = function(ctx) {
-      this.ctx = ctx;
-    };
-
-    CanvasFillRect.prototype.render = function() {
-      this.ctx.fillStyle = '#EEE';
-      return this.ctx.fillRect(0, 0, this.width, this.height);
-    };
-
-    return CanvasFillRect;
-
-  })(seen.RenderLayer);
-
-  seen.CanvasCanvas = (function(_super) {
-    __extends(CanvasCanvas, _super);
-
-    function CanvasCanvas(scene, element) {
-      this.element = element;
-      CanvasCanvas.__super__.constructor.call(this, scene);
-      this.ctx = this.element.getContext('2d');
-    }
-
-    CanvasCanvas.prototype.layer = function(name, component) {
-      this.layers[name] = component;
-      if (component != null) {
-        component.setContext(this.ctx);
-      }
-      return this;
-    };
-
-    CanvasCanvas.prototype.reset = function() {
-      return this.ctx.clearRect(0, 0, this.width, this.height);
-    };
-
-    return CanvasCanvas;
-
-  })(seen.Renderer);
-
-  seen.CanvasScene = function(elementId, scene, width, height) {
-    if (width == null) {
-      width = 400;
-    }
-    if (height == null) {
-      height = 400;
-    }
-    return new seen.CanvasCanvas(scene, document.getElementById(elementId)).layer('background', new seen.CanvasFillRect(width, height)).layer('scene', new seen.CanvasRenderer(width, height));
-  };
-
   seen.Scene = (function() {
     Scene.prototype.defaults = {
-      cullBackfaces: true,
-      camera: new seen.Camera(),
       model: new seen.Model(),
-      shader: seen.Shaders.phong
+      camera: new seen.Camera(),
+      shader: seen.Shaders.phong,
+      cullBackfaces: true,
+      fractionalPoints: false
     };
 
     function Scene(options) {
-      this._renderSurfaces = __bind(this._renderSurfaces, this);
       this.render = __bind(this.render, this);
       seen.Util.defaults(this, options, this.defaults);
-      this.dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render');
-      this.on = this.dispatch.on;
       this._renderModelCache = {};
     }
 
-    Scene.prototype.startRenderLoop = function(msecDelay) {
-      if (msecDelay == null) {
-        msecDelay = 30;
-      }
-      return setInterval(this.render, msecDelay);
-    };
-
     Scene.prototype.render = function() {
-      var renderModels;
-      this.dispatch.beforeRender();
-      renderModels = this._renderSurfaces();
-      this.dispatch.render(renderModels);
-      this.dispatch.afterRender(renderModels);
-      return this;
-    };
-
-    Scene.prototype._renderSurfaces = function() {
       var projection, renderModels,
         _this = this;
       projection = this.camera.getMatrix();
@@ -1922,7 +2024,7 @@
       this.model.eachRenderable(function(light, transform) {
         return new seen.LightRenderModel(light, transform);
       }, function(shape, lights, transform) {
-        var renderModel, surface, _i, _len, _ref6, _ref7, _ref8, _results;
+        var p, renderModel, surface, _i, _j, _len, _len1, _ref6, _ref7, _ref8, _ref9, _results;
         _ref6 = shape.surfaces;
         _results = [];
         for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
@@ -1931,6 +2033,13 @@
           if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
             renderModel.fill = (_ref7 = surface.fill) != null ? _ref7.render(lights, _this.shader, renderModel.transformed) : void 0;
             renderModel.stroke = (_ref8 = surface.stroke) != null ? _ref8.render(lights, _this.shader, renderModel.transformed) : void 0;
+            if (_this.fractionalPoints !== true) {
+              _ref9 = renderModel.projected.points;
+              for (_j = 0, _len1 = _ref9.length; _j < _len1; _j++) {
+                p = _ref9[_j];
+                p.round();
+              }
+            }
             _results.push(renderModels.push(renderModel));
           } else {
             _results.push(void 0);

@@ -2,7 +2,6 @@
 
 
 {% block demo %}
-<script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
   w = 500
   h = 500
@@ -44,11 +43,12 @@
       projection : seen.Projections.perspective()
 
   seen.SvgScene('seen-canvas', scene, w, h)
-  scene.startRenderLoop(10)
-
-  scene.on 'beforeRender.animate', () ->
-    geomGroup.roty(-0.01)
-    lightGroup.roty(0.02)
+    .animate()
+    .onBefore(->
+      geomGroup.roty(-0.01)
+      lightGroup.roty(0.02)
+    )
+    .startRenderLoop(10)
 
 </script>
 {% endblock %}

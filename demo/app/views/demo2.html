@@ -1,29 +1,20 @@
 {% extends 'demo-template.html' %}
 
 {% block demo %}
-<script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
-  w = 500
-  h = 500
-
-  # Make a plate that will take up the entire viewport minus 10 pixel margins
-  hw = w/2 - 10
-  hh = h/2 - 10
-  plate = new seen.Shape('custom', [new seen.Surface([
-    seen.P(-hw, -hh, 0)
-    seen.P( hw, -hh, 0)
-    seen.P( hw,  hh, 0)
-    seen.P(-hw,  hh, 0)
-  ])])
-
-  plate.fill new seen.Material seen.Colors.hsl(0, 0.5, 0.4)
+  size = 500
 
   scene = new seen.Scene
-    model  : seen.Models.default().add(plate)
+    model  : seen.Models.default().add(seen.Shapes.tetrahedron().scale(80))
     camera : new seen.Camera
-      viewport : seen.Viewports.center(w,h)
+      viewport : seen.Viewports.center(size, size)
 
-  seen.SvgScene('seen-canvas', scene, w, h)
-  scene.render()
+  seen.SvgScene('seen-canvas', scene, size, size)
+    .animate()
+    .onBefore(->
+      scene.model.roty(0.02).rotx(0.015).rotz(0.007)
+    )
+    .startRenderLoop()
+
 </script>
 {% endblock %}

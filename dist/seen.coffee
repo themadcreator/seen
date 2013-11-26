@@ -270,6 +270,13 @@ class seen.Point
     @z /= n
     return @
 
+  # Destructively rounds each coordinate to the nearest integer.
+  round: () ->
+    @x = Math.round(@x)
+    @y = Math.round(@y)
+    @z = Math.round(@z)
+    return @
+
   # Destructively scales this `Point` by its magnitude.
   normalize: () ->
     n = Math.sqrt(@dot(@))
@@ -603,38 +610,6 @@ seen.Shaders = {
 }
 
 
-
-class seen.Renderer
-  constructor: (@scene) ->
-    @layers = {}
-    @scene.on "render.#{seen.Util.uniqueId('renderer-')}", @render
-
-  render: (renderModels) =>
-    @reset()
-    for key, layer of @layers
-      layer.render(renderModels)
-    @cleanup()
-
-  reset   : ->
-  cleanup : ->
-
-class seen.RenderLayer
-  render: (renderModels) =>
-    @reset()
-    for renderModel in renderModels
-      renderModel.surface.painter.paint(renderModel, @)
-    @cleanup()
-
-  path : ->
-    # override should return a path renderer
-
-  text : ->
-    # override should return a text renderer
-
-  reset : ->
-
-  cleanup : ->
-
 # The `RenderModel` object contains the transformed and projected points as well as various data
 # needed to render scene shapes.
 #
@@ -688,6 +663,7 @@ class seen.RenderModel
     set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
     set.normal.set(set.v0).cross(set.v1).normalize()
 
+
 class seen.LightRenderModel
   constructor: (light, transform) ->
     @colorIntensity = light.color.copy().scale(light.intensity)
@@ -696,6 +672,327 @@ class seen.LightRenderModel
     @point          = light.point.copy().transform(transform)
     origin          = seen.Points.ZERO.copy().transform(transform)
     @normal         = light.normal.copy().transform(transform).subtract(origin).normalize()
+
+
+
+class seen.RenderContext
+  constructor: ->
+    @layers = {}
+
+  render: () =>
+    @reset()
+    for key, layer of @layers
+      layer.context.reset()
+      layer.layer.render(layer.context)
+      layer.context.cleanup()
+    @cleanup()
+
+  animate : ->
+    return new seen.Animator().onRender(@render)
+
+  layer: (name, layer) ->
+    @layers[name] = {
+      layer   : layer
+      context : @
+    }
+    return @
+
+  reset   : ->
+
+  cleanup : ->
+
+
+class seen.RenderLayerContext
+  path    : -> # Return a path builder
+  text    : -> # Return a text builder
+  rect    : -> # Return a rect builder
+
+  reset   : ->
+  cleanup : ->
+
+
+class seen.RenderLayer
+  render: (context) =>
+
+
+class seen.FillLayer extends seen.RenderLayer
+  constructor : (@width = 500, @height = 500, @fill = '#EEE') ->
+
+  render: (context) =>
+    context.rect()
+      .style(
+        fill : @fill
+      )
+      .size(
+        width  : @width
+        height : @height
+      )
+
+
+class seen.SceneLayer extends seen.RenderLayer
+  constructor : (@scene) ->
+
+  render : (context) =>
+    for renderModel in @scene.render()
+      renderModel.surface.painter.paint(renderModel, context)
+
+
+class seen.DebugLayer extends seen.RenderLayer
+  constructor: (animator) ->
+    @_msg = ''
+    @_fps = 30
+
+    animator.onBefore @_renderStart
+    animator.onAfter @_renderEnd
+
+  render : (context) =>
+    context.text()
+      .style(
+        'fill' : '#000'
+      )
+      .transform(
+        seen.M().translate(10 , 20).scale(1,-1,1)
+      )
+      .text(@_msg)
+
+  _renderStart: =>
+    @_renderStartTime = new Date()
+
+  _renderEnd: =>
+    # Compute frame time
+    frameTime = 1000 / (new Date() - @_renderStartTime)
+    # Smooth frame time
+    if frameTime != NaN then @_fps += (frameTime - @_fps) / 20
+    # Record debug message
+    @_msg = "fps: #{@_fps.toFixed(1)}" #" surfaces: #{e.length}"
+
+
+seen.LayersScene = (context, scene, width = 400, height = 400) ->
+  context
+    .layer('background', new seen.FillLayer(width, height))
+    .layer('scene',      new seen.SceneLayer(scene))
+  return context
+
+
+
+_svg = (name) ->
+  return document.createElementNS('http://www.w3.org/2000/svg', name)
+
+_line = (points) ->
+  return 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
+
+_styleElement = (el, style) ->
+  str = ''
+  for key,val of style
+    str += "#{key}:#{val};"
+  el.setAttribute('style', str)
+
+class seen.SvgPathPainter
+  setElement: (@el) ->
+
+  style: (style) ->
+    _styleElement(@el, style)
+    return @
+
+  path: (points) ->
+    @el.setAttribute('d', _line(points))
+    return @
+
+class seen.SvgTextPainter
+  setElement: (@el) ->
+
+  style: (style) ->
+    _styleElement(@el, style)
+    return @
+
+  transform: (transform) ->
+    m = seen.Matrices.flipY().multiply(transform).m
+    @el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
+    return @
+
+  text: (text) ->
+    @el.textContent = text
+    return @
+
+class seen.SvgRectPainter
+  setElement: (@el) ->
+
+  style: (style) ->
+    _styleElement(@el, style)
+    return @
+
+  size: ({width, height}) ->
+    @el.setAttribute('width', width)
+    @el.setAttribute('height', height)
+    return @
+
+class seen.SvgLayerRenderContext extends seen.RenderLayerContext
+  constructor : (@group) ->
+    @pathPainter = new seen.SvgPathPainter()
+    @textPainter = new seen.SvgTextPainter()
+    @rectPainter = new seen.SvgRectPainter()
+    @_i = 0
+
+  path : () ->
+    el = @_manifest('path')
+    @pathPainter.setElement el
+    return @pathPainter
+
+  text : () ->
+    el = @_manifest('text')
+    el.setAttribute 'font-family', 'Roboto'
+    @textPainter.setElement el
+    return @textPainter
+
+  rect : (dims) ->
+    el = @_manifest('rect')
+    @rectPainter.setElement el
+    return @rectPainter
+
+  reset : ->
+    @_i = 0
+
+  cleanup : ->
+    children = @group.childNodes
+    while (@_i < children.length)
+      children[@_i].setAttribute('style', 'display: none;')
+      @_i++
+
+  _manifest : (type) ->
+    children = @group.childNodes
+    if @_i >= children.length
+      path = _svg(type)
+      @group.appendChild(path)
+      @_i++
+      return path
+
+    current = children[@_i]
+    if current.tagName is type
+      @_i++
+      return current
+    else
+      path = _svg(type)
+      @group.replaceChild(path, current)
+      @_i++
+      return path
+
+class seen.SvgRenderContext extends seen.RenderContext
+  constructor : (@svg) ->
+    super()
+
+  layer : (name, layer) ->
+    @svg.appendChild(group = _svg('g'))
+    @layers[name] = {
+      layer   : layer
+      context : new seen.SvgLayerRenderContext(group)
+    }
+    return @
+
+seen.SvgScene = (elementId, scene, width, height) ->
+  context = new seen.SvgRenderContext(document.getElementById(elementId))
+  return seen.LayersScene(context, scene, width, height)
+
+
+
+class seen.CanvasPathPainter
+  constructor : (@ctx) ->
+
+  style: (style) ->
+    for key, val of style
+      switch key
+        when 'fill' then @ctx.fillStyle = val
+        when 'stroke' then @ctx.strokeStyle = val
+    return @
+
+  path: (points) ->
+    @ctx.beginPath()
+
+    for p, i in points
+      if i is 0
+        @ctx.moveTo(p.x, p.y)
+      else
+        @ctx.lineTo(p.x, p.y)
+
+    @ctx.closePath()
+    @ctx.fill()
+    return @
+
+
+class seen.CanvasTextPainter
+  constructor : (@ctx) ->
+
+  style: (style) ->
+    for key, val of style
+      switch key
+        when 'fill' then @ctx.fillStyle = val
+        when 'stroke' then @ctx.strokeStyle = val
+
+    @ctx.font = '16px Roboto'
+    return @
+
+  text: (text) ->
+    @ctx.fillText(text, 0, 0)
+    @ctx.setTransform(1, 0, 0, 1, 0, 0)
+    return @
+
+  transform: (transform) ->
+    m = seen.Matrices.flipY().multiply(transform).m
+    @ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
+    return @
+
+
+class seen.CanvasRectPainter
+  constructor : (@ctx) ->
+
+  style: (style) ->
+    for key, val of style
+      switch key
+        when 'fill' then @ctx.fillStyle = val
+        when 'stroke' then @ctx.strokeStyle = val
+    return @
+
+  size: ({width, height}) ->
+    @ctx.fillRect(0, 0, width, height)
+    return @
+
+
+class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
+  constructor : (@ctx) ->
+    @pathPainter = new seen.CanvasPathPainter(@ctx)
+    @textPainter = new seen.CanvasTextPainter(@ctx)
+    @rectPainter = new seen.CanvasRectPainter(@ctx)
+
+  path : () ->
+    return @pathPainter
+
+  text : () ->
+    return @textPainter
+
+  rect : () ->
+    return @rectPainter
+
+
+
+class seen.CanvasRenderContext extends seen.RenderContext
+  constructor: (@element, @width, @height) ->
+    super()
+    @ctx = @element.getContext('2d')
+
+  layer : (name, layer) ->
+    @layers[name] = {
+      layer   : layer
+      context : new seen.CanvasLayerRenderContext(@ctx)
+    }
+    return @
+
+  reset : ->
+    @ctx.clearRect(0, 0, @width, @height)
+
+
+seen.CanvasScene = (elementId, scene, width, height) ->
+  context = new seen.CanvasRenderContext(document.getElementById(elementId), width, height)
+  return seen.LayersScene(context, scene, width, height)
+
 
 
 
@@ -801,12 +1098,12 @@ seen.Models = {
 # ------------------
 
 class seen.Painter
-  paint : (renderObject, canvas) ->
+  paint : (renderObject, context) ->
     # Override this
 
 class PathPainter extends seen.Painter
-  paint : (renderObject, canvas) ->
-    canvas.path()
+  paint : (renderObject, context) ->
+    context.path()
       .style(
         fill           : if not renderObject.fill? then 'none' else renderObject.fill.hex()
         stroke         : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
@@ -815,8 +1112,8 @@ class PathPainter extends seen.Painter
       ).path(renderObject.projected.points)
 
 class TextPainter extends seen.Painter
-  paint : (renderObject, canvas) ->
-    canvas.text()
+  paint : (renderObject, context) ->
+    context.text()
       .style(
         fill          : if not renderObject.fill? then 'none' else renderObject.fill.hex()
         stroke        : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
@@ -1082,6 +1379,35 @@ seen.Shapes.obj = (objContents, cullBackfaces = true) ->
   ))
 
 
+
+class seen.Animator
+  constructor : () ->
+    @dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render')
+    @on       = @dispatch.on
+
+  startRenderLoop: (msecDelay = 30) ->
+    setInterval(@render, msecDelay)
+    return @
+
+  render: () =>
+    @dispatch.beforeRender()
+    @dispatch.render()
+    @dispatch.afterRender()
+    return @
+
+  onBefore : (handler) ->
+    @on "beforeRender.#{seen.Util.uniqueId('animator-')}", handler
+    return @
+
+  onAfter : (handler) ->
+    @on "afterRender.#{seen.Util.uniqueId('animator-')}", handler
+    return @
+
+  onRender : (handler) ->
+    @on "render.#{seen.Util.uniqueId('animator-')}", handler
+    return @
+
+
 # ## Projections
 # #### Projections and viewport tranformations.
 # ------------------
@@ -1183,268 +1509,22 @@ class seen.Camera
 
 
 
-
-_svg = (name) ->
-  return document.createElementNS('http://www.w3.org/2000/svg', name)
-
-_line = (points) ->
-  return 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
-
-_styleElement = (el, style) ->
-  str = ''
-  for key,val of style
-    str += "#{key}:#{val};"
-  el.setAttribute('style', str)
-
-class seen.SvgPathPainter
-  setElement: (@el) ->
-
-  style: (style) ->
-    _styleElement(@el, style)
-    return @
-
-  path: (points) ->
-    @el.setAttribute('d', _line(points))
-    return @
-
-class seen.SvgTextPainter
-  setElement: (@el) ->
-
-  style: (style) ->
-    _styleElement(@el, style)
-    return @
-
-  transform: (transform) ->
-    m = seen.Matrices.flipY().multiply(transform).m
-    @el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
-    return @
-
-  text: (text) ->
-    @el.textContent = text
-    return @
-
-class seen.SvgRenderer extends seen.RenderLayer
-  constructor : ->
-    @pathPainter = new seen.SvgPathPainter()
-    @textPainter = new seen.SvgTextPainter()
-
-  setGroup : (@group) ->
-
-  path : () ->
-    el = @_manifest('path')
-    @pathPainter.setElement el
-    return @pathPainter
-
-  text : () ->
-    el = @_manifest('text')
-    el.setAttribute 'font-family', 'Roboto'
-    @textPainter.setElement el
-    return @textPainter
-
-  reset : ->
-    @_i = 0
-
-  cleanup : ->
-    children = @group.childNodes
-    while (@_i < children.length)
-      children[@_i].setAttribute('style', 'display: none;')
-      @_i++
-
-  _manifest : (type) ->
-    children = @group.childNodes
-    if @_i >= children.length
-      path = _svg(type)
-      @group.appendChild(path)
-      @_i++
-      return path
-
-    current = children[@_i]
-    if current.tagName is type
-      @_i++
-      return current
-    else
-      path = _svg(type)
-      @group.replaceChild(path, current)
-      @_i++
-      return path
-
-
-class seen.SvgRenderDebug extends seen.RenderLayer
-  constructor: (scene) ->
-    @_text = _svg('text')
-    @_text.setAttribute('style', 'text-anchor:end;')
-    @_text.setAttribute('x', 500 - 10)
-    @_text.setAttribute('y', '20')
-
-    @_fps = 30
-    scene.on 'beforeRender.debug', @_renderStart
-    scene.on 'afterRender.debug', @_renderEnd
-
-  render : ->
-
-  setGroup: (group) ->
-    group.appendChild(@_text)
-
-  _renderStart: =>
-    @_renderStartTime = new Date()
-
-  _renderEnd: (e) =>
-    frameTime = 1000 / (new Date() - @_renderStartTime)
-    if frameTime != NaN then @_fps += (frameTime - @_fps) / 20
-    @_text.textContent = "fps: #{@_fps.toFixed(1)} surfaces: #{e.length}"
-
-
-class seen.SvgFillRect extends seen.RenderLayer
-  constructor : (@width = 500, @height = 500) ->
-
-  render : ->
-
-  setGroup: (group) ->
-    rect = _svg('rect')
-    rect.setAttribute('fill', '#EEE')
-    rect.setAttribute('width',  @width)
-    rect.setAttribute('height', @width)
-    group.appendChild(rect)
-
-
-class seen.SvgCanvas extends seen.Renderer
-  constructor: (scene, @svg) ->
-    super(scene)
-
-  layer : (name, component) ->
-    @layers[name] = component
-    @svg.appendChild(group = _svg('g'))
-    component?.setGroup group
-    return @
-
-seen.SvgScene = (elementId, scene, width = 400, height = 400) ->
-  new seen.SvgCanvas(scene, document.getElementById(elementId))
-    .layer('background', new seen.SvgFillRect(width, height))
-    .layer('scene', new seen.SvgRenderer())
-
-
-
-class seen.CanvasPathPainter
-  setContext: (@ctx) ->
-
-  style: (style) ->
-    for key, val of style
-      switch key
-        when 'fill' then @ctx.fillStyle = val
-        when 'stroke' then @ctx.strokeStyle = val
-    return @
-
-  path: (points) ->
-    @ctx.beginPath()
-
-    for p, i in points
-      if i is 0
-        @ctx.moveTo(p.x, p.y)
-      else
-        @ctx.lineTo(p.x, p.y)
-
-    @ctx.closePath()
-    @ctx.fill()
-    return @
-
-
-class seen.CanvasTextPainter
-  setContext: (@ctx) ->
-
-  style: (style) ->
-    for key, val of style
-      switch key
-        when 'fill' then @ctx.fillStyle = val
-        when 'stroke' then @ctx.strokeStyle = val
-
-    @ctx.font = '16px Roboto'
-    return @
-
-  text: (text) ->
-    @ctx.fillText(text, 0, 0)
-    @ctx.setTransform(1, 0, 0, 1, 0, 0)
-    return @
-
-  transform: (transform) ->
-    m = seen.Matrices.flipY().multiply(transform).m
-    @ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
-    return @
-
-
-class seen.CanvasRenderer extends seen.RenderLayer
-  constructor : (@width, @height) ->
-    @pathPainter = new seen.CanvasPathPainter()
-    @textPainter = new seen.CanvasTextPainter()
-
-  setContext : (@ctx) ->
-
-  path : () ->
-    @pathPainter.setContext @ctx
-    return @pathPainter
-
-  text : () ->
-    @textPainter.setContext @ctx
-    return @textPainter
-
-
-class seen.CanvasFillRect extends seen.RenderLayer
-  constructor : (@width = 500, @height = 500) ->
-
-  setContext : (@ctx) ->
-
-  render: =>
-    @ctx.fillStyle = '#EEE'
-    @ctx.fillRect(0, 0, @width, @height)
-
-
-class seen.CanvasCanvas extends seen.Renderer
-  constructor: (scene, @element) ->
-    super(scene)
-    @ctx = @element.getContext('2d')
-
-  layer : (name, component) ->
-    @layers[name] = component
-    component?.setContext @ctx
-    return @
-
-  reset : ->
-    @ctx.clearRect(0, 0, @width, @height)
-
-
-seen.CanvasScene = (elementId, scene, width = 400, height = 400) ->
-  new seen.CanvasCanvas(scene, document.getElementById(elementId))
-    .layer('background', new seen.CanvasFillRect(width, height))
-    .layer('scene', new seen.CanvasRenderer(width, height))
-
-
 # ## The Scene
 # ------------------
 
 class seen.Scene
   defaults:
-    cullBackfaces : true
-    camera        : new seen.Camera()
-    model         : new seen.Model()
-    shader        : seen.Shaders.phong
+    model            : new seen.Model()
+    camera           : new seen.Camera()
+    shader           : seen.Shaders.phong
+    cullBackfaces    : true
+    fractionalPoints : false
 
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
-
-    @dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render')
-    @on       = @dispatch.on
     @_renderModelCache = {}
 
-  startRenderLoop: (msecDelay = 30) ->
-    setInterval(@render, msecDelay)
-
-  render: () =>
-    @dispatch.beforeRender()
-    renderModels = @_renderSurfaces()
-    @dispatch.render(renderModels)
-    @dispatch.afterRender(renderModels)
-    return @
-
-  _renderSurfaces: () =>
+  render : () =>
     # compute projection matrix
     projection = @camera.getMatrix()
 
@@ -1467,6 +1547,11 @@ class seen.Scene
             renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
             renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
 
+            # Rounding the coordinates for display speeds up path drawing at the cost of
+            # a slight jittering effect when animating
+            if @fractionalPoints isnt true
+              p.round() for p in renderModel.projected.points
+
             # add surface to renderable surfaces array
             renderModels.push renderModel
     )
@@ -1476,7 +1561,6 @@ class seen.Scene
       return  b.projected.barycenter.z - a.projected.barycenter.z
 
     return renderModels
-
 
   _renderSurface : (surface, transform, projection) ->
     renderModel = @_renderModelCache[surface.id]
