@@ -1,0 +1,33 @@
+{% extends 'demo-template.html' %}
+
+{% block demo %}
+<script type="text/coffeescript">
+  size = 500
+
+  shapes = [
+    seen.Shapes.sphere(2).scale(80)
+    seen.Shapes.sphere(2).scale(80)
+  ]
+
+  scene = new seen.Scene
+    model  : seen.Models.default()
+    camera : new seen.Camera
+      viewport : seen.Viewports.center(size, size)
+
+
+  modelGroups = shapes.map (shape, i) ->
+    shiftX = 100 * (if i is 0 then -1 else 1)
+    return scene.model.append().translate(shiftX).add(shape)
+
+  context = seen.SvgScene('seen-canvas', scene, size, size)
+  context.render()
+
+  dragger = new seen.Drag(document.getElementById('seen-canvas'), {inertia : true})
+  dragger.on('drag.rotate', (e) ->
+    xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
+    shapes[0].transform(xform)
+    context.render()
+  )
+
+</script>
+{% endblock %}

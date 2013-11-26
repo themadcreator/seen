@@ -328,6 +328,69 @@ seen.Points = {
   ZERO : seen.P(0, 0, 0)
 }
 
+# http://glprogramming.com/codedump/godecho/quaternion.html
+class seen.Quaternion
+  @pixelsPerRadian : 150
+
+  @xyToTransform : (x, y) ->
+    quatX = seen.Quaternion.pointAngle(seen.Points.Y, x / seen.Quaternion.pixelsPerRadian)
+    quatY = seen.Quaternion.pointAngle(seen.Points.X, y / seen.Quaternion.pixelsPerRadian)
+    return quatX.multiply(quatY).toMatrix()
+
+  @axisAngle : (x, y, z, angleRads) ->
+    scale = Math.sin(angleRads / 2.0)
+    w     = Math.cos(angleRads / 2.0)
+    return new seen.Quaternion(scale * x, scale * y, scale * z, w)
+
+  @pointAngle : (p, angleRads) ->
+    scale = Math.sin(angleRads / 2.0)
+    w     = Math.cos(angleRads / 2.0)
+    return new seen.Quaternion(scale * p.x, scale * p.y, scale * p.z, w)
+
+  constructor : ->
+    @q = seen.P(arguments...)
+
+  multiply : (q) ->
+    r = seen.P()
+
+    r.w = @q.w * q.q.w - @q.x * q.q.x - @q.y * q.q.y - @q.z * q.q.z
+    r.x = @q.w * q.q.x + @q.x * q.q.w + @q.y * q.q.z - @q.z * q.q.y
+    r.y = @q.w * q.q.y + @q.y * q.q.w + @q.z * q.q.x - @q.x * q.q.z
+    r.z = @q.w * q.q.z + @q.z * q.q.w + @q.x * q.q.y - @q.y * q.q.x
+
+    result = new seen.Quaternion()
+    result.q = r
+    return result
+
+  toMatrix : ->
+    m = new Array(16)
+
+    # First row
+    m[ 0] = 1.0 - 2.0 * ( @q.y * @q.y + @q.z * @q.z )
+    m[ 1] = 2.0 * ( @q.x * @q.y - @q.w * @q.z )
+    m[ 2] = 2.0 * ( @q.x * @q.z + @q.w * @q.y )
+    m[ 3] = 0.0
+
+    # Second row
+    m[ 4] = 2.0 * ( @q.x * @q.y + @q.w * @q.z )
+    m[ 5] = 1.0 - 2.0 * ( @q.x * @q.x + @q.z * @q.z )
+    m[ 6] = 2.0 * ( @q.y * @q.z - @q.w * @q.x )
+    m[ 7] = 0.0
+
+    # Third row
+    m[ 8] = 2.0 * ( @q.x * @q.z - @q.w * @q.y )
+    m[ 9] = 2.0 * ( @q.y * @q.z + @q.w * @q.x )
+    m[10] = 1.0 - 2.0 * ( @q.x * @q.x + @q.y * @q.y )
+    m[11] = 0.0
+
+    # Fourth row
+    m[12] = 0
+    m[13] = 0
+    m[14] = 0
+    m[15] = 1.0
+    return seen.M(m)
+
+
 
 
 
@@ -607,6 +670,41 @@ seen.Shaders = {
   diffuse : new DiffusePhong()
   ambient : new Ambient()
   flat    : new Flat()
+}
+
+
+
+# ## Painters
+# ------------------
+
+class seen.Painter
+  paint : (renderObject, context) ->
+    # Override this
+
+class PathPainter extends seen.Painter
+  paint : (renderObject, context) ->
+    context.path()
+      .style(
+        fill           : if not renderObject.fill? then 'none' else renderObject.fill.hex()
+        stroke         : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
+        'fill-opacity' : if not renderObject.fill?.a? then 1.0 else (renderObject.fill.a / 255.0)
+        'stroke-width' : renderObject.surface['stroke-width'] ? 1
+      ).path(renderObject.projected.points)
+
+class TextPainter extends seen.Painter
+  paint : (renderObject, context) ->
+    context.text()
+      .style(
+        fill          : if not renderObject.fill? then 'none' else renderObject.fill.hex()
+        stroke        : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
+        'text-anchor' : renderObject.surface.anchor ? 'middle'
+      )
+      .transform(renderObject.transform.copy().multiply renderObject.projection)
+      .text(renderObject.surface.text)
+
+seen.Painters = {
+  path : new PathPainter()
+  text : new TextPainter()
 }
 
 
@@ -996,6 +1094,124 @@ seen.CanvasScene = (elementId, scene, width, height) ->
 
 
 
+seen.WindowEvents = do ->
+  dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp')
+  window.onmouseup   = dispatch.mouseUp
+  window.onmousemove = dispatch.mouseMove
+  window.onmousedown = dispatch.mouseDown
+  return {on : dispatch.on}
+
+class seen.MouseEvents
+  defaults:
+    useWindowEvents : true
+
+  constructor : (@el, options) ->
+    seen.Util.defaults(@, options, @defaults)
+
+    @_uid = seen.Util.uniqueId('mouser-')
+
+    @_mouseDown = false
+
+    if @useWindowEvents
+      @el.onmousedown = @_onMouseDown
+    else
+      @el.onmousedown = @_onMouseDown
+      @el.onmouseup   = @_onMouseUp
+      @el.onmousemove = @_onMouseMove
+
+    @dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp')
+    @on       = @dispatch.on
+
+  _onMouseMove : (e) =>
+    @dispatch.mouseMove(e)
+    if @_mouseDown then @dispatch.drag(e)
+
+  _onMouseDown : (e) =>
+    @_mouseDown = true
+    if @useWindowEvents
+      seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
+      seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
+    @dispatch.mouseDown(e)
+    @dispatch.dragStart(e)
+
+  _onMouseUp : (e) =>
+    @_mouseDown = false
+    if @useWindowEvents
+      seen.WindowEvents.on "mouseUp.#{@_uid}", null
+      seen.WindowEvents.on "mouseMove.#{@_uid}", null
+    @dispatch.mouseUp(e)
+    @dispatch.dragEnd(e)
+
+class seen.Drag
+  defaults:
+    inertia           : false
+    inertiaMsecDelay  : 30
+    inertiaExtinction : 0.1
+
+  constructor : (@el, options) ->
+    seen.Util.defaults(@, options, @defaults)
+    @_uid = seen.Util.uniqueId('dragger-')
+
+    @_inertiaRunning = false
+    @_dragState =
+      dragging : false
+      origin   : null
+      last     : null
+      inertia : [0,0]
+
+    @dispatch = seen.Events.dispatch('drag')
+    @on       = @dispatch.on
+
+    mouser = new seen.MouseEvents(@el)
+    mouser.on "dragStart.#{@_uid}", @_onDragStart
+    mouser.on "dragEnd.#{@_uid}", @_onDragEnd
+    mouser.on "drag.#{@_uid}", @_onDrag
+
+  _onDragStart : (e) =>
+    @_stopInertia()
+    @_dragState.dragging = true
+    @_dragState.origin = [e.pageX, e.pageY]
+    @_dragState.last   = [e.pageX, e.pageY]
+
+  _onDragEnd : (e) =>
+    @_dragState.dragging = false
+    if @inertia
+      @_dragState.inertia = [e.pageX - @_dragState.last[0], e.pageY - @_dragState.last[1]]
+      @_startInertia()
+
+  _onDrag : (e) =>
+    @dispatch.drag(
+      offset         : [e.pageX - @_dragState.origin[0], e.pageY - @_dragState.origin[1]]
+      offsetRelative : [e.pageX - @_dragState.last[0], e.pageY - @_dragState.last[1]]
+    )
+    @_dragState.last = [e.pageX, e.pageY]
+
+  _onInertia : () =>
+    return unless @_inertiaRunning
+
+    @_dragState.inertia = @_dragState.inertia.map (i) => i * (1.0 - @inertiaExtinction)
+    if Math.abs(@_dragState.inertia[0]) < 1 and Math.abs(@_dragState.inertia[1]) < 1
+      @_stopInertia()
+      return
+
+    @dispatch.drag(
+      offset         : [@_dragState.last[0] - @_dragState.origin[0], @_dragState.last[0] - @_dragState.origin[1]]
+      offsetRelative : @_dragState.inertia
+    )
+    @_dragState.last = [@_dragState.last[0] + @_dragState.inertia[0], @_dragState.last[1] + @_dragState.inertia[1]]
+
+    @_startInertia()
+
+  _startInertia : =>
+    @_inertiaRunning = true
+    setTimeout(@_onInertia, @inertiaMsecDelay)
+
+  _stopInertia : =>
+    @_dragState.inertia = [0,0]
+    @_inertiaRunning = false
+
+
+
 # ## Geometry
 # #### Groups, shapes, and surfaces
 # ------------------
@@ -1036,11 +1252,12 @@ class seen.Model extends seen.Transformable
     @children = []
     @lights   = []
 
-  add: (child) ->
-    if child instanceof seen.Shape or child instanceof seen.Model
-      @children.push child
-    else if child instanceof seen.Light
-      @lights.push child
+  add: (childs...) ->
+    for child in childs
+      if child instanceof seen.Shape or child instanceof seen.Model
+        @children.push child
+      else if child instanceof seen.Light
+        @lights.push child
     return @
 
   append: () ->
@@ -1090,41 +1307,6 @@ seen.Models = {
       intensity : 0.0015
 
     return model
-}
-
-
-
-# ## Painters
-# ------------------
-
-class seen.Painter
-  paint : (renderObject, context) ->
-    # Override this
-
-class PathPainter extends seen.Painter
-  paint : (renderObject, context) ->
-    context.path()
-      .style(
-        fill           : if not renderObject.fill? then 'none' else renderObject.fill.hex()
-        stroke         : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
-        'fill-opacity' : if not renderObject.fill?.a? then 1.0 else (renderObject.fill.a / 255.0)
-        'stroke-width' : renderObject.surface['stroke-width'] ? 1
-      ).path(renderObject.projected.points)
-
-class TextPainter extends seen.Painter
-  paint : (renderObject, context) ->
-    context.text()
-      .style(
-        fill          : if not renderObject.fill? then 'none' else renderObject.fill.hex()
-        stroke        : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
-        'text-anchor' : renderObject.surface.anchor ? 'middle'
-      )
-      .transform(renderObject.transform.copy().multiply renderObject.projection)
-      .text(renderObject.surface.text)
-
-seen.Painters = {
-  path : new PathPainter()
-  text : new TextPainter()
 }
 
 
@@ -1548,7 +1730,7 @@ class seen.Scene
             renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
 
             # Rounding the coordinates for display speeds up path drawing at the cost of
-            # a slight jittering effect when animating
+            # a slight jittering effect when animating. Anecdotally, the speedup on demo1 was 10 FPS
             if @fractionalPoints isnt true
               p.round() for p in renderModel.projected.points
 

@@ -7,7 +7,7 @@ TODO before v1.0
   front,side,top orth + persp views
   Lights/Material/Shader gallery with parameter sliders
   Area Chart
-  Canvas vs. SVG renderers
+
 
 Other Demos
   Picture in Picture
@@ -15,13 +15,10 @@ Other Demos
   Bar Chart
 
 TODO Features
-  Quaternion Mouse Rotation
   Shape manipulator control
   Shadow Casting
   Physics
-  Animation
   Human-Scale Articulated Skeleton
-  (/) Directional lights
 
   isometric projection
 

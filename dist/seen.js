@@ -377,6 +377,72 @@
     ZERO: seen.P(0, 0, 0)
   };
 
+  seen.Quaternion = (function() {
+    Quaternion.pixelsPerRadian = 150;
+
+    Quaternion.xyToTransform = function(x, y) {
+      var quatX, quatY;
+      quatX = seen.Quaternion.pointAngle(seen.Points.Y, x / seen.Quaternion.pixelsPerRadian);
+      quatY = seen.Quaternion.pointAngle(seen.Points.X, y / seen.Quaternion.pixelsPerRadian);
+      return quatX.multiply(quatY).toMatrix();
+    };
+
+    Quaternion.axisAngle = function(x, y, z, angleRads) {
+      var scale, w;
+      scale = Math.sin(angleRads / 2.0);
+      w = Math.cos(angleRads / 2.0);
+      return new seen.Quaternion(scale * x, scale * y, scale * z, w);
+    };
+
+    Quaternion.pointAngle = function(p, angleRads) {
+      var scale, w;
+      scale = Math.sin(angleRads / 2.0);
+      w = Math.cos(angleRads / 2.0);
+      return new seen.Quaternion(scale * p.x, scale * p.y, scale * p.z, w);
+    };
+
+    function Quaternion() {
+      this.q = seen.P.apply(seen, arguments);
+    }
+
+    Quaternion.prototype.multiply = function(q) {
+      var r, result;
+      r = seen.P();
+      r.w = this.q.w * q.q.w - this.q.x * q.q.x - this.q.y * q.q.y - this.q.z * q.q.z;
+      r.x = this.q.w * q.q.x + this.q.x * q.q.w + this.q.y * q.q.z - this.q.z * q.q.y;
+      r.y = this.q.w * q.q.y + this.q.y * q.q.w + this.q.z * q.q.x - this.q.x * q.q.z;
+      r.z = this.q.w * q.q.z + this.q.z * q.q.w + this.q.x * q.q.y - this.q.y * q.q.x;
+      result = new seen.Quaternion();
+      result.q = r;
+      return result;
+    };
+
+    Quaternion.prototype.toMatrix = function() {
+      var m;
+      m = new Array(16);
+      m[0] = 1.0 - 2.0 * (this.q.y * this.q.y + this.q.z * this.q.z);
+      m[1] = 2.0 * (this.q.x * this.q.y - this.q.w * this.q.z);
+      m[2] = 2.0 * (this.q.x * this.q.z + this.q.w * this.q.y);
+      m[3] = 0.0;
+      m[4] = 2.0 * (this.q.x * this.q.y + this.q.w * this.q.z);
+      m[5] = 1.0 - 2.0 * (this.q.x * this.q.x + this.q.z * this.q.z);
+      m[6] = 2.0 * (this.q.y * this.q.z - this.q.w * this.q.x);
+      m[7] = 0.0;
+      m[8] = 2.0 * (this.q.x * this.q.z - this.q.w * this.q.y);
+      m[9] = 2.0 * (this.q.y * this.q.z + this.q.w * this.q.x);
+      m[10] = 1.0 - 2.0 * (this.q.x * this.q.x + this.q.y * this.q.y);
+      m[11] = 0.0;
+      m[12] = 0;
+      m[13] = 0;
+      m[14] = 0;
+      m[15] = 1.0;
+      return seen.M(m);
+    };
+
+    return Quaternion;
+
+  })();
+
   seen.Color = (function() {
     function Color(r, g, b, a) {
       this.r = r != null ? r : 0;
@@ -735,6 +801,63 @@
     flat: new Flat()
   };
 
+  seen.Painter = (function() {
+    function Painter() {}
+
+    Painter.prototype.paint = function(renderObject, context) {};
+
+    return Painter;
+
+  })();
+
+  PathPainter = (function(_super) {
+    __extends(PathPainter, _super);
+
+    function PathPainter() {
+      _ref4 = PathPainter.__super__.constructor.apply(this, arguments);
+      return _ref4;
+    }
+
+    PathPainter.prototype.paint = function(renderObject, context) {
+      var _ref5, _ref6;
+      return context.path().style({
+        fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
+        stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
+        'fill-opacity': ((_ref5 = renderObject.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderObject.fill.a / 255.0,
+        'stroke-width': (_ref6 = renderObject.surface['stroke-width']) != null ? _ref6 : 1
+      }).path(renderObject.projected.points);
+    };
+
+    return PathPainter;
+
+  })(seen.Painter);
+
+  TextPainter = (function(_super) {
+    __extends(TextPainter, _super);
+
+    function TextPainter() {
+      _ref5 = TextPainter.__super__.constructor.apply(this, arguments);
+      return _ref5;
+    }
+
+    TextPainter.prototype.paint = function(renderObject, context) {
+      var _ref6;
+      return context.text().style({
+        fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
+        stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
+        'text-anchor': (_ref6 = renderObject.surface.anchor) != null ? _ref6 : 'middle'
+      }).transform(renderObject.transform.copy().multiply(renderObject.projection)).text(renderObject.surface.text);
+    };
+
+    return TextPainter;
+
+  })(seen.Painter);
+
+  seen.Painters = {
+    path: new PathPainter(),
+    text: new TextPainter()
+  };
+
   seen.RenderModel = (function() {
     function RenderModel(surface, transform, projection) {
       this.surface = surface;
@@ -765,11 +888,11 @@
       var p;
       return {
         points: (function() {
-          var _i, _len, _ref4, _results;
-          _ref4 = this.points;
+          var _i, _len, _ref6, _results;
+          _ref6 = this.points;
           _results = [];
-          for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
-            p = _ref4[_i];
+          for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+            p = _ref6[_i];
             _results.push(p.copy());
           }
           return _results;
@@ -782,7 +905,7 @@
     };
 
     RenderModel.prototype._math = function(set, points, transform, applyClip) {
-      var i, p, sp, _i, _j, _len, _len1, _ref4;
+      var i, p, sp, _i, _j, _len, _len1, _ref6;
       if (applyClip == null) {
         applyClip = false;
       }
@@ -795,9 +918,9 @@
         }
       }
       set.barycenter.set(seen.Points.ZERO);
-      _ref4 = set.points;
-      for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
-        p = _ref4[_j];
+      _ref6 = set.points;
+      for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
+        p = _ref6[_j];
         set.barycenter.add(p);
       }
       set.barycenter.divide(set.points.length);
@@ -832,11 +955,11 @@
     }
 
     RenderContext.prototype.render = function() {
-      var key, layer, _ref4;
+      var key, layer, _ref6;
       this.reset();
-      _ref4 = this.layers;
-      for (key in _ref4) {
-        layer = _ref4[key];
+      _ref6 = this.layers;
+      for (key in _ref6) {
+        layer = _ref6[key];
         layer.context.reset();
         layer.layer.render(layer.context);
         layer.context.cleanup();
@@ -924,11 +1047,11 @@
     }
 
     SceneLayer.prototype.render = function(context) {
-      var renderModel, _i, _len, _ref4, _results;
-      _ref4 = this.scene.render();
+      var renderModel, _i, _len, _ref6, _results;
+      _ref6 = this.scene.render();
       _results = [];
-      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
-        renderModel = _ref4[_i];
+      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+        renderModel = _ref6[_i];
         _results.push(renderModel.surface.painter.paint(renderModel, context));
       }
       return _results;
@@ -1347,6 +1470,162 @@
     return seen.LayersScene(context, scene, width, height);
   };
 
+  seen.WindowEvents = (function() {
+    var dispatch;
+    dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp');
+    window.onmouseup = dispatch.mouseUp;
+    window.onmousemove = dispatch.mouseMove;
+    window.onmousedown = dispatch.mouseDown;
+    return {
+      on: dispatch.on
+    };
+  })();
+
+  seen.MouseEvents = (function() {
+    MouseEvents.prototype.defaults = {
+      useWindowEvents: true
+    };
+
+    function MouseEvents(el, options) {
+      this.el = el;
+      this._onMouseUp = __bind(this._onMouseUp, this);
+      this._onMouseDown = __bind(this._onMouseDown, this);
+      this._onMouseMove = __bind(this._onMouseMove, this);
+      seen.Util.defaults(this, options, this.defaults);
+      this._uid = seen.Util.uniqueId('mouser-');
+      this._mouseDown = false;
+      if (this.useWindowEvents) {
+        this.el.onmousedown = this._onMouseDown;
+      } else {
+        this.el.onmousedown = this._onMouseDown;
+        this.el.onmouseup = this._onMouseUp;
+        this.el.onmousemove = this._onMouseMove;
+      }
+      this.dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp');
+      this.on = this.dispatch.on;
+    }
+
+    MouseEvents.prototype._onMouseMove = function(e) {
+      this.dispatch.mouseMove(e);
+      if (this._mouseDown) {
+        return this.dispatch.drag(e);
+      }
+    };
+
+    MouseEvents.prototype._onMouseDown = function(e) {
+      this._mouseDown = true;
+      if (this.useWindowEvents) {
+        seen.WindowEvents.on("mouseUp." + this._uid, this._onMouseUp);
+        seen.WindowEvents.on("mouseMove." + this._uid, this._onMouseMove);
+      }
+      this.dispatch.mouseDown(e);
+      return this.dispatch.dragStart(e);
+    };
+
+    MouseEvents.prototype._onMouseUp = function(e) {
+      this._mouseDown = false;
+      if (this.useWindowEvents) {
+        seen.WindowEvents.on("mouseUp." + this._uid, null);
+        seen.WindowEvents.on("mouseMove." + this._uid, null);
+      }
+      this.dispatch.mouseUp(e);
+      return this.dispatch.dragEnd(e);
+    };
+
+    return MouseEvents;
+
+  })();
+
+  seen.Drag = (function() {
+    Drag.prototype.defaults = {
+      inertia: false,
+      inertiaMsecDelay: 30,
+      inertiaExtinction: 0.1
+    };
+
+    function Drag(el, options) {
+      var mouser;
+      this.el = el;
+      this._stopInertia = __bind(this._stopInertia, this);
+      this._startInertia = __bind(this._startInertia, this);
+      this._onInertia = __bind(this._onInertia, this);
+      this._onDrag = __bind(this._onDrag, this);
+      this._onDragEnd = __bind(this._onDragEnd, this);
+      this._onDragStart = __bind(this._onDragStart, this);
+      seen.Util.defaults(this, options, this.defaults);
+      this._uid = seen.Util.uniqueId('dragger-');
+      this._inertiaRunning = false;
+      this._dragState = {
+        dragging: false,
+        origin: null,
+        last: null,
+        inertia: [0, 0]
+      };
+      this.dispatch = seen.Events.dispatch('drag');
+      this.on = this.dispatch.on;
+      mouser = new seen.MouseEvents(this.el);
+      mouser.on("dragStart." + this._uid, this._onDragStart);
+      mouser.on("dragEnd." + this._uid, this._onDragEnd);
+      mouser.on("drag." + this._uid, this._onDrag);
+    }
+
+    Drag.prototype._onDragStart = function(e) {
+      this._stopInertia();
+      this._dragState.dragging = true;
+      this._dragState.origin = [e.pageX, e.pageY];
+      return this._dragState.last = [e.pageX, e.pageY];
+    };
+
+    Drag.prototype._onDragEnd = function(e) {
+      this._dragState.dragging = false;
+      if (this.inertia) {
+        this._dragState.inertia = [e.pageX - this._dragState.last[0], e.pageY - this._dragState.last[1]];
+        return this._startInertia();
+      }
+    };
+
+    Drag.prototype._onDrag = function(e) {
+      this.dispatch.drag({
+        offset: [e.pageX - this._dragState.origin[0], e.pageY - this._dragState.origin[1]],
+        offsetRelative: [e.pageX - this._dragState.last[0], e.pageY - this._dragState.last[1]]
+      });
+      return this._dragState.last = [e.pageX, e.pageY];
+    };
+
+    Drag.prototype._onInertia = function() {
+      var _this = this;
+      if (!this._inertiaRunning) {
+        return;
+      }
+      this._dragState.inertia = this._dragState.inertia.map(function(i) {
+        return i * (1.0 - _this.inertiaExtinction);
+      });
+      if (Math.abs(this._dragState.inertia[0]) < 1 && Math.abs(this._dragState.inertia[1]) < 1) {
+        this._stopInertia();
+        return;
+      }
+      this.dispatch.drag({
+        offset: [this._dragState.last[0] - this._dragState.origin[0], this._dragState.last[0] - this._dragState.origin[1]],
+        offsetRelative: this._dragState.inertia
+      });
+      this._dragState.last = [this._dragState.last[0] + this._dragState.inertia[0], this._dragState.last[1] + this._dragState.inertia[1]];
+      return this._startInertia();
+    };
+
+    Drag.prototype._startInertia = function() {
+      this._inertiaRunning = true;
+      return setTimeout(this._onInertia, this.inertiaMsecDelay);
+    };
+
+    Drag.prototype._stopInertia = function() {
+      this._dragState.inertia = [0, 0];
+      return this._inertiaRunning = false;
+    };
+
+    return Drag;
+
+  })();
+
   seen.Surface = (function() {
     Surface.prototype.cullBackfaces = true;
 
@@ -1405,11 +1684,16 @@
       this.lights = [];
     }
 
-    Model.prototype.add = function(child) {
-      if (child instanceof seen.Shape || child instanceof seen.Model) {
-        this.children.push(child);
-      } else if (child instanceof seen.Light) {
-        this.lights.push(child);
+    Model.prototype.add = function() {
+      var child, childs, _i, _len;
+      childs = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      for (_i = 0, _len = childs.length; _i < _len; _i++) {
+        child = childs[_i];
+        if (child instanceof seen.Shape || child instanceof seen.Model) {
+          this.children.push(child);
+        } else if (child instanceof seen.Light) {
+          this.lights.push(child);
+        }
       }
       return this;
     };
@@ -1422,11 +1706,11 @@
     };
 
     Model.prototype.eachShape = function(f) {
-      var child, _i, _len, _ref4, _results;
-      _ref4 = this.children;
+      var child, _i, _len, _ref6, _results;
+      _ref6 = this.children;
       _results = [];
-      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
-        child = _ref4[_i];
+      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+        child = _ref6[_i];
         if (child instanceof seen.Shape) {
           f.call(this, child);
         }
@@ -1444,19 +1728,19 @@
     };
 
     Model.prototype._eachRenderable = function(lightFn, shapeFn, lightModels, transform) {
-      var child, light, _i, _j, _len, _len1, _ref4, _ref5, _results;
+      var child, light, _i, _j, _len, _len1, _ref6, _ref7, _results;
       if (this.lights.length > 0) {
         lightModels = lightModels.slice();
       }
-      _ref4 = this.lights;
-      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
-        light = _ref4[_i];
+      _ref6 = this.lights;
+      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
+        light = _ref6[_i];
         lightModels.push(lightFn.call(this, light, light.m.copy().multiply(transform)));
       }
-      _ref5 = this.children;
+      _ref7 = this.children;
       _results = [];
-      for (_j = 0, _len1 = _ref5.length; _j < _len1; _j++) {
-        child = _ref5[_j];
+      for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
+        child = _ref7[_j];
         if (child instanceof seen.Shape) {
           shapeFn.call(this, child, lightModels, child.m.copy().multiply(transform));
         }
@@ -1491,63 +1775,6 @@
       }));
       return model;
     }
-  };
-
-  seen.Painter = (function() {
-    function Painter() {}
-
-    Painter.prototype.paint = function(renderObject, context) {};
-
-    return Painter;
-
-  })();
-
-  PathPainter = (function(_super) {
-    __extends(PathPainter, _super);
-
-    function PathPainter() {
-      _ref4 = PathPainter.__super__.constructor.apply(this, arguments);
-      return _ref4;
-    }
-
-    PathPainter.prototype.paint = function(renderObject, context) {
-      var _ref5, _ref6;
-      return context.path().style({
-        fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
-        stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
-        'fill-opacity': ((_ref5 = renderObject.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderObject.fill.a / 255.0,
-        'stroke-width': (_ref6 = renderObject.surface['stroke-width']) != null ? _ref6 : 1
-      }).path(renderObject.projected.points);
-    };
-
-    return PathPainter;
-
-  })(seen.Painter);
-
-  TextPainter = (function(_super) {
-    __extends(TextPainter, _super);
-
-    function TextPainter() {
-      _ref5 = TextPainter.__super__.constructor.apply(this, arguments);
-      return _ref5;
-    }
-
-    TextPainter.prototype.paint = function(renderObject, context) {
-      var _ref6;
-      return context.text().style({
-        fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
-        stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
-        'text-anchor': (_ref6 = renderObject.surface.anchor) != null ? _ref6 : 'middle'
-      }).transform(renderObject.transform.copy().multiply(renderObject.projection)).text(renderObject.surface.text);
-    };
-
-    return TextPainter;
-
-  })(seen.Painter);
-
-  seen.Painters = {
-    path: new PathPainter(),
-    text: new TextPainter()
   };
 
   ICOS_X = 0.525731112119133606;

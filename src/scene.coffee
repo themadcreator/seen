@@ -37,7 +37,7 @@ class seen.Scene
             renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
 
             # Rounding the coordinates for display speeds up path drawing at the cost of
-            # a slight jittering effect when animating
+            # a slight jittering effect when animating. Anecdotally, the speedup on demo1 was 10 FPS
             if @fractionalPoints isnt true
               p.round() for p in renderModel.projected.points
 

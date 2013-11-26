@@ -5,11 +5,12 @@ class seen.Model extends seen.Transformable
     @children = []
     @lights   = []
 
-  add: (child) ->
-    if child instanceof seen.Shape or child instanceof seen.Model
-      @children.push child
-    else if child instanceof seen.Light
-      @lights.push child
+  add: (childs...) ->
+    for child in childs
+      if child instanceof seen.Shape or child instanceof seen.Model
+        @children.push child
+      else if child instanceof seen.Light
+        @lights.push child
     return @
 
   append: () ->
