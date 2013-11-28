@@ -19,37 +19,44 @@ body {
 }
 
 h1 {
-  font-weight: normal;
-  margin-left: 20px;
-  color : #444;
+  font-weight : normal;
+  margin-left : 20px;
+  color       : #444;
 }
 
 a {
   text-decoration : none;
-  color : #444;
+  color           : #444;
 }
+
 a:visited {
   color : #888;
 }
+
 a:hover {
   color : #44F;
 }
+
 .nav-button-wrapper {
   display : inline-block;
   width   : 33%;
 }
+
 .nav-button {
   background-color : #F8F8F8;
   padding          : 1em 3em;
   margin           : 1em;
 }
+
 .nav-button:hover {
   background-color : #EEF;
 }
+
 .nav-button .label {
-  text-transform: uppercase;
-  font-size: 1.2em;
+  text-transform : uppercase;
+  font-size      : 1.2em;
 }
+
 .nav-button .title {
-  font-size: 0.8em;
+  font-size : 0.8em;
 }
