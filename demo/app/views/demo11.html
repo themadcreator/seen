@@ -45,7 +45,7 @@
       camera : new seen.Camera
         viewport : seen.Viewports.center(dim, dim)
 
-    contexts.push seen.CanvasScene("seen-canvas-#{depth}", scene, dim, dim)
+    contexts.push seen.CanvasContext("seen-canvas-#{depth}", scene, dim, dim)
 
   # All Shapes in one
 
@@ -59,7 +59,7 @@
       viewport   : seen.Viewports.origin(1500, dim)
       projection : seen.Projections.ortho()
 
-  contexts.push seen.CanvasScene('seen-canvas-all', scene, 1500, dim)
+  contexts.push seen.CanvasContext('seen-canvas-all', scene, 1500, dim)
 
   new seen.Animator()
     .onBefore( ->

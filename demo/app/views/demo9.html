@@ -12,7 +12,7 @@
     camera : new seen.Camera
       viewport   : seen.Viewports.center(dim, dim)
 
-  seen.SvgScene('seen-canvas', scene, dim, dim)
+  seen.SvgContext('seen-canvas', scene, dim, dim)
     .animate()
     .onBefore(-> shape.roty(0.01).rotx(0.003))
     .startRenderLoop(20)

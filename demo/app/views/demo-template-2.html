@@ -1,0 +1,48 @@
+<html>
+<head>
+  <title>{{title}} | seen.js</title>
+  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+  <link href='lib/demo-theme.css' rel='stylesheet' type='text/css'/>
+  <script src="dist/seen.js"></script>
+  <script src="lib/coffee-script.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>{{title}}</h1>
+    <div>{{description}}</div>
+
+
+    <div class="nav-bar">
+      <div class="nav-button-wrapper" style="text-align : left;">
+        {% if prev %}
+          <a href="/{{prev.view}}"><div class="nav-button">
+          <div class="label">prev</div><div class="title">{{prev.title}}</div>
+          </div></a>
+        {% endif %}
+      </div>
+      <div class="nav-button-wrapper" style="text-align : center;">
+          <a href="/"><div class="nav-button">
+          <div class="label">up</div><div class="title">to demo list</div>
+          </div></a>
+      </div>
+      <div class="nav-button-wrapper" style="text-align : right;">
+        {% if next %}
+          <a href="/{{next.view}}"><div class="nav-button">
+          <div class="label">next</div><div class="title">{{next.title}}</div>
+          </div></a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% block canvases %}
+    <svg width="{{width}}" height="{{height}}" id="seen-canvas"></svg>
+    {% endblock %}
+
+    {% block description %}
+    {% endblock %}
+
+    {% block demo %}
+    {% endblock %}
+  </div>
+</body>
+</html>

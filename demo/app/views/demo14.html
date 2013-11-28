@@ -19,7 +19,7 @@
     shiftX = 100 * (if i is 0 then -1 else 1)
     return scene.model.append().translate(shiftX).add(shape)
 
-  context = seen.SvgScene('seen-canvas', scene, size, size)
+  context = seen.SvgContext('seen-canvas', scene, size, size)
   context.render()
 
   dragger = new seen.Drag(document.getElementById('seen-canvas'), {inertia : true})

@@ -37,7 +37,7 @@
       camera           : new seen.Camera
         viewport : seen.Viewports.center(dim, dim)
 
-  contexts = scenes.map (scene,i) -> seen.CanvasScene("seen-canvas-#{i}", scene, dim, dim)
+  contexts = scenes.map (scene,i) -> seen.CanvasContext("seen-canvas-#{i}", scene, dim, dim)
   new seen.Animator()
     .onBefore(->
       scene.model.roty(0.01).rotx(0.003) for scene in scenes

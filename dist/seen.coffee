@@ -49,6 +49,12 @@ seen.Util = {
   # Returns an ID which is unique to this instance of the library
   uniqueId: (prefix = '') ->
     return prefix + NEXT_UNIQUE_ID++
+
+  element : (elementOrString) ->
+    if typeof elementOrString is 'string'
+      return document.getElementById(elementOrString)
+    else
+      return elementOrString
 }
 
 
@@ -494,12 +500,20 @@ seen.Colors = {
 
     return new seen.Color(r * 255, g * 255, b * 255, a * 255)
 
-  randomSurfaces : (shape) ->
+  randomSurfaces : (shape, sat = 0.5, lit = 0.4) ->
     for surface in shape.surfaces
-      surface.fill = new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
+      surface.fill = new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
-  randomShape : (shape) ->
-    shape.fill new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
+  randomSurfaces2 : (shape, drift = 0.03, sat = 0.5, lit = 0.4) ->
+    hue = Math.random()
+    for surface in shape.surfaces
+      hue += (Math.random() - 0.5) * drift
+      if hue < 0 then hue = 1
+      if hue > 1 then hue = 0
+      surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
+
+  randomShape : (shape, sat = 0.5, lit = 0.4) ->
+    shape.fill new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
   # A few `Color`s are supplied for convenience.
   black : -> @hex('#000000')
@@ -674,6 +688,43 @@ seen.Shaders = {
 
 
 
+class seen.RenderContext
+  constructor: ->
+    @layers = {}
+
+  render: () =>
+    @reset()
+    for key, layer of @layers
+      layer.context.reset()
+      layer.layer.render(layer.context)
+      layer.context.cleanup()
+    @cleanup()
+    return @
+
+  animate : ->
+    return new seen.Animator().onRender(@render)
+
+  layer: (name, layer) ->
+    @layers[name] = {
+      layer   : layer
+      context : @
+    }
+    return @
+
+  reset   : ->
+  cleanup : ->
+
+
+class seen.RenderLayerContext
+  path    : -> # Return a path builder
+  text    : -> # Return a text builder
+  rect    : -> # Return a rect builder
+
+  reset   : ->
+  cleanup : ->
+
+
+
 # ## Painters
 # ------------------
 
@@ -772,41 +823,6 @@ class seen.LightRenderModel
     @normal         = light.normal.copy().transform(transform).subtract(origin).normalize()
 
 
-
-class seen.RenderContext
-  constructor: ->
-    @layers = {}
-
-  render: () =>
-    @reset()
-    for key, layer of @layers
-      layer.context.reset()
-      layer.layer.render(layer.context)
-      layer.context.cleanup()
-    @cleanup()
-
-  animate : ->
-    return new seen.Animator().onRender(@render)
-
-  layer: (name, layer) ->
-    @layers[name] = {
-      layer   : layer
-      context : @
-    }
-    return @
-
-  reset   : ->
-
-  cleanup : ->
-
-
-class seen.RenderLayerContext
-  path    : -> # Return a path builder
-  text    : -> # Return a text builder
-  rect    : -> # Return a rect builder
-
-  reset   : ->
-  cleanup : ->
 
 
 class seen.RenderLayer
@@ -977,6 +993,7 @@ class seen.SvgLayerRenderContext extends seen.RenderLayerContext
 class seen.SvgRenderContext extends seen.RenderContext
   constructor : (@svg) ->
     super()
+    @svg = seen.Util.element(@svg)
 
   layer : (name, layer) ->
     @svg.appendChild(group = _svg('g'))
@@ -986,8 +1003,8 @@ class seen.SvgRenderContext extends seen.RenderContext
     }
     return @
 
-seen.SvgScene = (elementId, scene, width, height) ->
-  context = new seen.SvgRenderContext(document.getElementById(elementId))
+seen.SvgContext = (elementId, scene, width, height) ->
+  context = new seen.SvgRenderContext(elementId)
   return seen.LayersScene(context, scene, width, height)
 
 
@@ -1072,9 +1089,10 @@ class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
 
 
 class seen.CanvasRenderContext extends seen.RenderContext
-  constructor: (@element, @width, @height) ->
+  constructor: (@el, @width, @height) ->
     super()
-    @ctx = @element.getContext('2d')
+    @el  = seen.Util.element(@el)
+    @ctx = @el.getContext('2d')
 
   layer : (name, layer) ->
     @layers[name] = {
@@ -1087,8 +1105,8 @@ class seen.CanvasRenderContext extends seen.RenderContext
     @ctx.clearRect(0, 0, @width, @height)
 
 
-seen.CanvasScene = (elementId, scene, width, height) ->
-  context = new seen.CanvasRenderContext(document.getElementById(elementId), width, height)
+seen.CanvasContext = (elementId, scene, width, height) ->
+  context = new seen.CanvasRenderContext(elementId, width, height)
   return seen.LayersScene(context, scene, width, height)
 
 
@@ -1096,31 +1114,28 @@ seen.CanvasScene = (elementId, scene, width, height) ->
 
 seen.WindowEvents = do ->
   dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp')
-  window.onmouseup   = dispatch.mouseUp
-  window.onmousemove = dispatch.mouseMove
-  window.onmousedown = dispatch.mouseDown
+  window.addEventListener('mouseup', dispatch.mouseUp, true)
+  window.addEventListener('mousedown', dispatch.mouseDown, true)
+  window.addEventListener('mousemove', dispatch.mouseMove, true)
   return {on : dispatch.on}
 
 class seen.MouseEvents
-  defaults:
-    useWindowEvents : true
-
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
 
     @_uid = seen.Util.uniqueId('mouser-')
 
-    @_mouseDown = false
-
-    if @useWindowEvents
-      @el.onmousedown = @_onMouseDown
-    else
-      @el.onmousedown = @_onMouseDown
-      @el.onmouseup   = @_onMouseUp
-      @el.onmousemove = @_onMouseMove
-
     @dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp')
     @on       = @dispatch.on
+
+    @_mouseDown = false
+    @attach()
+
+  attach : () ->
+    @el.addEventListener('mousedown', @_onMouseDown)
+
+  detach : () ->
+    @el.removeEventListener('mousedown', @_onMouseDown)
 
   _onMouseMove : (e) =>
     @dispatch.mouseMove(e)
@@ -1128,25 +1143,58 @@ class seen.MouseEvents
 
   _onMouseDown : (e) =>
     @_mouseDown = true
-    if @useWindowEvents
-      seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
-      seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
+    seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
+    seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
     @dispatch.mouseDown(e)
     @dispatch.dragStart(e)
 
   _onMouseUp : (e) =>
     @_mouseDown = false
-    if @useWindowEvents
-      seen.WindowEvents.on "mouseUp.#{@_uid}", null
-      seen.WindowEvents.on "mouseMove.#{@_uid}", null
+    seen.WindowEvents.on "mouseUp.#{@_uid}", null
+    seen.WindowEvents.on "mouseMove.#{@_uid}", null
     @dispatch.mouseUp(e)
     @dispatch.dragEnd(e)
 
+class seen.InertialMouse
+  @inertiaExtinction : 0.1
+  @smoothingTimeout  : 300
+  @inertiaMsecDelay  : 30
+
+  constructor : ->
+    @reset()
+
+  get : ->
+    scale = 1000 / seen.InertialMouse.inertiaMsecDelay
+    return [@x * scale, @y * scale]
+
+  reset : ->
+    @xy = [0, 0]
+    return @
+
+  update : (xy) ->
+    if @lastUpdate?
+      msec = new Date().getTime() - @lastUpdate.getTime()
+      # Compute pixels per milliseconds
+      xy = xy.map (x) -> x / Math.max(msec, 1)
+      # Compute interpolation parameter based on time between measurements
+      t = Math.min(1, msec / seen.InertialMouse.smoothingTimeout)
+      @x = t * xy[0] + (1.0 - t) * @x
+      @y = t * xy[1] + (1.0 - t) * @y
+    else
+     [@x, @y] = xy
+
+    @lastUpdate = new Date()
+    return @
+
+  damp : ->
+    @x *= (1.0 - seen.InertialMouse.inertiaExtinction)
+    @y *= (1.0 - seen.InertialMouse.inertiaExtinction)
+    return @
+
+
 class seen.Drag
   defaults:
-    inertia           : false
-    inertiaMsecDelay  : 30
-    inertiaExtinction : 0.1
+    inertia : false
 
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -1157,7 +1205,7 @@ class seen.Drag
       dragging : false
       origin   : null
       last     : null
-      inertia : [0,0]
+      inertia  : new seen.InertialMouse()
 
     @dispatch = seen.Events.dispatch('drag')
     @on       = @dispatch.on
@@ -1175,39 +1223,51 @@ class seen.Drag
 
   _onDragEnd : (e) =>
     @_dragState.dragging = false
+
     if @inertia
-      @_dragState.inertia = [e.pageX - @_dragState.last[0], e.pageY - @_dragState.last[1]]
+      dragEvent =
+        offset         : [e.pageX - @_dragState.origin[0], e.pageY - @_dragState.origin[1]]
+        offsetRelative : [e.pageX - @_dragState.last[0], e.pageY - @_dragState.last[1]]
+
+      @_dragState.inertia.update(dragEvent.offsetRelative)
       @_startInertia()
 
   _onDrag : (e) =>
-    @dispatch.drag(
+    dragEvent =
       offset         : [e.pageX - @_dragState.origin[0], e.pageY - @_dragState.origin[1]]
       offsetRelative : [e.pageX - @_dragState.last[0], e.pageY - @_dragState.last[1]]
-    )
+
+    @dispatch.drag(dragEvent)
+
+    if @inertia
+      @_dragState.inertia.update(dragEvent.offsetRelative)
+
     @_dragState.last = [e.pageX, e.pageY]
 
   _onInertia : () =>
     return unless @_inertiaRunning
 
-    @_dragState.inertia = @_dragState.inertia.map (i) => i * (1.0 - @inertiaExtinction)
-    if Math.abs(@_dragState.inertia[0]) < 1 and Math.abs(@_dragState.inertia[1]) < 1
+    # Apply damping and get x,y intertia values
+    intertia = @_dragState.inertia.damp().get()
+
+    if Math.abs(intertia[0]) < 1 and Math.abs(intertia[1]) < 1
       @_stopInertia()
       return
 
     @dispatch.drag(
       offset         : [@_dragState.last[0] - @_dragState.origin[0], @_dragState.last[0] - @_dragState.origin[1]]
-      offsetRelative : @_dragState.inertia
+      offsetRelative : intertia
     )
-    @_dragState.last = [@_dragState.last[0] + @_dragState.inertia[0], @_dragState.last[1] + @_dragState.inertia[1]]
+    @_dragState.last = [@_dragState.last[0] + intertia[0], @_dragState.last[1] + intertia[1]]
 
     @_startInertia()
 
   _startInertia : =>
     @_inertiaRunning = true
-    setTimeout(@_onInertia, @inertiaMsecDelay)
+    setTimeout(@_onInertia, seen.InertialMouse.inertiaMsecDelay)
 
   _stopInertia : =>
-    @_dragState.inertia = [0,0]
+    @_dragState.inertia.reset()
     @_inertiaRunning = false
 
 
@@ -1294,7 +1354,7 @@ seen.Models = {
     # Key
     model.add seen.Lights.directional
       normal    : seen.P(-1, 1, 1).normalize()
-      color     : seen.Colors.hsl(0.1, 0.4, 0.7)
+      color     : seen.Colors.hsl(0.1, 0.3, 0.7)
       intensity : 0.004
 
     # Back

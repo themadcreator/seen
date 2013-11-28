@@ -1,31 +1,28 @@
 
 seen.WindowEvents = do ->
   dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp')
-  window.onmouseup   = dispatch.mouseUp
-  window.onmousemove = dispatch.mouseMove
-  window.onmousedown = dispatch.mouseDown
+  window.addEventListener('mouseup', dispatch.mouseUp, true)
+  window.addEventListener('mousedown', dispatch.mouseDown, true)
+  window.addEventListener('mousemove', dispatch.mouseMove, true)
   return {on : dispatch.on}
 
 class seen.MouseEvents
-  defaults:
-    useWindowEvents : true
-
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
 
     @_uid = seen.Util.uniqueId('mouser-')
 
-    @_mouseDown = false
-
-    if @useWindowEvents
-      @el.onmousedown = @_onMouseDown
-    else
-      @el.onmousedown = @_onMouseDown
-      @el.onmouseup   = @_onMouseUp
-      @el.onmousemove = @_onMouseMove
-
     @dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp')
     @on       = @dispatch.on
+
+    @_mouseDown = false
+    @attach()
+
+  attach : () ->
+    @el.addEventListener('mousedown', @_onMouseDown)
+
+  detach : () ->
+    @el.removeEventListener('mousedown', @_onMouseDown)
 
   _onMouseMove : (e) =>
     @dispatch.mouseMove(e)
@@ -33,25 +30,58 @@ class seen.MouseEvents
 
   _onMouseDown : (e) =>
     @_mouseDown = true
-    if @useWindowEvents
-      seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
-      seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
+    seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
+    seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
     @dispatch.mouseDown(e)
     @dispatch.dragStart(e)
 
   _onMouseUp : (e) =>
     @_mouseDown = false
-    if @useWindowEvents
-      seen.WindowEvents.on "mouseUp.#{@_uid}", null
-      seen.WindowEvents.on "mouseMove.#{@_uid}", null
+    seen.WindowEvents.on "mouseUp.#{@_uid}", null
+    seen.WindowEvents.on "mouseMove.#{@_uid}", null
     @dispatch.mouseUp(e)
     @dispatch.dragEnd(e)
 
+class seen.InertialMouse
+  @inertiaExtinction : 0.1
+  @smoothingTimeout  : 300
+  @inertiaMsecDelay  : 30
+
+  constructor : ->
+    @reset()
+
+  get : ->
+    scale = 1000 / seen.InertialMouse.inertiaMsecDelay
+    return [@x * scale, @y * scale]
+
+  reset : ->
+    @xy = [0, 0]
+    return @
+
+  update : (xy) ->
+    if @lastUpdate?
+      msec = new Date().getTime() - @lastUpdate.getTime()
+      # Compute pixels per milliseconds
+      xy = xy.map (x) -> x / Math.max(msec, 1)
+      # Compute interpolation parameter based on time between measurements
+      t = Math.min(1, msec / seen.InertialMouse.smoothingTimeout)
+      @x = t * xy[0] + (1.0 - t) * @x
+      @y = t * xy[1] + (1.0 - t) * @y
+    else
+     [@x, @y] = xy
+
+    @lastUpdate = new Date()
+    return @
+
+  damp : ->
+    @x *= (1.0 - seen.InertialMouse.inertiaExtinction)
+    @y *= (1.0 - seen.InertialMouse.inertiaExtinction)
+    return @
+
+
 class seen.Drag
   defaults:
-    inertia           : false
-    inertiaMsecDelay  : 30
-    inertiaExtinction : 0.1
+    inertia : false
 
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -62,7 +92,7 @@ class seen.Drag
       dragging : false
       origin   : null
       last     : null
-      inertia : [0,0]
+      inertia  : new seen.InertialMouse()
 
     @dispatch = seen.Events.dispatch('drag')
     @on       = @dispatch.on
@@ -80,37 +110,49 @@ class seen.Drag
 
   _onDragEnd : (e) =>
     @_dragState.dragging = false
+
     if @inertia
-      @_dragState.inertia = [e.pageX - @_dragState.last[0], e.pageY - @_dragState.last[1]]
+      dragEvent =
+        offset         : [e.pageX - @_dragState.origin[0], e.pageY - @_dragState.origin[1]]
+        offsetRelative : [e.pageX - @_dragState.last[0], e.pageY - @_dragState.last[1]]
+
+      @_dragState.inertia.update(dragEvent.offsetRelative)
       @_startInertia()
 
   _onDrag : (e) =>
-    @dispatch.drag(
+    dragEvent =
       offset         : [e.pageX - @_dragState.origin[0], e.pageY - @_dragState.origin[1]]
       offsetRelative : [e.pageX - @_dragState.last[0], e.pageY - @_dragState.last[1]]
-    )
+
+    @dispatch.drag(dragEvent)
+
+    if @inertia
+      @_dragState.inertia.update(dragEvent.offsetRelative)
+
     @_dragState.last = [e.pageX, e.pageY]
 
   _onInertia : () =>
     return unless @_inertiaRunning
 
-    @_dragState.inertia = @_dragState.inertia.map (i) => i * (1.0 - @inertiaExtinction)
-    if Math.abs(@_dragState.inertia[0]) < 1 and Math.abs(@_dragState.inertia[1]) < 1
+    # Apply damping and get x,y intertia values
+    intertia = @_dragState.inertia.damp().get()
+
+    if Math.abs(intertia[0]) < 1 and Math.abs(intertia[1]) < 1
       @_stopInertia()
       return
 
     @dispatch.drag(
       offset         : [@_dragState.last[0] - @_dragState.origin[0], @_dragState.last[0] - @_dragState.origin[1]]
-      offsetRelative : @_dragState.inertia
+      offsetRelative : intertia
     )
-    @_dragState.last = [@_dragState.last[0] + @_dragState.inertia[0], @_dragState.last[1] + @_dragState.inertia[1]]
+    @_dragState.last = [@_dragState.last[0] + intertia[0], @_dragState.last[1] + intertia[1]]
 
     @_startInertia()
 
   _startInertia : =>
     @_inertiaRunning = true
-    setTimeout(@_onInertia, @inertiaMsecDelay)
+    setTimeout(@_onInertia, seen.InertialMouse.inertiaMsecDelay)
 
   _stopInertia : =>
-    @_dragState.inertia = [0,0]
+    @_dragState.inertia.reset()
     @_inertiaRunning = false

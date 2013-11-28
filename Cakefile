@@ -9,6 +9,7 @@ DISTS = {
     'src/materials.coffee'
     'src/light.coffee'
     'src/shaders.coffee'
+    'src/render/context.coffee'
     'src/render/painters.coffee'
     'src/render/model.coffee'
     'src/render/layers.coffee'

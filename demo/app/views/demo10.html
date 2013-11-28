@@ -20,7 +20,7 @@
       camera : new seen.Camera
         viewport : seen.Viewports.center(dim, dim)
 
-    context = seen.CanvasScene("seen-canvas-#{i}", scene, dim, dim)
+    context = seen.CanvasContext("seen-canvas-#{i}", scene, dim, dim)
     context.render()
 
     $.get objFile, {}, (contents) ->

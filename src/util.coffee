@@ -22,4 +22,10 @@ seen.Util = {
   # Returns an ID which is unique to this instance of the library
   uniqueId: (prefix = '') ->
     return prefix + NEXT_UNIQUE_ID++
+
+  element : (elementOrString) ->
+    if typeof elementOrString is 'string'
+      return document.getElementById(elementOrString)
+    else
+      return elementOrString
 }

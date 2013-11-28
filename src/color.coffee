@@ -99,12 +99,20 @@ seen.Colors = {
 
     return new seen.Color(r * 255, g * 255, b * 255, a * 255)
 
-  randomSurfaces : (shape) ->
+  randomSurfaces : (shape, sat = 0.5, lit = 0.4) ->
     for surface in shape.surfaces
-      surface.fill = new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
+      surface.fill = new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
-  randomShape : (shape) ->
-    shape.fill new seen.Material seen.Colors.hsl(Math.random(), 0.5, 0.4)
+  randomSurfaces2 : (shape, drift = 0.03, sat = 0.5, lit = 0.4) ->
+    hue = Math.random()
+    for surface in shape.surfaces
+      hue += (Math.random() - 0.5) * drift
+      if hue < 0 then hue = 1
+      if hue > 1 then hue = 0
+      surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
+
+  randomShape : (shape, sat = 0.5, lit = 0.4) ->
+    shape.fill new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
   # A few `Color`s are supplied for convenience.
   black : -> @hex('#000000')

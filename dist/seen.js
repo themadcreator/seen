@@ -46,6 +46,13 @@
         prefix = '';
       }
       return prefix + NEXT_UNIQUE_ID++;
+    },
+    element: function(elementOrString) {
+      if (typeof elementOrString === 'string') {
+        return document.getElementById(elementOrString);
+      } else {
+        return elementOrString;
+      }
     }
   };
 
@@ -559,18 +566,57 @@
       }
       return new seen.Color(r * 255, g * 255, b * 255, a * 255);
     },
-    randomSurfaces: function(shape) {
+    randomSurfaces: function(shape, sat, lit) {
       var surface, _i, _len, _ref, _results;
+      if (sat == null) {
+        sat = 0.5;
+      }
+      if (lit == null) {
+        lit = 0.4;
+      }
       _ref = shape.surfaces;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         surface = _ref[_i];
-        _results.push(surface.fill = new seen.Material(seen.Colors.hsl(Math.random(), 0.5, 0.4)));
+        _results.push(surface.fill = new seen.Material(seen.Colors.hsl(Math.random(), sat, lit)));
       }
       return _results;
     },
-    randomShape: function(shape) {
-      return shape.fill(new seen.Material(seen.Colors.hsl(Math.random(), 0.5, 0.4)));
+    randomSurfaces2: function(shape, drift, sat, lit) {
+      var hue, surface, _i, _len, _ref, _results;
+      if (drift == null) {
+        drift = 0.03;
+      }
+      if (sat == null) {
+        sat = 0.5;
+      }
+      if (lit == null) {
+        lit = 0.4;
+      }
+      hue = Math.random();
+      _ref = shape.surfaces;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        surface = _ref[_i];
+        hue += (Math.random() - 0.5) * drift;
+        if (hue < 0) {
+          hue = 1;
+        }
+        if (hue > 1) {
+          hue = 0;
+        }
+        _results.push(surface.fill = new seen.Material(seen.Colors.hsl(hue, 0.5, 0.4)));
+      }
+      return _results;
+    },
+    randomShape: function(shape, sat, lit) {
+      if (sat == null) {
+        sat = 0.5;
+      }
+      if (lit == null) {
+        lit = 0.4;
+      }
+      return shape.fill(new seen.Material(seen.Colors.hsl(Math.random(), sat, lit)));
     },
     black: function() {
       return this.hex('#000000');
@@ -801,6 +847,63 @@
     flat: new Flat()
   };
 
+  seen.RenderContext = (function() {
+    function RenderContext() {
+      this.render = __bind(this.render, this);
+      this.layers = {};
+    }
+
+    RenderContext.prototype.render = function() {
+      var key, layer, _ref4;
+      this.reset();
+      _ref4 = this.layers;
+      for (key in _ref4) {
+        layer = _ref4[key];
+        layer.context.reset();
+        layer.layer.render(layer.context);
+        layer.context.cleanup();
+      }
+      this.cleanup();
+      return this;
+    };
+
+    RenderContext.prototype.animate = function() {
+      return new seen.Animator().onRender(this.render);
+    };
+
+    RenderContext.prototype.layer = function(name, layer) {
+      this.layers[name] = {
+        layer: layer,
+        context: this
+      };
+      return this;
+    };
+
+    RenderContext.prototype.reset = function() {};
+
+    RenderContext.prototype.cleanup = function() {};
+
+    return RenderContext;
+
+  })();
+
+  seen.RenderLayerContext = (function() {
+    function RenderLayerContext() {}
+
+    RenderLayerContext.prototype.path = function() {};
+
+    RenderLayerContext.prototype.text = function() {};
+
+    RenderLayerContext.prototype.rect = function() {};
+
+    RenderLayerContext.prototype.reset = function() {};
+
+    RenderLayerContext.prototype.cleanup = function() {};
+
+    return RenderLayerContext;
+
+  })();
+
   seen.Painter = (function() {
     function Painter() {}
 
@@ -945,62 +1048,6 @@
     }
 
     return LightRenderModel;
-
-  })();
-
-  seen.RenderContext = (function() {
-    function RenderContext() {
-      this.render = __bind(this.render, this);
-      this.layers = {};
-    }
-
-    RenderContext.prototype.render = function() {
-      var key, layer, _ref6;
-      this.reset();
-      _ref6 = this.layers;
-      for (key in _ref6) {
-        layer = _ref6[key];
-        layer.context.reset();
-        layer.layer.render(layer.context);
-        layer.context.cleanup();
-      }
-      return this.cleanup();
-    };
-
-    RenderContext.prototype.animate = function() {
-      return new seen.Animator().onRender(this.render);
-    };
-
-    RenderContext.prototype.layer = function(name, layer) {
-      this.layers[name] = {
-        layer: layer,
-        context: this
-      };
-      return this;
-    };
-
-    RenderContext.prototype.reset = function() {};
-
-    RenderContext.prototype.cleanup = function() {};
-
-    return RenderContext;
-
-  })();
-
-  seen.RenderLayerContext = (function() {
-    function RenderLayerContext() {}
-
-    RenderLayerContext.prototype.path = function() {};
-
-    RenderLayerContext.prototype.text = function() {};
-
-    RenderLayerContext.prototype.rect = function() {};
-
-    RenderLayerContext.prototype.reset = function() {};
-
-    RenderLayerContext.prototype.cleanup = function() {};
-
-    return RenderLayerContext;
 
   })();
 
@@ -1280,6 +1327,7 @@
     function SvgRenderContext(svg) {
       this.svg = svg;
       SvgRenderContext.__super__.constructor.call(this);
+      this.svg = seen.Util.element(this.svg);
     }
 
     SvgRenderContext.prototype.layer = function(name, layer) {
@@ -1296,9 +1344,9 @@
 
   })(seen.RenderContext);
 
-  seen.SvgScene = function(elementId, scene, width, height) {
+  seen.SvgContext = function(elementId, scene, width, height) {
     var context;
-    context = new seen.SvgRenderContext(document.getElementById(elementId));
+    context = new seen.SvgRenderContext(elementId);
     return seen.LayersScene(context, scene, width, height);
   };
 
@@ -1440,12 +1488,13 @@
   seen.CanvasRenderContext = (function(_super) {
     __extends(CanvasRenderContext, _super);
 
-    function CanvasRenderContext(element, width, height) {
-      this.element = element;
+    function CanvasRenderContext(el, width, height) {
+      this.el = el;
       this.width = width;
       this.height = height;
       CanvasRenderContext.__super__.constructor.call(this);
-      this.ctx = this.element.getContext('2d');
+      this.el = seen.Util.element(this.el);
+      this.ctx = this.el.getContext('2d');
     }
 
     CanvasRenderContext.prototype.layer = function(name, layer) {
@@ -1464,28 +1513,24 @@
 
   })(seen.RenderContext);
 
-  seen.CanvasScene = function(elementId, scene, width, height) {
+  seen.CanvasContext = function(elementId, scene, width, height) {
     var context;
-    context = new seen.CanvasRenderContext(document.getElementById(elementId), width, height);
+    context = new seen.CanvasRenderContext(elementId, width, height);
     return seen.LayersScene(context, scene, width, height);
   };
 
   seen.WindowEvents = (function() {
     var dispatch;
     dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp');
-    window.onmouseup = dispatch.mouseUp;
-    window.onmousemove = dispatch.mouseMove;
-    window.onmousedown = dispatch.mouseDown;
+    window.addEventListener('mouseup', dispatch.mouseUp, true);
+    window.addEventListener('mousedown', dispatch.mouseDown, true);
+    window.addEventListener('mousemove', dispatch.mouseMove, true);
     return {
       on: dispatch.on
     };
   })();
 
   seen.MouseEvents = (function() {
-    MouseEvents.prototype.defaults = {
-      useWindowEvents: true
-    };
-
     function MouseEvents(el, options) {
       this.el = el;
       this._onMouseUp = __bind(this._onMouseUp, this);
@@ -1493,17 +1538,19 @@
       this._onMouseMove = __bind(this._onMouseMove, this);
       seen.Util.defaults(this, options, this.defaults);
       this._uid = seen.Util.uniqueId('mouser-');
-      this._mouseDown = false;
-      if (this.useWindowEvents) {
-        this.el.onmousedown = this._onMouseDown;
-      } else {
-        this.el.onmousedown = this._onMouseDown;
-        this.el.onmouseup = this._onMouseUp;
-        this.el.onmousemove = this._onMouseMove;
-      }
       this.dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp');
       this.on = this.dispatch.on;
+      this._mouseDown = false;
+      this.attach();
     }
+
+    MouseEvents.prototype.attach = function() {
+      return this.el.addEventListener('mousedown', this._onMouseDown);
+    };
+
+    MouseEvents.prototype.detach = function() {
+      return this.el.removeEventListener('mousedown', this._onMouseDown);
+    };
 
     MouseEvents.prototype._onMouseMove = function(e) {
       this.dispatch.mouseMove(e);
@@ -1514,20 +1561,16 @@
 
     MouseEvents.prototype._onMouseDown = function(e) {
       this._mouseDown = true;
-      if (this.useWindowEvents) {
-        seen.WindowEvents.on("mouseUp." + this._uid, this._onMouseUp);
-        seen.WindowEvents.on("mouseMove." + this._uid, this._onMouseMove);
-      }
+      seen.WindowEvents.on("mouseUp." + this._uid, this._onMouseUp);
+      seen.WindowEvents.on("mouseMove." + this._uid, this._onMouseMove);
       this.dispatch.mouseDown(e);
       return this.dispatch.dragStart(e);
     };
 
     MouseEvents.prototype._onMouseUp = function(e) {
       this._mouseDown = false;
-      if (this.useWindowEvents) {
-        seen.WindowEvents.on("mouseUp." + this._uid, null);
-        seen.WindowEvents.on("mouseMove." + this._uid, null);
-      }
+      seen.WindowEvents.on("mouseUp." + this._uid, null);
+      seen.WindowEvents.on("mouseMove." + this._uid, null);
       this.dispatch.mouseUp(e);
       return this.dispatch.dragEnd(e);
     };
@@ -1536,11 +1579,58 @@
 
   })();
 
+  seen.InertialMouse = (function() {
+    InertialMouse.inertiaExtinction = 0.1;
+
+    InertialMouse.smoothingTimeout = 300;
+
+    InertialMouse.inertiaMsecDelay = 30;
+
+    function InertialMouse() {
+      this.reset();
+    }
+
+    InertialMouse.prototype.get = function() {
+      var scale;
+      scale = 1000 / seen.InertialMouse.inertiaMsecDelay;
+      return [this.x * scale, this.y * scale];
+    };
+
+    InertialMouse.prototype.reset = function() {
+      this.xy = [0, 0];
+      return this;
+    };
+
+    InertialMouse.prototype.update = function(xy) {
+      var msec, t;
+      if (this.lastUpdate != null) {
+        msec = new Date().getTime() - this.lastUpdate.getTime();
+        xy = xy.map(function(x) {
+          return x / Math.max(msec, 1);
+        });
+        t = Math.min(1, msec / seen.InertialMouse.smoothingTimeout);
+        this.x = t * xy[0] + (1.0 - t) * this.x;
+        this.y = t * xy[1] + (1.0 - t) * this.y;
+      } else {
+        this.x = xy[0], this.y = xy[1];
+      }
+      this.lastUpdate = new Date();
+      return this;
+    };
+
+    InertialMouse.prototype.damp = function() {
+      this.x *= 1.0 - seen.InertialMouse.inertiaExtinction;
+      this.y *= 1.0 - seen.InertialMouse.inertiaExtinction;
+      return this;
+    };
+
+    return InertialMouse;
+
+  })();
+
   seen.Drag = (function() {
     Drag.prototype.defaults = {
-      inertia: false,
-      inertiaMsecDelay: 30,
-      inertiaExtinction: 0.1
+      inertia: false
     };
 
     function Drag(el, options) {
@@ -1559,7 +1649,7 @@
         dragging: false,
         origin: null,
         last: null,
-        inertia: [0, 0]
+        inertia: new seen.InertialMouse()
       };
       this.dispatch = seen.Events.dispatch('drag');
       this.on = this.dispatch.on;
@@ -1577,48 +1667,56 @@
     };
 
     Drag.prototype._onDragEnd = function(e) {
+      var dragEvent;
       this._dragState.dragging = false;
       if (this.inertia) {
-        this._dragState.inertia = [e.pageX - this._dragState.last[0], e.pageY - this._dragState.last[1]];
+        dragEvent = {
+          offset: [e.pageX - this._dragState.origin[0], e.pageY - this._dragState.origin[1]],
+          offsetRelative: [e.pageX - this._dragState.last[0], e.pageY - this._dragState.last[1]]
+        };
+        this._dragState.inertia.update(dragEvent.offsetRelative);
         return this._startInertia();
       }
     };
 
     Drag.prototype._onDrag = function(e) {
-      this.dispatch.drag({
+      var dragEvent;
+      dragEvent = {
         offset: [e.pageX - this._dragState.origin[0], e.pageY - this._dragState.origin[1]],
         offsetRelative: [e.pageX - this._dragState.last[0], e.pageY - this._dragState.last[1]]
-      });
+      };
+      this.dispatch.drag(dragEvent);
+      if (this.inertia) {
+        this._dragState.inertia.update(dragEvent.offsetRelative);
+      }
       return this._dragState.last = [e.pageX, e.pageY];
     };
 
     Drag.prototype._onInertia = function() {
-      var _this = this;
+      var intertia;
       if (!this._inertiaRunning) {
         return;
       }
-      this._dragState.inertia = this._dragState.inertia.map(function(i) {
-        return i * (1.0 - _this.inertiaExtinction);
-      });
-      if (Math.abs(this._dragState.inertia[0]) < 1 && Math.abs(this._dragState.inertia[1]) < 1) {
+      intertia = this._dragState.inertia.damp().get();
+      if (Math.abs(intertia[0]) < 1 && Math.abs(intertia[1]) < 1) {
         this._stopInertia();
         return;
       }
       this.dispatch.drag({
         offset: [this._dragState.last[0] - this._dragState.origin[0], this._dragState.last[0] - this._dragState.origin[1]],
-        offsetRelative: this._dragState.inertia
+        offsetRelative: intertia
       });
-      this._dragState.last = [this._dragState.last[0] + this._dragState.inertia[0], this._dragState.last[1] + this._dragState.inertia[1]];
+      this._dragState.last = [this._dragState.last[0] + intertia[0], this._dragState.last[1] + intertia[1]];
       return this._startInertia();
     };
 
     Drag.prototype._startInertia = function() {
       this._inertiaRunning = true;
-      return setTimeout(this._onInertia, this.inertiaMsecDelay);
+      return setTimeout(this._onInertia, seen.InertialMouse.inertiaMsecDelay);
     };
 
     Drag.prototype._stopInertia = function() {
-      this._dragState.inertia = [0, 0];
+      this._dragState.inertia.reset();
       return this._inertiaRunning = false;
     };
 
@@ -1763,7 +1861,7 @@
       model = new seen.Model();
       model.add(seen.Lights.directional({
         normal: seen.P(-1, 1, 1).normalize(),
-        color: seen.Colors.hsl(0.1, 0.4, 0.7),
+        color: seen.Colors.hsl(0.1, 0.3, 0.7),
         intensity: 0.004
       }));
       model.add(seen.Lights.directional({

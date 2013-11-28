@@ -55,7 +55,7 @@
 
   contexts = scenes.map (scene,i) ->
     d = if i is 0 then 600 else 300
-    return seen.SvgScene("seen-canvas-#{i}", scene, d, d)
+    return seen.SvgContext("seen-canvas-#{i}", scene, d, d)
 
 </script>
 {% endblock %}

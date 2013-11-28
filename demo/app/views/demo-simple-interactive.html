@@ -1,0 +1,26 @@
+{% extends 'demo-template-2.html' %}
+
+{% block demo %}
+<script type="text/coffeescript">
+  width  = {{width}}
+  height = {{height}}
+
+  shape = seen.Shapes.sphere(2).scale(height * 0.4)
+  seen.Colors.randomSurfaces2(shape)
+
+  scene = new seen.Scene
+    model  : seen.Models.default().add(shape)
+    camera : new seen.Camera
+      viewport : seen.Viewports.center(width, height)
+
+  context = seen.SvgContext('seen-canvas', scene, width, height)
+  context.render()
+
+  dragger = new seen.Drag(document.getElementById('seen-canvas'), {inertia : true})
+  dragger.on('drag.rotate', (e) ->
+    xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
+    shape.transform(xform)
+    context.render()
+  )
+</script>
+{% endblock %}

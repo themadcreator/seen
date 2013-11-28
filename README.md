@@ -3,21 +3,21 @@
 
 
 ## What's this all about?
-seen.js is a library for rendering simple 3D models in Javascript. It performs 3D to 2D transformations in code and renders to either SVG or HTML5 Canvases for broad compatibility.
+seen.js is a standalone library for rendering simple 3D models in Javascript. It performs 3D to 2D transformations in code and renders to either SVG or HTML5 Canvases for broad compatibility.
 
 
 ## Features
-* Renders to HTML5 Canvas elements for speed, or to SVG paths for compatibility.
 * Phong reflection model with ambient, diffuse, and specular terms.
 * Perspective and orthographic projections.
 * Pixel-for-pixel viewport alignment in the Z=0 plane for easy layout.
 * Point, directional, and ambient light sources.
 * Hierarchical models, lighting, and transformations.
+* Renders to HTML5 Canvas elements for speed, or to SVG paths for compatibility.
 * Simple, fast painters algorithm for Z-ordering.
 * 3D Transformed text (when using orthographic projections).
 * Interaction including quaternion based mouse rotations.
 * Modular class structure for maximum readability and extensibility.
-* No dependencies (except for jquery and d3 in some demos).
+* No dependencies (except for demos).
 
 
 ## Render Loop Optimizations
@@ -35,6 +35,7 @@ Render event hierarchy:
 
 
 ## Demos
+Install nodejs from here ().
 Clone this repo and start the demo server on http://localhost:5000 like so:
   cd demos
   npm install
@@ -51,7 +52,7 @@ Clone this repo and start the demo server on http://localhost:5000 like so:
 
 ## Defining a scene
 
-## Creating an SVG or HTML4 Canvas render context
+## Creating an SVG or HTML5 Canvas render context
 
 ## Rendering and animating a scene
 

@@ -1,0 +1,22 @@
+<html>
+<head>
+  <title>Demos | seen.js</title>
+  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+  <link href='lib/demo-theme.css' rel='stylesheet' type='text/css'/>
+  <script src="dist/seen.js"></script>
+  <script src="lib/coffee-script.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>seen.js Demos</h1>
+
+    <ul class="demo-list">
+      {% for demo in demos %}
+        <a href="{{demo.view}}">
+          <li >{{demo.title}}</li>
+        </a>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>

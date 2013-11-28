@@ -9,7 +9,7 @@
   scene = seen.demo.text()
   scene.camera.viewport = seen.Viewports.center(w,h)
 
-  context = seen.SvgScene('seen-canvas', scene, w, h)
+  context = seen.SvgContext('seen-canvas', scene, w, h)
     .animate()
     .onBefore(-> scene.model.rotx(0.02))
     .startRenderLoop()

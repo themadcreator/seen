@@ -103,6 +103,7 @@ class seen.SvgLayerRenderContext extends seen.RenderLayerContext
 class seen.SvgRenderContext extends seen.RenderContext
   constructor : (@svg) ->
     super()
+    @svg = seen.Util.element(@svg)
 
   layer : (name, layer) ->
     @svg.appendChild(group = _svg('g'))
@@ -112,6 +113,6 @@ class seen.SvgRenderContext extends seen.RenderContext
     }
     return @
 
-seen.SvgScene = (elementId, scene, width, height) ->
-  context = new seen.SvgRenderContext(document.getElementById(elementId))
+seen.SvgContext = (elementId, scene, width, height) ->
+  context = new seen.SvgRenderContext(elementId)
   return seen.LayersScene(context, scene, width, height)

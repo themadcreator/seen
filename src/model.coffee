@@ -47,7 +47,7 @@ seen.Models = {
     # Key
     model.add seen.Lights.directional
       normal    : seen.P(-1, 1, 1).normalize()
-      color     : seen.Colors.hsl(0.1, 0.4, 0.7)
+      color     : seen.Colors.hsl(0.1, 0.3, 0.7)
       intensity : 0.004
 
     # Back

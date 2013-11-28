@@ -79,9 +79,10 @@ class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
 
 
 class seen.CanvasRenderContext extends seen.RenderContext
-  constructor: (@element, @width, @height) ->
+  constructor: (@el, @width, @height) ->
     super()
-    @ctx = @element.getContext('2d')
+    @el  = seen.Util.element(@el)
+    @ctx = @el.getContext('2d')
 
   layer : (name, layer) ->
     @layers[name] = {
@@ -94,7 +95,7 @@ class seen.CanvasRenderContext extends seen.RenderContext
     @ctx.clearRect(0, 0, @width, @height)
 
 
-seen.CanvasScene = (elementId, scene, width, height) ->
-  context = new seen.CanvasRenderContext(document.getElementById(elementId), width, height)
+seen.CanvasContext = (elementId, scene, width, height) ->
+  context = new seen.CanvasRenderContext(elementId, width, height)
   return seen.LayersScene(context, scene, width, height)
 

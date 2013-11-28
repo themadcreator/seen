@@ -39,7 +39,7 @@
       projection : seen.Projections.ortho()
 
   for s,i in [scene1, scene2, scene3]
-    seen.SvgScene("seen-canvas-#{i + 1}", s, w, h).render()
+    seen.SvgContext("seen-canvas-#{i + 1}", s, w, h).render()
 
 </script>
 {% endblock %}

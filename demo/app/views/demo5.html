@@ -42,7 +42,7 @@
       viewport   : seen.Viewports.center(w,h)
       projection : seen.Projections.perspective()
 
-  seen.SvgScene('seen-canvas', scene, w, h)
+  seen.SvgContext('seen-canvas', scene, w, h)
     .animate()
     .onBefore(->
       geomGroup.roty(-0.01)
