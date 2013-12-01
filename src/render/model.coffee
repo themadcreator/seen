@@ -12,7 +12,7 @@ class seen.RenderModel
     @_update()
 
   update: (transform, projection) ->
-    if seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m)
+    if not @surface.dirty and seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m)
       return
     else
       @transform  = transform
@@ -22,6 +22,7 @@ class seen.RenderModel
   _update: () ->
     @_math(@transformed, @points, @transform, false)
     @_math(@projected, @transformed.points, @projection, true)
+    @surface.dirty = false
 
   _initRenderData: ->
     return {

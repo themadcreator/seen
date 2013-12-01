@@ -2,20 +2,22 @@
 # #### Shape primitives and shape-making methods
 # ------------------
 
+EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0
+
 ICOS_X = 0.525731112119133606
 ICOS_Z = 0.850650808352039932
 ICOSAHEDRON_POINTS = [
-  seen.P(-ICOS_X, 0.0, -ICOS_Z)
-  seen.P(ICOS_X, 0.0, -ICOS_Z)
-  seen.P(-ICOS_X, 0.0, ICOS_Z)
-  seen.P(ICOS_X, 0.0, ICOS_Z)
-  seen.P(0.0, ICOS_Z, -ICOS_X)
-  seen.P(0.0, ICOS_Z, ICOS_X)
-  seen.P(0.0, -ICOS_Z, -ICOS_X)
-  seen.P(0.0, -ICOS_Z, ICOS_X)
-  seen.P(ICOS_Z, ICOS_X, 0.0)
-  seen.P(-ICOS_Z, ICOS_X, 0.0)
-  seen.P(ICOS_Z, -ICOS_X, 0.0)
+  seen.P(-ICOS_X, 0.0,     -ICOS_Z)
+  seen.P(ICOS_X,  0.0,     -ICOS_Z)
+  seen.P(-ICOS_X, 0.0,     ICOS_Z)
+  seen.P(ICOS_X,  0.0,     ICOS_Z)
+  seen.P(0.0,     ICOS_Z,  -ICOS_X)
+  seen.P(0.0,     ICOS_Z,  ICOS_X)
+  seen.P(0.0,     -ICOS_Z, -ICOS_X)
+  seen.P(0.0,     -ICOS_Z, ICOS_X)
+  seen.P(ICOS_Z,  ICOS_X,  0.0)
+  seen.P(-ICOS_Z, ICOS_X,  0.0)
+  seen.P(ICOS_Z,  -ICOS_X, 0.0)
   seen.P(-ICOS_Z, -ICOS_X, 0.0)
 ]
 
@@ -134,6 +136,38 @@ seen.Shapes = {
       [1,2,3]]
 
     return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap))
+
+  patch: (nx = 20, ny = 20) ->
+    nx = Math.round(nx)
+    ny = Math.round(ny)
+    surfaces = []
+    for x in [0...nx]
+      column = []
+      for y in [0...ny]
+        pts0 = [
+          seen.P(x, y)
+          seen.P(x + 1, y - 0.5)
+          seen.P(x + 1, y + 0.5)
+        ]
+        pts1 = [
+          seen.P(x, y)
+          seen.P(x + 1, y + 0.5)
+          seen.P(x, y + 1) 
+        ]
+
+        for pts in [pts0, pts1]
+          for p in pts
+            p.x *= EQUILATERAL_TRIANGLE_ALTITUDE
+            p.y += if x % 2 is 0 then 0.5 else 0
+          column.push pts
+
+      if x % 2 isnt 0
+        for p in column[0]
+          p.y += ny
+        column.push column.shift()
+      surfaces = surfaces.concat(column)
+
+    return new seen.Shape('patch', surfaces.map((s) -> new seen.Surface(s)))
 
   icosahedron : ->
     return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))

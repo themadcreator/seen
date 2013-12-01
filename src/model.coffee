@@ -31,6 +31,7 @@ class seen.Model extends seen.Transformable
   _eachRenderable : (lightFn, shapeFn, lightModels, transform) ->
     if @lights.length > 0 then lightModels = lightModels.slice()
     for light in @lights
+      continue unless light.enabled
       lightModels.push lightFn.call(@, light, light.m.copy().multiply(transform))
 
     for child in @children

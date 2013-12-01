@@ -1,5 +1,5 @@
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _styleElement, _svg,
+  var ARRAY_POOL, Ambient, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _styleElement, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -669,7 +669,8 @@
       point: seen.P(),
       color: seen.Colors.white(),
       intensity: 0.01,
-      normal: seen.P(1, -1, -1).normalize()
+      normal: seen.P(1, -1, -1).normalize(),
+      enabled: true
     };
 
     function Light(type, options) {
@@ -973,7 +974,7 @@
     }
 
     RenderModel.prototype.update = function(transform, projection) {
-      if (seen.Util.arraysEqual(transform.m, this.transform.m) && seen.Util.arraysEqual(projection.m, this.projection.m)) {
+      if (!this.surface.dirty && seen.Util.arraysEqual(transform.m, this.transform.m) && seen.Util.arraysEqual(projection.m, this.projection.m)) {
 
       } else {
         this.transform = transform;
@@ -984,7 +985,8 @@
 
     RenderModel.prototype._update = function() {
       this._math(this.transformed, this.points, this.transform, false);
-      return this._math(this.projected, this.transformed.points, this.projection, true);
+      this._math(this.projected, this.transformed.points, this.projection, true);
+      return this.surface.dirty = false;
     };
 
     RenderModel.prototype._initRenderData = function() {
@@ -1833,6 +1835,9 @@
       _ref6 = this.lights;
       for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
         light = _ref6[_i];
+        if (!light.enabled) {
+          continue;
+        }
         lightModels.push(lightFn.call(this, light, light.m.copy().multiply(transform)));
       }
       _ref7 = this.children;
@@ -1874,6 +1879,8 @@
       return model;
     }
   };
+
+  EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0;
 
   ICOS_X = 0.525731112119133606;
 
@@ -1941,6 +1948,47 @@
       points = [seen.P(1, 1, 1), seen.P(-1, -1, 1), seen.P(-1, 1, -1), seen.P(1, -1, -1)];
       coordinateMap = [[0, 2, 1], [0, 1, 3], [3, 2, 0], [1, 2, 3]];
       return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
+    },
+    patch: function(nx, ny) {
+      var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref6, _ref7;
+      if (nx == null) {
+        nx = 20;
+      }
+      if (ny == null) {
+        ny = 20;
+      }
+      nx = Math.round(nx);
+      ny = Math.round(ny);
+      surfaces = [];
+      for (x = _i = 0; 0 <= nx ? _i < nx : _i > nx; x = 0 <= nx ? ++_i : --_i) {
+        column = [];
+        for (y = _j = 0; 0 <= ny ? _j < ny : _j > ny; y = 0 <= ny ? ++_j : --_j) {
+          pts0 = [seen.P(x, y), seen.P(x + 1, y - 0.5), seen.P(x + 1, y + 0.5)];
+          pts1 = [seen.P(x, y), seen.P(x + 1, y + 0.5), seen.P(x, y + 1)];
+          _ref6 = [pts0, pts1];
+          for (_k = 0, _len = _ref6.length; _k < _len; _k++) {
+            pts = _ref6[_k];
+            for (_l = 0, _len1 = pts.length; _l < _len1; _l++) {
+              p = pts[_l];
+              p.x *= EQUILATERAL_TRIANGLE_ALTITUDE;
+              p.y += x % 2 === 0 ? 0.5 : 0;
+            }
+            column.push(pts);
+          }
+        }
+        if (x % 2 !== 0) {
+          _ref7 = column[0];
+          for (_m = 0, _len2 = _ref7.length; _m < _len2; _m++) {
+            p = _ref7[_m];
+            p.y += ny;
+          }
+          column.push(column.shift());
+        }
+        surfaces = surfaces.concat(column);
+      }
+      return new seen.Shape('patch', surfaces.map(function(s) {
+        return new seen.Surface(s);
+      }));
     },
     icosahedron: function() {
       return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));

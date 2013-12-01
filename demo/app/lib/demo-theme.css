@@ -11,10 +11,10 @@ body {
 .page {
   position         : absolute;
   top              : 40px;
-  bottom           : 60px;
   width            : 900px;
   left             : 50%;
   margin-left      : -450px;
+  margin-bottom    : 60px;
   background-color : white;
 }
 

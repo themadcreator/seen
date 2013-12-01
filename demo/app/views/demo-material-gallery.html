@@ -1,0 +1,124 @@
+{% extends 'demo-template-2.html' %}
+
+{% block demo %}
+
+<script src="lib/jquery.js"></script>
+<script src="lib/jquery-ui.js"></script>
+<link href="lib/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<style>
+  .parameters-container {
+    padding : 2em 10em;
+  }
+
+  label {
+    font-size: 12pt;
+  }
+</style>
+
+
+<div class="parameters-container">
+  <h4>Shape</h4>
+  <div id="shape-radios">
+    <input type="radio" id="shape-sphere" name="shape-radio" value="sphere" checked="checked"><label for="shape-sphere">Sphere</label>
+    <input type="radio" id="shape-tetra"  name="shape-radio" value="tetrahedron"><label for="shape-tetra">Tetrahedron</label>
+    <input type="radio" id="shape-cube"   name="shape-radio" value="cube"><label for="shape-cube">Cube</label>
+    <input type="radio" id="shape-patch"  name="shape-radio" value="patch"><label for="shape-patch">Patch</label>
+  </div>
+
+  <h4>Material</h4>
+  <label for="hue-slider">Hue</label><div id="hue-slider"></div>
+  <label for="shinyness-slider">Shinyness</label><div id="shinyness-slider"></div>
+
+  <h4>Lights</h4>
+  <div id="light-toggles">
+    <input type="checkbox" id="light-key"  name="lights-checkbox" checked="checked"/><label for="light-key">Key light</label>
+    <input type="checkbox" id="light-back" name="lights-checkbox" checked="checked"/><label for="light-back">Back light</label>
+    <input type="checkbox" id="light-amb"  name="lights-checkbox" checked="checked"/><label for="light-amb">Ambient light</label>
+  </div>
+
+  <h4>Lighting model</h4>
+  <div id="lighting-model-radios">
+    <input type="radio" id="model-phong"   name="model-radio" value="phong" checked="checked"><label for="model-phong">Phong Diffuse and Specular</label>
+    <input type="radio" id="model-diffuse" name="model-radio" value="diffuse"><label for="model-diffuse">Phong Diffuse only</label>
+    <input type="radio" id="model-flat"    name="model-radio" value="flat"><label for="model-flat">Flat</label>
+  </div>
+</div>
+
+<script type="text/coffeescript">
+  width  = {{width}}
+  height = {{height}}
+
+  scene = new seen.Scene
+    model  : seen.Models.default()
+    camera : new seen.Camera
+      viewport : seen.Viewports.center(width, height)
+
+  shape = null
+  group = scene.model.append().scale(100)
+
+  context = seen.SvgContext('seen-canvas', scene, width, height).render()
+
+  dragger = new seen.Drag(document.getElementById('seen-canvas'), {inertia : true})
+  dragger.on('drag.rotate', (e) ->
+    xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
+    group.transform(xform)
+    context.render()
+  )
+
+  shapeFactory =
+    sphere      : -> seen.Shapes.sphere(3).scale(2)
+    tetrahedron : -> seen.Shapes.tetrahedron()
+    cube        : -> seen.Shapes.cube()
+    patch       : -> seen.Shapes.patch(4, 4).translate(-1, -1).scale(0.5)
+
+  updateHue = ->
+    hue = parseFloat($('#hue-slider').slider('value')) / 100.0
+    for surf in shape.surfaces
+      surf.fill.color = seen.Colors.hsl(hue, 0.5, 0.5)
+      surf.dirty = true
+    context.render()
+
+  updateShinyness = ->
+    shinyness = parseFloat($('#shinyness-slider').slider('value'))
+    for surf in shape.surfaces
+      surf.fill.specularExponent = shinyness
+      surf.dirty = true
+    context.render()
+
+  updateShape =  ->
+    shapeType = $('input[name=shape-radio]:checked').val()
+    group.children = [shape = shapeFactory[shapeType]()]
+    updateHue()
+    updateShinyness()
+    context.render()
+
+  updateLights = ->
+    #console.log 'UPDATEING LIGHTS'
+    $('#light-toggles input').each (i, el) ->
+      #console.log i, el
+      scene.model.lights[i].enabled = $(el).is(':checked')
+    context.render()
+
+  updateLightingModel = ->
+    shaderType = $('input[name=model-radio]:checked').val()
+    scene.shader = seen.Shaders[shaderType]
+    context.render()
+
+  # Interactions
+  $(document).ready ->
+    $('#shape-radios').buttonset().click(updateShape)
+    $('#hue-slider').slider(slide : updateHue)
+    $('#shinyness-slider').slider().slider(
+      slide : updateShinyness
+      value : 8
+      min   : 0
+      max   : 20
+      step  : 0.1
+    )
+    $('#light-toggles').buttonset().click(updateLights)
+    $('#lighting-model-radios').buttonset().click(updateLightingModel)
+
+    updateShape()
+
+</script>
+{% endblock %}

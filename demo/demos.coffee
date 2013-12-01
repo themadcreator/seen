@@ -13,6 +13,21 @@ Demos = [
   view   : 'demo-simple-interactive'
   width  : 900
   height : 500
+,
+  title  : 'Materials gallery'
+  view   : 'demo-material-gallery'
+  width  : 900
+  height : 500
+,
+  title  : 'Shapes gallery'
+  view   : 'demo-shapes'
+  width  : 900
+  height : 500
+,
+  title  : 'Undulating sphere'
+  view   : 'demo-animated-sphere'
+  width  : 900
+  height : 500
 ]
 
 module.exports = Demos

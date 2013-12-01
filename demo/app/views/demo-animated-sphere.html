@@ -1,0 +1,38 @@
+{% extends 'demo-template-2.html' %}
+
+{% block demo %}
+<script type="text/coffeescript" src="/lib/simplex-noise.coffee"></script>
+<script type="text/coffeescript">
+  width  = {{width}}
+  height = {{height}}
+
+  shape = seen.Shapes.sphere(3).scale(150)
+  seen.Colors.randomSurfaces2(shape, 0.01)
+
+  scene = new seen.Scene
+    model  : seen.Models.default().add(shape)
+    camera : new seen.Camera
+      viewport : seen.Viewports.center(width, height)
+
+  context = seen.SvgContext('seen-canvas', scene, width, height).render()
+
+  for surf in shape.surfaces
+    surf.originals = surf.points.map (p) -> p.copy()
+  
+  t = 0
+  noiser = new Simplex3D(Math.random())
+  context.animate()
+    .onBefore(->
+      for surf in shape.surfaces
+        for p,i in surf.points
+          n = noiser.noise(p.x, p.y, p.z + t)
+          surf.points[i] = surf.originals[i].copy().multiply(1 + n / 3)
+        surf.dirty = true
+
+      shape.rotx(0.001).rotz(0.003)
+      t += 0.01
+    )
+    .startRenderLoop()
+
+</script>
+{% endblock %}

@@ -9,6 +9,7 @@ class seen.Light extends seen.Transformable
     color     : seen.Colors.white()
     intensity : 0.01
     normal    : seen.P(1, -1, -1).normalize()
+    enabled   : true
 
   constructor: (@type, options) ->
     super
