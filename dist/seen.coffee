@@ -58,8 +58,15 @@ seen.Util = {
 }
 
 
+# ## Events
+# ------------------
+
+# Attribution: these have been adapted from d3.js's event dispatcher functions.
 
 seen.Events = {
+  # Return a new dispatcher that creates event types using
+  # the supplied string argument list. The returned `Dispatcher`
+  # will have methods with the names of the event types.
   dispatch : () ->
     dispatch = new seen.Events.Dispatcher()
     for arg in arguments
@@ -67,6 +74,12 @@ seen.Events = {
     return dispatch
 }
 
+# The `Dispatcher` class. These objects have methods that can be invoked like dispatch.eventName().
+# Listeners can be registered with dispatch.on('eventName.uniqueId', callback). Listeners can
+# be removed with dispatch.on('eventName.uniqueId', null).
+#
+# Note that only one listener with the name event name and id can be registered at once. If you
+# to generate unique ids, you can use the seen.Util.uniqueId() method.
 class seen.Events.Dispatcher
   on : (type, listener) =>
     i = type.indexOf '.'
@@ -80,6 +93,7 @@ class seen.Events.Dispatcher
 
     return @
 
+# Internal event object for storing listener callbacks and a map for easy lookup.
 seen.Events.Event = ->
   listeners = []
   listenerMap = {}
@@ -133,16 +147,16 @@ class seen.Matrix
   copy: ->
     return new seen.Matrix(@m.slice())
 
-  # Desctructively resets the matrix to the identity matrix.
+  # Resets the matrix to the identity matrix.
   reset: ->
     @m = IDENTITY.slice()
     return @
 
-  # Destructively multiply by the `Matrix` argument.
+  # Multiply by the `Matrix` argument.
   multiply: (b) ->
     return @matrix(b.m)
 
-  # Destructively multiply by the 16-value `Array` argument. This method uses the `ARRAY_POOL`, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.
+  # Multiply by the 16-value `Array` argument. This method uses the `ARRAY_POOL`, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.
   matrix: (m) ->
     c = ARRAY_POOL
     for j in [0...4]
@@ -156,35 +170,35 @@ class seen.Matrix
     @m = c
     return @
 
-  # Destructively apply a rotation about the X axis. `Theta` is measured in Radians
+  # Apply a rotation about the X axis. `Theta` is measured in Radians
   rotx: (theta) ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ 1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1 ]
     return @matrix(rm)
 
-  # Destructively apply a rotation about the Y axis. `Theta` is measured in Radians
+  # Apply a rotation about the Y axis. `Theta` is measured in Radians
   roty: (theta)  ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1 ]
     return @matrix(rm)
 
-  # Destructively apply a rotation about the Z axis. `Theta` is measured in Radians
+  # Apply a rotation about the Z axis. `Theta` is measured in Radians
   rotz: (theta) ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]
     return @matrix(rm)
 
-  # Destructively apply a translation. All arguments default to `0`
+  # Apply a translation. All arguments default to `0`
   translate: (x = 0, y = 0, z = 0) ->
     @m[3]  += x
     @m[7]  += y
     @m[11] += z
     return @
 
-  # Destructively apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
+  # Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
   scale: (sx, sy, sz) ->
     sx     ?= 1
     sy     ?= sx
@@ -241,14 +255,14 @@ class seen.Point
     @w = p.w
     return @
 
-  # Destructively performs parameter-wise addition with the supplied `Point`.
+  # Performs parameter-wise addition with the supplied `Point`.
   add: (q) ->
     @x += q.x
     @y += q.y
     @z += q.z
     return @
 
-  # Destructively performs parameter-wise subtraction with the supplied `Point`.
+  # Performs parameter-wise subtraction with the supplied `Point`.
   subtract: (q) ->
     @x -= q.x
     @y -= q.y
@@ -262,28 +276,28 @@ class seen.Point
     @z += z
     return @
 
-  # Destructively multiplies each parameters by the supplied scalar value.
+  # Multiplies each parameters by the supplied scalar value.
   multiply: (n) ->
     @x *= n
     @y *= n
     @z *= n
     return @
 
-  # Destructively divides each parameters by the supplied scalar value.
+  # Divides each parameters by the supplied scalar value.
   divide: (n) ->
     @x /= n
     @y /= n
     @z /= n
     return @
 
-  # Destructively rounds each coordinate to the nearest integer.
+  # Rounds each coordinate to the nearest integer.
   round: () ->
     @x = Math.round(@x)
     @y = Math.round(@y)
     @z = Math.round(@z)
     return @
 
-  # Destructively scales this `Point` by its magnitude.
+  # Divides this `Point` by its magnitude.
   normalize: () ->
     n = Math.sqrt(@dot(@))
     if n == 0
@@ -307,7 +321,7 @@ class seen.Point
   dot: (q) ->
     return @x * q.x + @y * q.y + @z * q.z
 
-  # Destructively computes the cross product with the supplied `Point`.
+  # Computes the cross product with the supplied `Point`.
   cross: (q) ->
     r = POINT_POOL
     r.x = @y * q.z - @z * q.y
@@ -316,9 +330,6 @@ class seen.Point
 
     @set(r)
     return @
-
-  toJSON: () ->
-    return [@x, @y, @z, @w]
 
 # Convenience method for creating `Points`.
 seen.P = (x,y,z,w) -> new seen.Point(x,y,z,w)
@@ -334,20 +345,25 @@ seen.Points = {
   ZERO : seen.P(0, 0, 0)
 }
 
-# http://glprogramming.com/codedump/godecho/quaternion.html
+# A Quaterionion class for computing quaterion multiplications. This creates more natural mouse rotations.
+#
+# Attribution: adapted from http://glprogramming.com/codedump/godecho/quaternion.html
 class seen.Quaternion
   @pixelsPerRadian : 150
 
+  # Convert the x and y pixel offsets into a rotation matrix
   @xyToTransform : (x, y) ->
     quatX = seen.Quaternion.pointAngle(seen.Points.Y, x / seen.Quaternion.pixelsPerRadian)
     quatY = seen.Quaternion.pointAngle(seen.Points.X, y / seen.Quaternion.pixelsPerRadian)
     return quatX.multiply(quatY).toMatrix()
 
+  # Create a rotation matrix from the axis defined by x, y, and z values, and the supplied angle.
   @axisAngle : (x, y, z, angleRads) ->
     scale = Math.sin(angleRads / 2.0)
     w     = Math.cos(angleRads / 2.0)
     return new seen.Quaternion(scale * x, scale * y, scale * z, w)
 
+  # Create a rotation matrix from the axis defined by the supplied point and the supplied angle.
   @pointAngle : (p, angleRads) ->
     scale = Math.sin(angleRads / 2.0)
     w     = Math.cos(angleRads / 2.0)
@@ -356,6 +372,7 @@ class seen.Quaternion
   constructor : ->
     @q = seen.P(arguments...)
 
+  # Multiply this `Quaterionion` by the `Quaternion` argument.
   multiply : (q) ->
     r = seen.P()
 
@@ -368,28 +385,25 @@ class seen.Quaternion
     result.q = r
     return result
 
+  # Convert this `Quaterion` into a transformation matrix.
   toMatrix : ->
     m = new Array(16)
 
-    # First row
     m[ 0] = 1.0 - 2.0 * ( @q.y * @q.y + @q.z * @q.z )
     m[ 1] = 2.0 * ( @q.x * @q.y - @q.w * @q.z )
     m[ 2] = 2.0 * ( @q.x * @q.z + @q.w * @q.y )
     m[ 3] = 0.0
 
-    # Second row
     m[ 4] = 2.0 * ( @q.x * @q.y + @q.w * @q.z )
     m[ 5] = 1.0 - 2.0 * ( @q.x * @q.x + @q.z * @q.z )
     m[ 6] = 2.0 * ( @q.y * @q.z - @q.w * @q.x )
     m[ 7] = 0.0
 
-    # Third row
     m[ 8] = 2.0 * ( @q.x * @q.z - @q.w * @q.y )
     m[ 9] = 2.0 * ( @q.y * @q.z + @q.w * @q.x )
     m[10] = 1.0 - 2.0 * ( @q.x * @q.x + @q.y * @q.y )
     m[11] = 0.0
 
-    # Fourth row
     m[12] = 0
     m[13] = 0
     m[14] = 0
@@ -399,6 +413,8 @@ class seen.Quaternion
 
 
 
+# ## Color
+# ------------------
 
 # `Color` objects store RGB and Alpha values from 0 to 255.
 class seen.Color
@@ -427,6 +443,13 @@ class seen.Color
     @r = Math.min(max, Math.max(min, @r))
     @g = Math.min(max, Math.max(min, @g))
     @b = Math.min(max, Math.max(min, @b))
+    return @
+
+  # Takes the minimum between each channel of this `Color` and the supplied `Color` object.
+  minChannels: (c) ->
+    @r = Math.min(c.r, @r)
+    @g = Math.min(c.g, @g)
+    @b = Math.min(c.b, @b)
     return @
 
   # Adds the channels of the current `Color` with each respective channel from the supplied `Color` object.
@@ -500,10 +523,12 @@ seen.Colors = {
 
     return new seen.Color(r * 255, g * 255, b * 255, a * 255)
 
+  # Generates a new random color for each surface of the supplied `Shape`
   randomSurfaces : (shape, sat = 0.5, lit = 0.4) ->
     for surface in shape.surfaces
       surface.fill = new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
+  # Generates a random hue then randomly drifts the hue for each surface of the supplied `Shape`
   randomSurfaces2 : (shape, drift = 0.03, sat = 0.5, lit = 0.4) ->
     hue = Math.random()
     for surface in shape.surfaces
@@ -512,6 +537,7 @@ seen.Colors = {
       if hue > 1 then hue = 0
       surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
 
+  # Generates a random color then sets the fill for every surface of the supplied `Shape`
   randomShape : (shape, sat = 0.5, lit = 0.4) ->
     shape.fill new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
@@ -521,7 +547,7 @@ seen.Colors = {
   gray  : -> @hex('#888888')
 }
 
-# Convenience constructor.
+# Convenience `Color` constructor.
 seen.C = (r,g,b,a) -> new seen.Color(r,g,b,a)
 
 
@@ -584,7 +610,10 @@ seen.Lights = {
 }
 
 
+# ## Shaders
+# ------------------
 
+# Shader functions are aggregated in this utils object
 seen.ShaderUtils = {
   applyDiffuse : (c, light, lightNormal, surfaceNormal, material) ->
     dot = lightNormal.dot(surfaceNormal)
@@ -600,14 +629,12 @@ seen.ShaderUtils = {
       # Apply diffuse phong shading
       c.addChannels(light.colorIntensity.copy().scale(dot))
 
-      # Apply specular phong shading
+      # Compute and apply specular phong shading
       eyeNormal         = seen.Points.Z
       reflectionNormal  = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
       specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent)
-      # TODO scale by specular color from material if available
-      # specularColor     = seen.C.white #material.specularColor ? seen.C.white
-      # c._addChannels(specularColor.scale(specularIntensity * light.intensity))
-      c.offset(specularIntensity * light.intensity)
+      specularColor     = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
+      c.addChannels(specularColor)
 
   applyAmbient : (c, light) ->
     # Apply ambient shading
@@ -641,7 +668,12 @@ class Phong extends seen.Shader
         when 'ambient'
           seen.ShaderUtils.applyAmbient(c, light)
 
-    c.multiplyChannels(material.color).clamp(0, 0xFF)
+    c.multiplyChannels(material.color)
+
+    if material.metallic
+      c.minChannels(material.specularColor)
+
+    c.clamp(0, 0xFF)
     return c
 
 # The `DiffusePhong` shader implements the Phong shading model with a diffuse and ambient term (no specular).
@@ -680,6 +712,8 @@ class Flat extends seen.Shader
   shade: (lights, renderModel, material) ->
     return material.color
 
+# Since `Shader` objects are stateless, we don't need to construct them more than once.
+# So, we export global instances here.
 seen.Shaders = {
   phong   : new Phong()
   diffuse : new DiffusePhong()
@@ -688,7 +722,12 @@ seen.Shaders = {
 }
 
 
+# ## Contexts
+# #### Base classes for rendering context and layers
+# ------------------
 
+# The `RenderContext` uses `RenderModel`s produced by the scene's render method to paint the shapes into an HTML element.
+# Since we support both SVG and Canvas painters, the `RenderContext` and `RenderLayerContext` define a common interface.
 class seen.RenderContext
   constructor: ->
     @layers = {}
@@ -702,9 +741,12 @@ class seen.RenderContext
     @cleanup()
     return @
 
+  # Returns a new `Animator` with this context's render method pre-registered.
   animate : ->
     return new seen.Animator().onRender(@render)
 
+  # Add a new `RenderLayerContext` to this context. This allows us to easily stack paintable components such as
+  # a fill backdrop, or even multiple scenes in one context.
   layer: (name, layer) ->
     @layers[name] = {
       layer   : layer
@@ -715,7 +757,7 @@ class seen.RenderContext
   reset   : ->
   cleanup : ->
 
-
+# The `RenderLayerContext` defines the interface for producing builders that can paint various things into the current layer.
 class seen.RenderLayerContext
   path    : -> # Return a path builder
   text    : -> # Return a text builder
@@ -727,32 +769,34 @@ class seen.RenderLayerContext
 
 
 # ## Painters
+# #### Defines the methods of painting a surface.
 # ------------------
 
+# Each `Painter` overrides the paint method. It uses the supplied `RenderLayerContext`'s builders
+# to create and style the geometry on screen.
 class seen.Painter
-  paint : (renderObject, context) ->
-    # Override this
+  paint : (renderModel, context) ->
 
 class PathPainter extends seen.Painter
-  paint : (renderObject, context) ->
+  paint : (renderModel, context) ->
     context.path()
       .style(
-        fill           : if not renderObject.fill? then 'none' else renderObject.fill.hex()
-        stroke         : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
-        'fill-opacity' : if not renderObject.fill?.a? then 1.0 else (renderObject.fill.a / 255.0)
-        'stroke-width' : renderObject.surface['stroke-width'] ? 1
-      ).path(renderObject.projected.points)
+        fill           : if not renderModel.fill? then 'none' else renderModel.fill.hex()
+        stroke         : if not renderModel.stroke? then 'none' else renderModel.stroke.hex()
+        'fill-opacity' : if not renderModel.fill?.a? then 1.0 else (renderModel.fill.a / 255.0)
+        'stroke-width' : renderModel.surface['stroke-width'] ? 1
+      ).path(renderModel.projected.points)
 
 class TextPainter extends seen.Painter
-  paint : (renderObject, context) ->
+  paint : (renderModel, context) ->
     context.text()
       .style(
-        fill          : if not renderObject.fill? then 'none' else renderObject.fill.hex()
-        stroke        : if not renderObject.stroke? then 'none' else renderObject.stroke.hex()
-        'text-anchor' : renderObject.surface.anchor ? 'middle'
+        fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
+        stroke        : if not renderModel.stroke? then 'none' else renderModel.stroke.hex()
+        'text-anchor' : renderModel.surface.anchor ? 'middle'
       )
-      .transform(renderObject.transform.copy().multiply renderObject.projection)
-      .text(renderObject.surface.text)
+      .transform(renderModel.transform.copy().multiply renderModel.projection)
+      .text(renderModel.surface.text)
 
 seen.Painters = {
   path : new PathPainter()
@@ -760,12 +804,17 @@ seen.Painters = {
 }
 
 
+# ## RenderModels
+# ------------------
+
 # The `RenderModel` object contains the transformed and projected points as well as various data
-# needed to render scene shapes.
+# needed to shade and paint a `Surface`.
 #
 # Once initialized, the object will have a constant memory footprint
 # down to `Number` primitives. Also, we compare each transform and projection
-# to prevent unnecessary re-computation.
+# to prevent unnecessary re-computation. 
+# 
+# If you need to force a re-computation, mark the surface as 'dirty'.
 class seen.RenderModel
   constructor: (@surface, @transform, @projection) ->
     @points      = @surface.points
@@ -814,7 +863,7 @@ class seen.RenderModel
     set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
     set.normal.set(set.v0).cross(set.v1).normalize()
 
-
+# The `LightRenderModel` stores pre-computed values necessary for shading surfaces with the supplied `Light`.
 class seen.LightRenderModel
   constructor: (light, transform) ->
     @colorIntensity = light.color.copy().scale(light.intensity)
@@ -1113,7 +1162,10 @@ seen.CanvasContext = (elementId, scene, width, height) ->
 
 
 
+# ## Interaction
+# ------------------
 
+# A global window event dispatcher.
 seen.WindowEvents = do ->
   dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp')
   window.addEventListener('mouseup', dispatch.mouseUp, true)
@@ -1121,6 +1173,8 @@ seen.WindowEvents = do ->
   window.addEventListener('mousemove', dispatch.mouseMove, true)
   return {on : dispatch.on}
 
+# An event dispatcher for mouse and drag events on a single dom element.
+# The available events are 'dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp'
 class seen.MouseEvents
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -1157,6 +1211,7 @@ class seen.MouseEvents
     @dispatch.mouseUp(e)
     @dispatch.dragEnd(e)
 
+# A class for computing mouse interia for interial scrolling
 class seen.InertialMouse
   @inertiaExtinction : 0.1
   @smoothingTimeout  : 300
@@ -1193,13 +1248,15 @@ class seen.InertialMouse
     @y *= (1.0 - seen.InertialMouse.inertiaExtinction)
     return @
 
-
+# A class that adds simple mouse dragging to a dom element.
+# A 'drag' event is emitted as the user is dragging their mouse.
 class seen.Drag
   defaults:
     inertia : false
 
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
+    @el = seen.Util.element(@el)
     @_uid = seen.Util.uniqueId('dragger-')
 
     @_inertiaRunning = false
@@ -1274,11 +1331,11 @@ class seen.Drag
 
 
 
-# ## Geometry
-# #### Groups, shapes, and surfaces
+# ## Surfaces and Shapes
 # ------------------
 
-# A surface is a defined as a planar object in 3D space. These paths don't necessarily need to be convex.
+# A `Surface` is a defined as a planar object in 3D space. These paths don't necessarily need
+# to be convex, but they should be non-degenerate. This library does not support shapes with holes.
 class seen.Surface
   # When 'false' this will override backface culling, which is useful if your material is transparent
   cullBackfaces : true
@@ -1286,34 +1343,42 @@ class seen.Surface
   fill          : new seen.Material(seen.C.gray)
   stroke        : null
 
-  # TODO change to options constructor with defaults
   constructor: (@points, @painter = seen.Painters.path) ->
     @id = 's' + seen.Util.uniqueId()
 
+# A `Shape` contains a collection of surface. They may create a closed 3D shape, but not necessarily.
+# For example, a cube is a closed shape, but a patch is not.
 class seen.Shape extends seen.Transformable
   constructor: (@type, @surfaces) ->
     super()
 
+  # Visit each surface
   eachSurface: (f) ->
     @surfaces.forEach(f)
     return @
 
+  # Apply the supplied fill `Material` to each surface
   fill: (fill) ->
     @eachSurface (s) -> s.fill = fill
     return @
 
+  # Apply the supplied stroke `Material` to each surface
   stroke: (stroke) ->
     @eachSurface (s) -> s.stroke = stroke
     return @
 
 
-
+# The object model class.
+# This class stores `Shapes`, `Lights`, and other `Models`
+# Since it extends `Transformable` it also contains a transformation matrix.
 class seen.Model extends seen.Transformable
   constructor: () ->
     super()
     @children = []
     @lights   = []
 
+  # Add a `Shape`, `Light`, and other `Model` as a child of this `Model`
+  # Any number of children can by supplied as arguments.
   add: (childs...) ->
     for child in childs
       if child instanceof seen.Shape or child instanceof seen.Model
@@ -1322,11 +1387,13 @@ class seen.Model extends seen.Transformable
         @lights.push child
     return @
 
+  # Create a new child model and return it.
   append: () ->
     model = new seen.Model
     @add model
     return model
 
+  # Visit each `Shape` in this `Model` and all recursive child `Model`s
   eachShape: (f) ->
     for child in @children
       if child instanceof seen.Shape
@@ -1334,6 +1401,11 @@ class seen.Model extends seen.Transformable
       if child instanceof seen.Model
         child.eachShape(f)
 
+  # Visit each `Light` and `Shape`, accumulating the recursive transformation matrices
+  # along the way. The light callback will be called with each light and its accumulated
+  # transform and it should return a `LightModel`. Each shape callback with be called
+  # with each shape and its accumulated transform as well as the list of light models 
+  # that apply to that shape.
   eachRenderable : (lightFn, shapeFn) ->
     @_eachRenderable(lightFn, shapeFn, [], @m)
 
@@ -1351,21 +1423,22 @@ class seen.Model extends seen.Transformable
 
 
 seen.Models = {
+  # The default model contains standard Hollywood-style 3-part lighting
   default : ->
     model = new seen.Model()
 
-    # Key
+    # Key light
     model.add seen.Lights.directional
       normal    : seen.P(-1, 1, 1).normalize()
       color     : seen.Colors.hsl(0.1, 0.3, 0.7)
       intensity : 0.004
 
-    # Back
+    # Back light
     model.add seen.Lights.directional
       normal    : seen.P(1, 1, -1).normalize()
       intensity : 0.003
 
-    # Fill
+    # Fill light
     model.add seen.Lights.ambient
       intensity : 0.0015
 
@@ -1448,6 +1521,7 @@ seen.Shapes = {
       newTriangles.push [v01,    v12, v20]
     return newTriangles
 
+  # Returns a 2x2x2 cube, centered on the origin
   cube: =>
     points = [
       seen.P(-1, -1, -1)
@@ -1462,6 +1536,7 @@ seen.Shapes = {
 
     return new seen.Shape('cube', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
 
+  # Returns a 1x1x1 cube from the origin to [1, 1, 1]
   unitcube: =>
     points = [
       seen.P(0, 0, 0)
@@ -1476,6 +1551,7 @@ seen.Shapes = {
 
     return new seen.Shape('unitcube', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
 
+  # Returns an axis-aligned 3D rectangle whose boundaries are defined by the two supplied points
   rectangle : (point1, point2) =>
     compose = (x, y, z) ->
       return seen.P(
@@ -1497,6 +1573,7 @@ seen.Shapes = {
 
     return new seen.Shape('rect', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
 
+  # Returns a tetrahedron that fits inside a 2x2x2 cube.
   tetrahedron: =>
     points = [
       seen.P( 1,  1,  1)
@@ -1512,6 +1589,7 @@ seen.Shapes = {
 
     return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap))
 
+  # Returns a planar triangular patch. The supplied arguments determine the number of triangle in the patch.
   patch: (nx = 20, ny = 20) ->
     nx = Math.round(nx)
     ny = Math.round(ny)
@@ -1544,15 +1622,18 @@ seen.Shapes = {
 
     return new seen.Shape('patch', surfaces.map((s) -> new seen.Surface(s)))
 
+  # Returns an icosahedron that fits within a 2x2x2 cube, centered on the origin
   icosahedron : ->
     return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))
 
-  sphere : (subdivisions = 1) ->
+  # Returns a sub-divided icosahedron, which approximates a sphere with triangles of equal size.
+  sphere : (subdivisions = 2) ->
     triangles = ICOSAHEDRON_COORDINATE_MAP.map (coords) -> coords.map (c) -> ICOSAHEDRON_POINTS[c]
     for i in [0...subdivisions]
       triangles = seen.Shapes._subdivideTriangles(triangles)
     return new seen.Shape('sphere', triangles.map (triangle) -> new seen.Surface(triangle.map (v) -> v.copy()))
 
+  # Return a text surface that can render 3D text when using an orthographic projection
   text: (text) ->
     surface = new seen.Surface([
       seen.P(0,  0, 0)
@@ -1562,6 +1643,7 @@ seen.Shapes = {
     surface.text = text
     return new seen.Shape('text', [surface])
 
+  # Returns a shape that is an extrusion of the supplied points into the z axis.
   extrude : (points, distance = 1) ->
     surfaces = []
     front = new seen.Surface (p.copy() for p in points)
@@ -1588,6 +1670,7 @@ seen.Shapes = {
     surfaces.push back
     return new seen.Shape('extrusion', surfaces)
 
+  # Returns an extruded block arrow shape.
   arrow : (thickness = 1, tailLength = 1, tailWidth = 1, headLength = 1, headPointiness = 0) ->
     htw = tailWidth/2
     points = [
@@ -1601,6 +1684,7 @@ seen.Shapes = {
     ]
     return seen.Shapes.extrude(points, thickness)
 
+  # Returns a shape with a single surface using the supplied points array 
   path : (points) ->
     return new seen.Shape('path', [new seen.Surface(points)])
 
@@ -1613,7 +1697,8 @@ seen.Shapes = {
 
 
 # Parser for Wavefront .obj files
-# NOTE: WAVEFRONT OBJ ARRAY INDICES ARE 1-BASED!!!!
+# 
+# Note: Wavefront .obj array indicies are 1-based.
 class seen.ObjParser
   constructor : () ->
     @vertices = []
@@ -1648,6 +1733,7 @@ class seen.ObjParser
       points = face.map (v) => seen.P(@vertices[v - 1]...)
       return faceMap.call(@, points)
 
+# This method accepts Wavefront .obj file content and returns a `Shape` object.
 seen.Shapes.obj = (objContents, cullBackfaces = true) ->
   parser = new seen.ObjParser()
   parser.parse(objContents)
@@ -1658,45 +1744,67 @@ seen.Shapes.obj = (objContents, cullBackfaces = true) ->
   ))
 
 
+# ## Animator
+# ------------------
 
+# The animator class is useful for creating a render loop.
+# We supply pre and post render events for apply animation changes between renders.
 class seen.Animator
   constructor : () ->
     @dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render')
     @on       = @dispatch.on
+    @_running = false
 
-  startRenderLoop: (msecDelay = 30) ->
-    setInterval(@render, msecDelay)
+  # Start the render loop. The delay between frames can be supplied as an argument.
+  start: (msecDelay = 30) ->
+    @_running   = true
+    @_msecDelay = msecDelay
+    setTimeout(@render, @_msecDelay)
     return @
 
+  # Stop the render loop.
+  stop : ->
+    @_running = false
+    return @
+
+  # The main render loop method
   render: () =>
+    return unless @_running
     @dispatch.beforeRender()
     @dispatch.render()
     @dispatch.afterRender()
+    setTimeout(@render, @_msecDelay)
     return @
 
+  # Add a callback that will be invoked before the render
   onBefore : (handler) ->
     @on "beforeRender.#{seen.Util.uniqueId('animator-')}", handler
     return @
 
+  # Add a callback that will be invoked after the render
   onAfter : (handler) ->
     @on "afterRender.#{seen.Util.uniqueId('animator-')}", handler
     return @
 
+  # Add a render callback
   onRender : (handler) ->
     @on "render.#{seen.Util.uniqueId('animator-')}", handler
     return @
 
 
-# ## Projections
-# #### Projections and viewport tranformations.
+# ## Camera
+# #### Projections, Viewports, and Cameras
 # ------------------
 
+# These projection methods return a 3D to 2D `Matrix` transformation.
+# Each projection assumes the camera is located at (0,0,0).
 seen.Projections = {
+  # Creates a perspective projection matrix 
   perspectiveFov : (fovyInDegrees = 50, front = 1) ->
     tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0)
     return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2*front)
 
-  # Creates a perspective projection matrix assuming camera is at (0,0,0)
+  # Creates a perspective projection matrix with the supplied frustrum
   perspective : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
     near2 = 2 * near
     dx    = right - left
@@ -1774,6 +1882,19 @@ seen.Viewports = {
     return {prescale, postscale}
 }
 
+# The `Camera` model contains all three major components of the 3D to 2D tranformation.
+# 
+# First, we transform object from world-space (the same space that the coordinates of
+# surface points are in after all their transforms are applied) to camera space. Typically,
+# this will place all viewable objects into a cube with coordinates:
+# x = -1 to 1, y = -1 to 1, z = 1 to 2
+# 
+# Second, we apply the projection trasform to create perspective parallax and what not.
+#
+# Finally, we rescale to the viewport size.
+#
+# These three steps allow us to easily create shapes whose coordinates match up to
+# screen coordinates in the z = 0 plane.
 class seen.Camera
   defaults :
     projection : seen.Projections.perspective()
@@ -1783,6 +1904,7 @@ class seen.Camera
   constructor : (options) ->
     seen.Util.defaults(@, options, @defaults)
 
+  # Performs the 3-step multiplication of the transformation matrices.
   getMatrix : ->
     @camera.copy().multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
 
@@ -1791,56 +1913,68 @@ class seen.Camera
 # ## The Scene
 # ------------------
 
+# A `Scene` is the main object for a view of a scene.
 class seen.Scene
   defaults:
+    # The root model for the scene, which contains `Shape`s and `Light`s
     model            : new seen.Model()
+    # `Camera` which defines the projection from shape-space to screen-space.
     camera           : new seen.Camera()
+    # The scene's shader determines which lighting model is used.
     shader           : seen.Shaders.phong
+    # This boolean can be used to turn off backface-culling for the whole
+    # scene. Beware, turning this off can slow down a scene's rendering
+    # by a factor of 2. You can also turn off backface-culling for
+    # individual surfaces with a boolean on those objects.
     cullBackfaces    : true
+    # This boolean determines if we round the surface coordinates to the
+    # nearest integer. Rounding the coordinates before display speeds up
+    # path drawing at the cost of a slight jittering effect when animating.
+    # Anecdotally, my speedup on a complex demo scene was 10 FPS
     fractionalPoints : false
 
   constructor: (options) ->
     seen.Util.defaults(@, options, @defaults)
     @_renderModelCache = {}
 
+  # The primary method that produces the render models, which are then used
+  # by the `RenderContext` to paint the scene.
   render : () =>
-    # compute projection matrix
+    # Compute the projection matrix.
     projection = @camera.getMatrix()
 
-    # build renderable surfaces array
     renderModels = []
-
     @model.eachRenderable(
       (light, transform) ->
-        # precompute light data.
+        # Compute light model data.
         new seen.LightRenderModel(light, transform)
 
       (shape, lights, transform) =>
         for surface in shape.surfaces
-          # compute transformed and projected geometry
+          # Compute transformed and projected geometry.
           renderModel = @_renderSurface(surface, transform, projection)
 
-          # test for culling
+          # Test projected normal's z-coordinate for culling (if enabled).
           if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
-            # apply material shading
+            # Render fill and stroke using material and shader.
             renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
             renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
 
-            # Rounding the coordinates for display speeds up path drawing at the cost of
-            # a slight jittering effect when animating. Anecdotally, the speedup on demo1 was 10 FPS
+            # Round coordinates
             if @fractionalPoints isnt true
               p.round() for p in renderModel.projected.points
 
-            # add surface to renderable surfaces array
             renderModels.push renderModel
     )
 
-    # sort for painter's algorithm
+    # Sort render models by projected z coordinate. This ensures that the surfaces
+    # farthest from the eye are painted first. (Painter's Algorithm)
     renderModels.sort (a, b) ->
       return  b.projected.barycenter.z - a.projected.barycenter.z
 
     return renderModels
 
+  # Get or create the rendermodel for the given surface. We cache these models to reduce object creation.
   _renderSurface : (surface, transform, projection) ->
     renderModel = @_renderModelCache[surface.id]
     if not renderModel?

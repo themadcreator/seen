@@ -12,7 +12,7 @@
   context = new seen.CanvasRenderContext(document.getElementById('seen-canvas'), dim, dim)
   context.layer('background', new seen.FillLayer(dim, dim))
 
-  animator = context.animate().startRenderLoop(20)
+  animator = context.animate().start(20)
 
   for objFile, i in ['assets/bunny-low.obj', 'assets/teapot-low.obj'] then do ->
     scene = new seen.Scene

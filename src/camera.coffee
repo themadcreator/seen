@@ -1,13 +1,16 @@
-# ## Projections
-# #### Projections and viewport tranformations.
+# ## Camera
+# #### Projections, Viewports, and Cameras
 # ------------------
 
+# These projection methods return a 3D to 2D `Matrix` transformation.
+# Each projection assumes the camera is located at (0,0,0).
 seen.Projections = {
+  # Creates a perspective projection matrix 
   perspectiveFov : (fovyInDegrees = 50, front = 1) ->
     tan = front * Math.tan(fovyInDegrees * Math.PI / 360.0)
     return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2*front)
 
-  # Creates a perspective projection matrix assuming camera is at (0,0,0)
+  # Creates a perspective projection matrix with the supplied frustrum
   perspective : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
     near2 = 2 * near
     dx    = right - left
@@ -85,6 +88,19 @@ seen.Viewports = {
     return {prescale, postscale}
 }
 
+# The `Camera` model contains all three major components of the 3D to 2D tranformation.
+# 
+# First, we transform object from world-space (the same space that the coordinates of
+# surface points are in after all their transforms are applied) to camera space. Typically,
+# this will place all viewable objects into a cube with coordinates:
+# x = -1 to 1, y = -1 to 1, z = 1 to 2
+# 
+# Second, we apply the projection trasform to create perspective parallax and what not.
+#
+# Finally, we rescale to the viewport size.
+#
+# These three steps allow us to easily create shapes whose coordinates match up to
+# screen coordinates in the z = 0 plane.
 class seen.Camera
   defaults :
     projection : seen.Projections.perspective()
@@ -94,6 +110,7 @@ class seen.Camera
   constructor : (options) ->
     seen.Util.defaults(@, options, @defaults)
 
+  # Performs the 3-step multiplication of the transformation matrices.
   getMatrix : ->
     @camera.copy().multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
 

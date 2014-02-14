@@ -73,6 +73,7 @@ seen.Shapes = {
       newTriangles.push [v01,    v12, v20]
     return newTriangles
 
+  # Returns a 2x2x2 cube, centered on the origin
   cube: =>
     points = [
       seen.P(-1, -1, -1)
@@ -87,6 +88,7 @@ seen.Shapes = {
 
     return new seen.Shape('cube', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
 
+  # Returns a 1x1x1 cube from the origin to [1, 1, 1]
   unitcube: =>
     points = [
       seen.P(0, 0, 0)
@@ -101,6 +103,7 @@ seen.Shapes = {
 
     return new seen.Shape('unitcube', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
 
+  # Returns an axis-aligned 3D rectangle whose boundaries are defined by the two supplied points
   rectangle : (point1, point2) =>
     compose = (x, y, z) ->
       return seen.P(
@@ -122,6 +125,7 @@ seen.Shapes = {
 
     return new seen.Shape('rect', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
 
+  # Returns a tetrahedron that fits inside a 2x2x2 cube.
   tetrahedron: =>
     points = [
       seen.P( 1,  1,  1)
@@ -137,6 +141,7 @@ seen.Shapes = {
 
     return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap))
 
+  # Returns a planar triangular patch. The supplied arguments determine the number of triangle in the patch.
   patch: (nx = 20, ny = 20) ->
     nx = Math.round(nx)
     ny = Math.round(ny)
@@ -169,15 +174,18 @@ seen.Shapes = {
 
     return new seen.Shape('patch', surfaces.map((s) -> new seen.Surface(s)))
 
+  # Returns an icosahedron that fits within a 2x2x2 cube, centered on the origin
   icosahedron : ->
     return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))
 
-  sphere : (subdivisions = 1) ->
+  # Returns a sub-divided icosahedron, which approximates a sphere with triangles of equal size.
+  sphere : (subdivisions = 2) ->
     triangles = ICOSAHEDRON_COORDINATE_MAP.map (coords) -> coords.map (c) -> ICOSAHEDRON_POINTS[c]
     for i in [0...subdivisions]
       triangles = seen.Shapes._subdivideTriangles(triangles)
     return new seen.Shape('sphere', triangles.map (triangle) -> new seen.Surface(triangle.map (v) -> v.copy()))
 
+  # Return a text surface that can render 3D text when using an orthographic projection
   text: (text) ->
     surface = new seen.Surface([
       seen.P(0,  0, 0)
@@ -187,6 +195,7 @@ seen.Shapes = {
     surface.text = text
     return new seen.Shape('text', [surface])
 
+  # Returns a shape that is an extrusion of the supplied points into the z axis.
   extrude : (points, distance = 1) ->
     surfaces = []
     front = new seen.Surface (p.copy() for p in points)
@@ -213,6 +222,7 @@ seen.Shapes = {
     surfaces.push back
     return new seen.Shape('extrusion', surfaces)
 
+  # Returns an extruded block arrow shape.
   arrow : (thickness = 1, tailLength = 1, tailWidth = 1, headLength = 1, headPointiness = 0) ->
     htw = tailWidth/2
     points = [
@@ -226,6 +236,7 @@ seen.Shapes = {
     ]
     return seen.Shapes.extrude(points, thickness)
 
+  # Returns a shape with a single surface using the supplied points array 
   path : (points) ->
     return new seen.Shape('path', [new seen.Surface(points)])
 

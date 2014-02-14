@@ -1,3 +1,5 @@
+# ## Color
+# ------------------
 
 # `Color` objects store RGB and Alpha values from 0 to 255.
 class seen.Color
@@ -26,6 +28,13 @@ class seen.Color
     @r = Math.min(max, Math.max(min, @r))
     @g = Math.min(max, Math.max(min, @g))
     @b = Math.min(max, Math.max(min, @b))
+    return @
+
+  # Takes the minimum between each channel of this `Color` and the supplied `Color` object.
+  minChannels: (c) ->
+    @r = Math.min(c.r, @r)
+    @g = Math.min(c.g, @g)
+    @b = Math.min(c.b, @b)
     return @
 
   # Adds the channels of the current `Color` with each respective channel from the supplied `Color` object.
@@ -99,10 +108,12 @@ seen.Colors = {
 
     return new seen.Color(r * 255, g * 255, b * 255, a * 255)
 
+  # Generates a new random color for each surface of the supplied `Shape`
   randomSurfaces : (shape, sat = 0.5, lit = 0.4) ->
     for surface in shape.surfaces
       surface.fill = new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
+  # Generates a random hue then randomly drifts the hue for each surface of the supplied `Shape`
   randomSurfaces2 : (shape, drift = 0.03, sat = 0.5, lit = 0.4) ->
     hue = Math.random()
     for surface in shape.surfaces
@@ -111,6 +122,7 @@ seen.Colors = {
       if hue > 1 then hue = 0
       surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
 
+  # Generates a random color then sets the fill for every surface of the supplied `Shape`
   randomShape : (shape, sat = 0.5, lit = 0.4) ->
     shape.fill new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
@@ -120,6 +132,6 @@ seen.Colors = {
   gray  : -> @hex('#888888')
 }
 
-# Convenience constructor.
+# Convenience `Color` constructor.
 seen.C = (r,g,b,a) -> new seen.Color(r,g,b,a)
 

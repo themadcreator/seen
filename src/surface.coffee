@@ -1,9 +1,9 @@
 
-# ## Geometry
-# #### Groups, shapes, and surfaces
+# ## Surfaces and Shapes
 # ------------------
 
-# A surface is a defined as a planar object in 3D space. These paths don't necessarily need to be convex.
+# A `Surface` is a defined as a planar object in 3D space. These paths don't necessarily need
+# to be convex, but they should be non-degenerate. This library does not support shapes with holes.
 class seen.Surface
   # When 'false' this will override backface culling, which is useful if your material is transparent
   cullBackfaces : true
@@ -11,22 +11,26 @@ class seen.Surface
   fill          : new seen.Material(seen.C.gray)
   stroke        : null
 
-  # TODO change to options constructor with defaults
   constructor: (@points, @painter = seen.Painters.path) ->
     @id = 's' + seen.Util.uniqueId()
 
+# A `Shape` contains a collection of surface. They may create a closed 3D shape, but not necessarily.
+# For example, a cube is a closed shape, but a patch is not.
 class seen.Shape extends seen.Transformable
   constructor: (@type, @surfaces) ->
     super()
 
+  # Visit each surface
   eachSurface: (f) ->
     @surfaces.forEach(f)
     return @
 
+  # Apply the supplied fill `Material` to each surface
   fill: (fill) ->
     @eachSurface (s) -> s.fill = fill
     return @
 
+  # Apply the supplied stroke `Material` to each surface
   stroke: (stroke) ->
     @eachSurface (s) -> s.stroke = stroke
     return @

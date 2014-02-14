@@ -29,16 +29,16 @@ class seen.Matrix
   copy: ->
     return new seen.Matrix(@m.slice())
 
-  # Desctructively resets the matrix to the identity matrix.
+  # Resets the matrix to the identity matrix.
   reset: ->
     @m = IDENTITY.slice()
     return @
 
-  # Destructively multiply by the `Matrix` argument.
+  # Multiply by the `Matrix` argument.
   multiply: (b) ->
     return @matrix(b.m)
 
-  # Destructively multiply by the 16-value `Array` argument. This method uses the `ARRAY_POOL`, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.
+  # Multiply by the 16-value `Array` argument. This method uses the `ARRAY_POOL`, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.
   matrix: (m) ->
     c = ARRAY_POOL
     for j in [0...4]
@@ -52,35 +52,35 @@ class seen.Matrix
     @m = c
     return @
 
-  # Destructively apply a rotation about the X axis. `Theta` is measured in Radians
+  # Apply a rotation about the X axis. `Theta` is measured in Radians
   rotx: (theta) ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ 1, 0, 0, 0, 0, ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1 ]
     return @matrix(rm)
 
-  # Destructively apply a rotation about the Y axis. `Theta` is measured in Radians
+  # Apply a rotation about the Y axis. `Theta` is measured in Radians
   roty: (theta)  ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ ct, 0, st, 0, 0, 1, 0, 0, -st, 0, ct, 0, 0, 0, 0, 1 ]
     return @matrix(rm)
 
-  # Destructively apply a rotation about the Z axis. `Theta` is measured in Radians
+  # Apply a rotation about the Z axis. `Theta` is measured in Radians
   rotz: (theta) ->
     ct = Math.cos(theta)
     st = Math.sin(theta)
     rm = [ ct, -st, 0, 0, st, ct, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]
     return @matrix(rm)
 
-  # Destructively apply a translation. All arguments default to `0`
+  # Apply a translation. All arguments default to `0`
   translate: (x = 0, y = 0, z = 0) ->
     @m[3]  += x
     @m[7]  += y
     @m[11] += z
     return @
 
-  # Destructively apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
+  # Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
   scale: (sx, sy, sz) ->
     sx     ?= 1
     sy     ?= sx
@@ -137,14 +137,14 @@ class seen.Point
     @w = p.w
     return @
 
-  # Destructively performs parameter-wise addition with the supplied `Point`.
+  # Performs parameter-wise addition with the supplied `Point`.
   add: (q) ->
     @x += q.x
     @y += q.y
     @z += q.z
     return @
 
-  # Destructively performs parameter-wise subtraction with the supplied `Point`.
+  # Performs parameter-wise subtraction with the supplied `Point`.
   subtract: (q) ->
     @x -= q.x
     @y -= q.y
@@ -158,28 +158,28 @@ class seen.Point
     @z += z
     return @
 
-  # Destructively multiplies each parameters by the supplied scalar value.
+  # Multiplies each parameters by the supplied scalar value.
   multiply: (n) ->
     @x *= n
     @y *= n
     @z *= n
     return @
 
-  # Destructively divides each parameters by the supplied scalar value.
+  # Divides each parameters by the supplied scalar value.
   divide: (n) ->
     @x /= n
     @y /= n
     @z /= n
     return @
 
-  # Destructively rounds each coordinate to the nearest integer.
+  # Rounds each coordinate to the nearest integer.
   round: () ->
     @x = Math.round(@x)
     @y = Math.round(@y)
     @z = Math.round(@z)
     return @
 
-  # Destructively scales this `Point` by its magnitude.
+  # Divides this `Point` by its magnitude.
   normalize: () ->
     n = Math.sqrt(@dot(@))
     if n == 0
@@ -203,7 +203,7 @@ class seen.Point
   dot: (q) ->
     return @x * q.x + @y * q.y + @z * q.z
 
-  # Destructively computes the cross product with the supplied `Point`.
+  # Computes the cross product with the supplied `Point`.
   cross: (q) ->
     r = POINT_POOL
     r.x = @y * q.z - @z * q.y
@@ -212,9 +212,6 @@ class seen.Point
 
     @set(r)
     return @
-
-  toJSON: () ->
-    return [@x, @y, @z, @w]
 
 # Convenience method for creating `Points`.
 seen.P = (x,y,z,w) -> new seen.Point(x,y,z,w)
@@ -230,20 +227,25 @@ seen.Points = {
   ZERO : seen.P(0, 0, 0)
 }
 
-# http://glprogramming.com/codedump/godecho/quaternion.html
+# A Quaterionion class for computing quaterion multiplications. This creates more natural mouse rotations.
+#
+# Attribution: adapted from http://glprogramming.com/codedump/godecho/quaternion.html
 class seen.Quaternion
   @pixelsPerRadian : 150
 
+  # Convert the x and y pixel offsets into a rotation matrix
   @xyToTransform : (x, y) ->
     quatX = seen.Quaternion.pointAngle(seen.Points.Y, x / seen.Quaternion.pixelsPerRadian)
     quatY = seen.Quaternion.pointAngle(seen.Points.X, y / seen.Quaternion.pixelsPerRadian)
     return quatX.multiply(quatY).toMatrix()
 
+  # Create a rotation matrix from the axis defined by x, y, and z values, and the supplied angle.
   @axisAngle : (x, y, z, angleRads) ->
     scale = Math.sin(angleRads / 2.0)
     w     = Math.cos(angleRads / 2.0)
     return new seen.Quaternion(scale * x, scale * y, scale * z, w)
 
+  # Create a rotation matrix from the axis defined by the supplied point and the supplied angle.
   @pointAngle : (p, angleRads) ->
     scale = Math.sin(angleRads / 2.0)
     w     = Math.cos(angleRads / 2.0)
@@ -252,6 +254,7 @@ class seen.Quaternion
   constructor : ->
     @q = seen.P(arguments...)
 
+  # Multiply this `Quaterionion` by the `Quaternion` argument.
   multiply : (q) ->
     r = seen.P()
 
@@ -264,28 +267,25 @@ class seen.Quaternion
     result.q = r
     return result
 
+  # Convert this `Quaterion` into a transformation matrix.
   toMatrix : ->
     m = new Array(16)
 
-    # First row
     m[ 0] = 1.0 - 2.0 * ( @q.y * @q.y + @q.z * @q.z )
     m[ 1] = 2.0 * ( @q.x * @q.y - @q.w * @q.z )
     m[ 2] = 2.0 * ( @q.x * @q.z + @q.w * @q.y )
     m[ 3] = 0.0
 
-    # Second row
     m[ 4] = 2.0 * ( @q.x * @q.y + @q.w * @q.z )
     m[ 5] = 1.0 - 2.0 * ( @q.x * @q.x + @q.z * @q.z )
     m[ 6] = 2.0 * ( @q.y * @q.z - @q.w * @q.x )
     m[ 7] = 0.0
 
-    # Third row
     m[ 8] = 2.0 * ( @q.x * @q.z - @q.w * @q.y )
     m[ 9] = 2.0 * ( @q.y * @q.z + @q.w * @q.x )
     m[10] = 1.0 - 2.0 * ( @q.x * @q.x + @q.y * @q.y )
     m[11] = 0.0
 
-    # Fourth row
     m[12] = 0
     m[13] = 0
     m[14] = 0

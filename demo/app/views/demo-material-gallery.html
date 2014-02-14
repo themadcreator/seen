@@ -10,8 +10,17 @@
     padding : 2em 10em;
   }
 
-  label {
-    font-size: 12pt;
+  .ui-widget {
+    font-size: 0.8em;
+  }
+
+  h4 {
+    margin-bottom : 4px;
+  }
+
+  h5 {
+    margin-top    : 4px;
+    margin-bottom : 4px;
   }
 </style>
 
@@ -26,8 +35,17 @@
   </div>
 
   <h4>Material</h4>
-  <label for="hue-slider">Hue</label><div id="hue-slider"></div>
-  <label for="shinyness-slider">Shinyness</label><div id="shinyness-slider"></div>
+  <h5>Hue</h5>
+  <div id="hue-slider"></div>
+
+  <h5>Shinyness</h5>
+  <div id="shinyness-slider"></div>
+
+  <h5>Specular Type</h5>
+  <div id="metallic-radios">
+    <input type="radio" id="metallic-no" name="metallic-radio" value="no" checked="checked"><label for="metallic-no">Non-metallic</label>
+    <input type="radio" id="metallic-yes" name="metallic-radio" value="yes"><label for="metallic-yes">Metallic</label>
+  </div>
 
   <h4>Lights</h4>
   <div id="light-toggles">
@@ -75,6 +93,7 @@
     hue = parseFloat($('#hue-slider').slider('value')) / 100.0
     for surf in shape.surfaces
       surf.fill.color = seen.Colors.hsl(hue, 0.5, 0.5)
+      surf.fill.specularColor = surf.fill.color
       surf.dirty = true
     context.render()
 
@@ -85,18 +104,25 @@
       surf.dirty = true
     context.render()
 
+  updateMetallic = ->
+    metallic = $('input[name=metallic-radio]:checked').val() is 'yes'
+    for surf in shape.surfaces
+      surf.fill.metallic = metallic
+      surf.dirty = true
+    context.render()
+
   updateShape =  ->
     shapeType = $('input[name=shape-radio]:checked').val()
     group.children = [shape = shapeFactory[shapeType]()]
     updateHue()
     updateShinyness()
+    updateMetallic()
     context.render()
 
   updateLights = ->
-    #console.log 'UPDATEING LIGHTS'
-    $('#light-toggles input').each (i, el) ->
-      #console.log i, el
-      scene.model.lights[i].enabled = $(el).is(':checked')
+    states = $('#light-toggles input').map (i, el) -> $(el).is(':checked')
+    for state, i in states
+      scene.model.lights[i].enabled = state
     context.render()
 
   updateLightingModel = ->
@@ -115,6 +141,7 @@
       max   : 20
       step  : 0.1
     )
+    $('#metallic-radios').buttonset().click(updateMetallic)
     $('#light-toggles').buttonset().click(updateLights)
     $('#lighting-model-radios').buttonset().click(updateLightingModel)
 

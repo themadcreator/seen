@@ -1,10 +1,14 @@
-
+# The object model class.
+# This class stores `Shapes`, `Lights`, and other `Models`
+# Since it extends `Transformable` it also contains a transformation matrix.
 class seen.Model extends seen.Transformable
   constructor: () ->
     super()
     @children = []
     @lights   = []
 
+  # Add a `Shape`, `Light`, and other `Model` as a child of this `Model`
+  # Any number of children can by supplied as arguments.
   add: (childs...) ->
     for child in childs
       if child instanceof seen.Shape or child instanceof seen.Model
@@ -13,11 +17,13 @@ class seen.Model extends seen.Transformable
         @lights.push child
     return @
 
+  # Create a new child model and return it.
   append: () ->
     model = new seen.Model
     @add model
     return model
 
+  # Visit each `Shape` in this `Model` and all recursive child `Model`s
   eachShape: (f) ->
     for child in @children
       if child instanceof seen.Shape
@@ -25,6 +31,11 @@ class seen.Model extends seen.Transformable
       if child instanceof seen.Model
         child.eachShape(f)
 
+  # Visit each `Light` and `Shape`, accumulating the recursive transformation matrices
+  # along the way. The light callback will be called with each light and its accumulated
+  # transform and it should return a `LightModel`. Each shape callback with be called
+  # with each shape and its accumulated transform as well as the list of light models 
+  # that apply to that shape.
   eachRenderable : (lightFn, shapeFn) ->
     @_eachRenderable(lightFn, shapeFn, [], @m)
 
@@ -42,21 +53,22 @@ class seen.Model extends seen.Transformable
 
 
 seen.Models = {
+  # The default model contains standard Hollywood-style 3-part lighting
   default : ->
     model = new seen.Model()
 
-    # Key
+    # Key light
     model.add seen.Lights.directional
       normal    : seen.P(-1, 1, 1).normalize()
       color     : seen.Colors.hsl(0.1, 0.3, 0.7)
       intensity : 0.004
 
-    # Back
+    # Back light
     model.add seen.Lights.directional
       normal    : seen.P(1, 1, -1).normalize()
       intensity : 0.003
 
-    # Fill
+    # Fill light
     model.add seen.Lights.ambient
       intensity : 0.0015
 

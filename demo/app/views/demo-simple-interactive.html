@@ -16,7 +16,11 @@
   context = seen.SvgContext('seen-canvas', scene, width, height)
   context.render()
 
-  dragger = new seen.Drag(document.getElementById('seen-canvas'), {inertia : true})
+  context.animate()
+    .onBefore(-> shape.rotx(0.01).roty(0.007))
+    .start()
+
+  dragger = new seen.Drag('seen-canvas', {inertia : true})
   dragger.on('drag.rotate', (e) ->
     xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
     shape.transform(xform)

@@ -1,9 +1,14 @@
+# ## RenderModels
+# ------------------
+
 # The `RenderModel` object contains the transformed and projected points as well as various data
-# needed to render scene shapes.
+# needed to shade and paint a `Surface`.
 #
 # Once initialized, the object will have a constant memory footprint
 # down to `Number` primitives. Also, we compare each transform and projection
-# to prevent unnecessary re-computation.
+# to prevent unnecessary re-computation. 
+# 
+# If you need to force a re-computation, mark the surface as 'dirty'.
 class seen.RenderModel
   constructor: (@surface, @transform, @projection) ->
     @points      = @surface.points
@@ -52,7 +57,7 @@ class seen.RenderModel
     set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
     set.normal.set(set.v0).cross(set.v1).normalize()
 
-
+# The `LightRenderModel` stores pre-computed values necessary for shading surfaces with the supplied `Light`.
 class seen.LightRenderModel
   constructor: (light, transform) ->
     @colorIntensity = light.color.copy().scale(light.intensity)

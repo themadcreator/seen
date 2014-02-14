@@ -6,10 +6,12 @@
   width  = {{width}}
   height = {{height}}
 
-  shape = seen.Shapes.sphere(3).scale(150)
-  seen.Colors.randomSurfaces2(shape, 0.01)
+  shape = seen.Shapes.sphere(2).scale(150)
+  seen.Colors.randomSurfaces2(shape) #, 0.01)
 
   scene = new seen.Scene
+    fractionalPoints : true
+    cullBackfaces    : false
     model  : seen.Models.default().add(shape)
     camera : new seen.Camera
       viewport : seen.Viewports.center(width, height)
@@ -18,6 +20,7 @@
 
   for surf in shape.surfaces
     surf.originals = surf.points.map (p) -> p.copy()
+    surf.fill.color.a = 150 # A little transparency
   
   t = 0
   noiser = new Simplex3D(Math.random())
@@ -30,9 +33,16 @@
         surf.dirty = true
 
       shape.rotx(0.001).rotz(0.003)
-      t += 0.01
+      t += 0.005
     )
-    .startRenderLoop()
+    .start()
+
+  dragger = new seen.Drag(document.getElementById('seen-canvas'), {inertia : true})
+  dragger.on('drag.rotate', (e) ->
+    xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
+    shape.transform(xform)
+    context.render()
+  )
 
 </script>
 {% endblock %}

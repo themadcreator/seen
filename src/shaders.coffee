@@ -1,4 +1,7 @@
+# ## Shaders
+# ------------------
 
+# Shader functions are aggregated in this utils object
 seen.ShaderUtils = {
   applyDiffuse : (c, light, lightNormal, surfaceNormal, material) ->
     dot = lightNormal.dot(surfaceNormal)
@@ -14,14 +17,12 @@ seen.ShaderUtils = {
       # Apply diffuse phong shading
       c.addChannels(light.colorIntensity.copy().scale(dot))
 
-      # Apply specular phong shading
+      # Compute and apply specular phong shading
       eyeNormal         = seen.Points.Z
       reflectionNormal  = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
       specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent)
-      # TODO scale by specular color from material if available
-      # specularColor     = seen.C.white #material.specularColor ? seen.C.white
-      # c._addChannels(specularColor.scale(specularIntensity * light.intensity))
-      c.offset(specularIntensity * light.intensity)
+      specularColor     = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
+      c.addChannels(specularColor)
 
   applyAmbient : (c, light) ->
     # Apply ambient shading
@@ -55,7 +56,12 @@ class Phong extends seen.Shader
         when 'ambient'
           seen.ShaderUtils.applyAmbient(c, light)
 
-    c.multiplyChannels(material.color).clamp(0, 0xFF)
+    c.multiplyChannels(material.color)
+
+    if material.metallic
+      c.minChannels(material.specularColor)
+
+    c.clamp(0, 0xFF)
     return c
 
 # The `DiffusePhong` shader implements the Phong shading model with a diffuse and ambient term (no specular).
@@ -94,6 +100,8 @@ class Flat extends seen.Shader
   shade: (lights, renderModel, material) ->
     return material.color
 
+# Since `Shader` objects are stateless, we don't need to construct them more than once.
+# So, we export global instances here.
 seen.Shaders = {
   phong   : new Phong()
   diffuse : new DiffusePhong()

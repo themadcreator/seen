@@ -1,4 +1,7 @@
+# ## Interaction
+# ------------------
 
+# A global window event dispatcher.
 seen.WindowEvents = do ->
   dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp')
   window.addEventListener('mouseup', dispatch.mouseUp, true)
@@ -6,6 +9,8 @@ seen.WindowEvents = do ->
   window.addEventListener('mousemove', dispatch.mouseMove, true)
   return {on : dispatch.on}
 
+# An event dispatcher for mouse and drag events on a single dom element.
+# The available events are 'dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp'
 class seen.MouseEvents
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -42,6 +47,7 @@ class seen.MouseEvents
     @dispatch.mouseUp(e)
     @dispatch.dragEnd(e)
 
+# A class for computing mouse interia for interial scrolling
 class seen.InertialMouse
   @inertiaExtinction : 0.1
   @smoothingTimeout  : 300
@@ -78,13 +84,15 @@ class seen.InertialMouse
     @y *= (1.0 - seen.InertialMouse.inertiaExtinction)
     return @
 
-
+# A class that adds simple mouse dragging to a dom element.
+# A 'drag' event is emitted as the user is dragging their mouse.
 class seen.Drag
   defaults:
     inertia : false
 
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
+    @el = seen.Util.element(@el)
     @_uid = seen.Util.uniqueId('dragger-')
 
     @_inertiaRunning = false

@@ -1,5 +1,6 @@
 # Parser for Wavefront .obj files
-# NOTE: WAVEFRONT OBJ ARRAY INDICES ARE 1-BASED!!!!
+# 
+# Note: Wavefront .obj array indicies are 1-based.
 class seen.ObjParser
   constructor : () ->
     @vertices = []
@@ -34,6 +35,7 @@ class seen.ObjParser
       points = face.map (v) => seen.P(@vertices[v - 1]...)
       return faceMap.call(@, points)
 
+# This method accepts Wavefront .obj file content and returns a `Shape` object.
 seen.Shapes.obj = (objContents, cullBackfaces = true) ->
   parser = new seen.ObjParser()
   parser.parse(objContents)

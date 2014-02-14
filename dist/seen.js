@@ -363,10 +363,6 @@
       return this;
     };
 
-    Point.prototype.toJSON = function() {
-      return [this.x, this.y, this.z, this.w];
-    };
-
     return Point;
 
   })();
@@ -486,6 +482,13 @@
       this.r = Math.min(max, Math.max(min, this.r));
       this.g = Math.min(max, Math.max(min, this.g));
       this.b = Math.min(max, Math.max(min, this.b));
+      return this;
+    };
+
+    Color.prototype.minChannels = function(c) {
+      this.r = Math.min(c.r, this.r);
+      this.g = Math.min(c.g, this.g);
+      this.b = Math.min(c.b, this.b);
       return this;
     };
 
@@ -709,14 +712,15 @@
       }
     },
     applyDiffuseAndSpecular: function(c, light, lightNormal, surfaceNormal, material) {
-      var dot, eyeNormal, reflectionNormal, specularIntensity;
+      var dot, eyeNormal, reflectionNormal, specularColor, specularIntensity;
       dot = lightNormal.dot(surfaceNormal);
       if (dot > 0) {
         c.addChannels(light.colorIntensity.copy().scale(dot));
         eyeNormal = seen.Points.Z;
         reflectionNormal = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal);
         specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent);
-        return c.offset(specularIntensity * light.intensity);
+        specularColor = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0);
+        return c.addChannels(specularColor);
       }
     },
     applyAmbient: function(c, light) {
@@ -758,7 +762,11 @@
             seen.ShaderUtils.applyAmbient(c, light);
         }
       }
-      c.multiplyChannels(material.color).clamp(0, 0xFF);
+      c.multiplyChannels(material.color);
+      if (material.metallic) {
+        c.minChannels(material.specularColor);
+      }
+      c.clamp(0, 0xFF);
       return c;
     };
 
@@ -908,7 +916,7 @@
   seen.Painter = (function() {
     function Painter() {}
 
-    Painter.prototype.paint = function(renderObject, context) {};
+    Painter.prototype.paint = function(renderModel, context) {};
 
     return Painter;
 
@@ -922,14 +930,14 @@
       return _ref4;
     }
 
-    PathPainter.prototype.paint = function(renderObject, context) {
+    PathPainter.prototype.paint = function(renderModel, context) {
       var _ref5, _ref6;
       return context.path().style({
-        fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
-        stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
-        'fill-opacity': ((_ref5 = renderObject.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderObject.fill.a / 255.0,
-        'stroke-width': (_ref6 = renderObject.surface['stroke-width']) != null ? _ref6 : 1
-      }).path(renderObject.projected.points);
+        fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
+        stroke: renderModel.stroke == null ? 'none' : renderModel.stroke.hex(),
+        'fill-opacity': ((_ref5 = renderModel.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderModel.fill.a / 255.0,
+        'stroke-width': (_ref6 = renderModel.surface['stroke-width']) != null ? _ref6 : 1
+      }).path(renderModel.projected.points);
     };
 
     return PathPainter;
@@ -944,13 +952,13 @@
       return _ref5;
     }
 
-    TextPainter.prototype.paint = function(renderObject, context) {
+    TextPainter.prototype.paint = function(renderModel, context) {
       var _ref6;
       return context.text().style({
-        fill: renderObject.fill == null ? 'none' : renderObject.fill.hex(),
-        stroke: renderObject.stroke == null ? 'none' : renderObject.stroke.hex(),
-        'text-anchor': (_ref6 = renderObject.surface.anchor) != null ? _ref6 : 'middle'
-      }).transform(renderObject.transform.copy().multiply(renderObject.projection)).text(renderObject.surface.text);
+        fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
+        stroke: renderModel.stroke == null ? 'none' : renderModel.stroke.hex(),
+        'text-anchor': (_ref6 = renderModel.surface.anchor) != null ? _ref6 : 'middle'
+      }).transform(renderModel.transform.copy().multiply(renderModel.projection)).text(renderModel.surface.text);
     };
 
     return TextPainter;
@@ -1645,6 +1653,7 @@
       this._onDragEnd = __bind(this._onDragEnd, this);
       this._onDragStart = __bind(this._onDragStart, this);
       seen.Util.defaults(this, options, this.defaults);
+      this.el = seen.Util.element(this.el);
       this._uid = seen.Util.uniqueId('dragger-');
       this._inertiaRunning = false;
       this._dragState = {
@@ -1996,7 +2005,7 @@
     sphere: function(subdivisions) {
       var i, triangles, _i;
       if (subdivisions == null) {
-        subdivisions = 1;
+        subdivisions = 2;
       }
       triangles = ICOSAHEDRON_COORDINATE_MAP.map(function(coords) {
         return coords.map(function(c) {
@@ -2174,20 +2183,32 @@
       this.render = __bind(this.render, this);
       this.dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render');
       this.on = this.dispatch.on;
+      this._running = false;
     }
 
-    Animator.prototype.startRenderLoop = function(msecDelay) {
+    Animator.prototype.start = function(msecDelay) {
       if (msecDelay == null) {
         msecDelay = 30;
       }
-      setInterval(this.render, msecDelay);
+      this._running = true;
+      this._msecDelay = msecDelay;
+      setTimeout(this.render, this._msecDelay);
+      return this;
+    };
+
+    Animator.prototype.stop = function() {
+      this._running = false;
       return this;
     };
 
     Animator.prototype.render = function() {
+      if (!this._running) {
+        return;
+      }
       this.dispatch.beforeRender();
       this.dispatch.render();
       this.dispatch.afterRender();
+      setTimeout(this.render, this._msecDelay);
       return this;
     };
 

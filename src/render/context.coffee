@@ -1,4 +1,9 @@
+# ## Contexts
+# #### Base classes for rendering context and layers
+# ------------------
 
+# The `RenderContext` uses `RenderModel`s produced by the scene's render method to paint the shapes into an HTML element.
+# Since we support both SVG and Canvas painters, the `RenderContext` and `RenderLayerContext` define a common interface.
 class seen.RenderContext
   constructor: ->
     @layers = {}
@@ -12,9 +17,12 @@ class seen.RenderContext
     @cleanup()
     return @
 
+  # Returns a new `Animator` with this context's render method pre-registered.
   animate : ->
     return new seen.Animator().onRender(@render)
 
+  # Add a new `RenderLayerContext` to this context. This allows us to easily stack paintable components such as
+  # a fill backdrop, or even multiple scenes in one context.
   layer: (name, layer) ->
     @layers[name] = {
       layer   : layer
@@ -25,7 +33,7 @@ class seen.RenderContext
   reset   : ->
   cleanup : ->
 
-
+# The `RenderLayerContext` defines the interface for producing builders that can paint various things into the current layer.
 class seen.RenderLayerContext
   path    : -> # Return a path builder
   text    : -> # Return a text builder
