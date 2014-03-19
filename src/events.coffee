@@ -40,13 +40,14 @@ seen.Events.Event = ->
 
   event = ->
     for l in listeners
-      l.apply(@, arguments)
+      if l? then l.apply(@, arguments)
 
   event.on = (name, listener) ->
     existing = listenerMap[name]
 
     if existing
-      listeners = listeners.slice(0, i = listeners.indexOf(existing)).concat(listeners.slice(i + 1))
+      i = listeners.indexOf(existing)
+      if i > 0 then listeners.splice(i, 1)
       delete listenerMap[name]
 
     if listener

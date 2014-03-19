@@ -17,7 +17,7 @@ class seen.MouseEvents
 
     @_uid = seen.Util.uniqueId('mouser-')
 
-    @dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp')
+    @dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp', 'mouseWheel')
     @on       = @dispatch.on
 
     @_mouseDown = false
@@ -25,9 +25,11 @@ class seen.MouseEvents
 
   attach : () ->
     @el.addEventListener('mousedown', @_onMouseDown)
+    @el.addEventListener('mousewheel', @_onMouseWheel)
 
   detach : () ->
     @el.removeEventListener('mousedown', @_onMouseDown)
+    @el.removeEventListener('mousewheel', @_onMouseWheel)
 
   _onMouseMove : (e) =>
     @dispatch.mouseMove(e)
@@ -46,6 +48,9 @@ class seen.MouseEvents
     seen.WindowEvents.on "mouseMove.#{@_uid}", null
     @dispatch.mouseUp(e)
     @dispatch.dragEnd(e)
+
+  _onMouseWheel : (e) =>
+    @dispatch.mouseWheel(e)
 
 # A class for computing mouse interia for interial scrolling
 class seen.InertialMouse
@@ -164,3 +169,19 @@ class seen.Drag
   _stopInertia : =>
     @_dragState.inertia.reset()
     @_inertiaRunning = false
+
+class seen.Zoom
+  constructor : (@el) ->
+    @el       = seen.Util.element(@el)
+    @_uid     = seen.Util.uniqueId('zoomer-')
+    @dispatch = seen.Events.dispatch('zoom')
+    @on       = @dispatch.on
+    
+    mouser    = new seen.MouseEvents(@el)
+    mouser.on "mouseWheel.#{@_uid}", @_onMouseWheel
+
+  _onMouseWheel : (e) =>
+    sign       = e.wheelDelta / Math.abs(e.wheelDelta)
+    zoomFactor = Math.abs(e.wheelDelta) / 120
+    zoom       = Math.pow(2, sign*zoomFactor)
+    @dispatch.zoom({sign, zoomFactor, zoom, e})

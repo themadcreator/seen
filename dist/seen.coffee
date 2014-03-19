@@ -100,13 +100,14 @@ seen.Events.Event = ->
 
   event = ->
     for l in listeners
-      l.apply(@, arguments)
+      if l? then l.apply(@, arguments)
 
   event.on = (name, listener) ->
     existing = listenerMap[name]
 
     if existing
-      listeners = listeners.slice(0, i = listeners.indexOf(existing)).concat(listeners.slice(i + 1))
+      i = listeners.indexOf(existing)
+      if i > 0 then listeners.splice(i, 1)
       delete listenerMap[name]
 
     if listener
@@ -785,22 +786,23 @@ class PathPainter extends seen.Painter
         stroke         : if not renderModel.stroke? then 'none' else renderModel.stroke.hex()
         'fill-opacity' : if not renderModel.fill?.a? then 1.0 else (renderModel.fill.a / 255.0)
         'stroke-width' : renderModel.surface['stroke-width'] ? 1
-      ).path(renderModel.projected.points)
+      )
+      .path(renderModel.projected.points)
+      .fill()
 
 class TextPainter extends seen.Painter
   paint : (renderModel, context) ->
+    xform = renderModel.transform.copy().multiply renderModel.projection
     context.text()
       .style(
         fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
-        stroke        : if not renderModel.stroke? then 'none' else renderModel.stroke.hex()
         'text-anchor' : renderModel.surface.anchor ? 'middle'
       )
-      .transform(renderModel.transform.copy().multiply renderModel.projection)
-      .text(renderModel.surface.text)
+      .text(xform, renderModel.surface.text)
 
 seen.Painters = {
-  path : new PathPainter()
-  text : new TextPainter()
+  path  : new PathPainter()
+  text  : new TextPainter()
 }
 
 
@@ -859,9 +861,14 @@ class seen.RenderModel
     set.barycenter.divide(set.points.length)
 
     # Compute normal, which is used for backface culling (when enabled)
-    set.v0.set(set.points[1]).subtract(set.points[0])
-    set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
-    set.normal.set(set.v0).cross(set.v1).normalize()
+    if set.points.length < 2
+      set.v0.set(seen.Points.Z)
+      set.v1.set(seen.Points.Z)
+      set.normal.set(seen.Points.Z)
+    else
+      set.v0.set(set.points[1]).subtract(set.points[0])
+      set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
+      set.normal.set(set.v0).cross(set.v1).normalize()
 
 # The `LightRenderModel` stores pre-computed values necessary for shading surfaces with the supplied `Light`.
 class seen.LightRenderModel
@@ -946,47 +953,35 @@ _svg = (name) ->
 _line = (points) ->
   return 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
 
-_styleElement = (el, style) ->
-  str = ''
-  for key,val of style
-    str += "#{key}:#{val};"
-  el.setAttribute('style', str)
-
-class seen.SvgPathPainter
+class seen.SvgStyler
   setElement: (@el) ->
 
   style: (style) ->
-    _styleElement(@el, style)
+    str = ''
+    for key,val of style
+      str += "#{key}:#{val};"
+    @el.setAttribute('style', str)
+
     return @
 
+  # Included for compatibility with the common API w/ canvas
+  fill : -> return @
+  draw : -> return @
+
+class seen.SvgPathPainter extends seen.SvgStyler
   path: (points) ->
     @el.setAttribute('d', _line(points))
     return @
 
-class seen.SvgTextPainter
-  setElement: (@el) ->
-
-  style: (style) ->
-    _styleElement(@el, style)
-    return @
-
-  transform: (transform) ->
+class seen.SvgTextPainter extends seen.SvgStyler
+  text: (transform, text) ->
     m = seen.Matrices.flipY().multiply(transform).m
     @el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
-    return @
-
-  text: (text) ->
     @el.textContent = text
     return @
 
-class seen.SvgRectPainter
-  setElement: (@el) ->
-
-  style: (style) ->
-    _styleElement(@el, style)
-    return @
-
-  size: ({width, height}) ->
+class seen.SvgRectPainter extends seen.SvgStyler
+  rect: ({width, height}) ->
     @el.setAttribute('width', width)
     @el.setAttribute('height', height)
     return @
@@ -1059,8 +1054,7 @@ seen.SvgContext = (elementId, scene, width, height) ->
   return seen.LayersScene(context, scene, width, height)
 
 
-
-class seen.CanvasPathPainter
+class seen.CanvasStyler
   constructor : (@ctx) ->
 
   style: (style) ->
@@ -1070,6 +1064,15 @@ class seen.CanvasPathPainter
         when 'stroke' then @ctx.strokeStyle = val
     return @
 
+  draw : ->
+    @ctx.stroke()
+    return @
+
+  fill : ->
+    @ctx.fill()
+    return @
+
+class seen.CanvasPathPainter extends seen.CanvasStyler
   path: (points) ->
     @ctx.beginPath()
 
@@ -1080,64 +1083,47 @@ class seen.CanvasPathPainter
         @ctx.lineTo(p.x, p.y)
 
     @ctx.closePath()
-    @ctx.fill()
     return @
 
-
-class seen.CanvasTextPainter
-  constructor : (@ctx) ->
-
-  style: (style) ->
-    for key, val of style
-      switch key
-        when 'fill' then @ctx.fillStyle = val
-        when 'stroke' then @ctx.strokeStyle = val
-
-    @ctx.font = '16px Roboto'
+class seen.CanvasRectPainter extends seen.CanvasStyler
+  rect: ({width, height}) ->
+    @ctx.rect(0, 0, width, height)
     return @
 
-  text: (text) ->
-    @ctx.fillText(text, 0, 0)
-    @ctx.setTransform(1, 0, 0, 1, 0, 0)
+class seen.CanvasPointPainter extends seen.CanvasStyler
+  circle: (point, radius) ->
+    @ctx.beginPath()
+    @ctx.arc(point.x, point.y, radius, 0, 2*Math.PI, true)
     return @
 
-  transform: (transform) ->
+class seen.CanvasTextPainter extends seen.CanvasStyler
+  text: (transform, text) ->
     m = seen.Matrices.flipY().multiply(transform).m
+    @ctx.save()
+    @ctx.font = '16px Roboto' # TODO method
     @ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
+    @ctx.fillText(text, 0, 0)
+    @ctx.restore()
     return @
-
-
-class seen.CanvasRectPainter
-  constructor : (@ctx) ->
-
-  style: (style) ->
-    for key, val of style
-      switch key
-        when 'fill' then @ctx.fillStyle = val
-        when 'stroke' then @ctx.strokeStyle = val
-    return @
-
-  size: ({width, height}) ->
-    @ctx.fillRect(0, 0, width, height)
-    return @
-
 
 class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
   constructor : (@ctx) ->
-    @pathPainter = new seen.CanvasPathPainter(@ctx)
-    @textPainter = new seen.CanvasTextPainter(@ctx)
-    @rectPainter = new seen.CanvasRectPainter(@ctx)
+    @pathPainter  = new seen.CanvasPathPainter(@ctx)
+    @pointPainter = new seen.CanvasPointPainter(@ctx)
+    @textPainter  = new seen.CanvasTextPainter(@ctx)
+    @rectPainter  = new seen.CanvasRectPainter(@ctx)
 
   path : () ->
     return @pathPainter
+
+  point : () ->
+    return @pointPainter
 
   text : () ->
     return @textPainter
 
   rect : () ->
     return @rectPainter
-
-
 
 class seen.CanvasRenderContext extends seen.RenderContext
   constructor: (@el, @width, @height) ->
@@ -1181,7 +1167,7 @@ class seen.MouseEvents
 
     @_uid = seen.Util.uniqueId('mouser-')
 
-    @dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp')
+    @dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp', 'mouseWheel')
     @on       = @dispatch.on
 
     @_mouseDown = false
@@ -1189,9 +1175,11 @@ class seen.MouseEvents
 
   attach : () ->
     @el.addEventListener('mousedown', @_onMouseDown)
+    @el.addEventListener('mousewheel', @_onMouseWheel)
 
   detach : () ->
     @el.removeEventListener('mousedown', @_onMouseDown)
+    @el.removeEventListener('mousewheel', @_onMouseWheel)
 
   _onMouseMove : (e) =>
     @dispatch.mouseMove(e)
@@ -1210,6 +1198,9 @@ class seen.MouseEvents
     seen.WindowEvents.on "mouseMove.#{@_uid}", null
     @dispatch.mouseUp(e)
     @dispatch.dragEnd(e)
+
+  _onMouseWheel : (e) =>
+    @dispatch.mouseWheel(e)
 
 # A class for computing mouse interia for interial scrolling
 class seen.InertialMouse
@@ -1328,6 +1319,22 @@ class seen.Drag
   _stopInertia : =>
     @_dragState.inertia.reset()
     @_inertiaRunning = false
+
+class seen.Zoom
+  constructor : (@el) ->
+    @el       = seen.Util.element(@el)
+    @_uid     = seen.Util.uniqueId('zoomer-')
+    @dispatch = seen.Events.dispatch('zoom')
+    @on       = @dispatch.on
+    
+    mouser    = new seen.MouseEvents(@el)
+    mouser.on "mouseWheel.#{@_uid}", @_onMouseWheel
+
+  _onMouseWheel : (e) =>
+    sign       = e.wheelDelta / Math.abs(e.wheelDelta)
+    zoomFactor = Math.abs(e.wheelDelta) / 120
+    zoom       = Math.pow(2, sign*zoomFactor)
+    @dispatch.zoom({sign, zoomFactor, zoom, e})
 
 
 
@@ -1982,4 +1989,7 @@ class seen.Scene
     else
       renderModel.update(transform, projection)
     return renderModel
+
+  flush : () =>
+    @_renderModelCache = {}
 

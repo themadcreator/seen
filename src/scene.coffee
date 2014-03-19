@@ -71,3 +71,6 @@ class seen.Scene
       renderModel.update(transform, projection)
     return renderModel
 
+  flush : () =>
+    @_renderModelCache = {}
+

@@ -5,47 +5,35 @@ _svg = (name) ->
 _line = (points) ->
   return 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
 
-_styleElement = (el, style) ->
-  str = ''
-  for key,val of style
-    str += "#{key}:#{val};"
-  el.setAttribute('style', str)
-
-class seen.SvgPathPainter
+class seen.SvgStyler
   setElement: (@el) ->
 
   style: (style) ->
-    _styleElement(@el, style)
+    str = ''
+    for key,val of style
+      str += "#{key}:#{val};"
+    @el.setAttribute('style', str)
+
     return @
 
+  # Included for compatibility with the common API w/ canvas
+  fill : -> return @
+  draw : -> return @
+
+class seen.SvgPathPainter extends seen.SvgStyler
   path: (points) ->
     @el.setAttribute('d', _line(points))
     return @
 
-class seen.SvgTextPainter
-  setElement: (@el) ->
-
-  style: (style) ->
-    _styleElement(@el, style)
-    return @
-
-  transform: (transform) ->
+class seen.SvgTextPainter extends seen.SvgStyler
+  text: (transform, text) ->
     m = seen.Matrices.flipY().multiply(transform).m
     @el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
-    return @
-
-  text: (text) ->
     @el.textContent = text
     return @
 
-class seen.SvgRectPainter
-  setElement: (@el) ->
-
-  style: (style) ->
-    _styleElement(@el, style)
-    return @
-
-  size: ({width, height}) ->
+class seen.SvgRectPainter extends seen.SvgStyler
+  rect: ({width, height}) ->
     @el.setAttribute('width', width)
     @el.setAttribute('height', height)
     return @

@@ -53,9 +53,14 @@ class seen.RenderModel
     set.barycenter.divide(set.points.length)
 
     # Compute normal, which is used for backface culling (when enabled)
-    set.v0.set(set.points[1]).subtract(set.points[0])
-    set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
-    set.normal.set(set.v0).cross(set.v1).normalize()
+    if set.points.length < 2
+      set.v0.set(seen.Points.Z)
+      set.v1.set(seen.Points.Z)
+      set.normal.set(seen.Points.Z)
+    else
+      set.v0.set(set.points[1]).subtract(set.points[0])
+      set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
+      set.normal.set(set.v0).cross(set.v1).normalize()
 
 # The `LightRenderModel` stores pre-computed values necessary for shading surfaces with the supplied `Light`.
 class seen.LightRenderModel

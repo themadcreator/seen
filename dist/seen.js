@@ -1,5 +1,5 @@
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _styleElement, _svg,
+  var ARRAY_POOL, Ambient, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -100,7 +100,11 @@
       _results = [];
       for (_i = 0, _len = listeners.length; _i < _len; _i++) {
         l = listeners[_i];
-        _results.push(l.apply(this, arguments));
+        if (l != null) {
+          _results.push(l.apply(this, arguments));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };
@@ -108,7 +112,10 @@
       var existing, i;
       existing = listenerMap[name];
       if (existing) {
-        listeners = listeners.slice(0, i = listeners.indexOf(existing)).concat(listeners.slice(i + 1));
+        i = listeners.indexOf(existing);
+        if (i > 0) {
+          listeners.splice(i, 1);
+        }
         delete listenerMap[name];
       }
       if (listener) {
@@ -937,7 +944,7 @@
         stroke: renderModel.stroke == null ? 'none' : renderModel.stroke.hex(),
         'fill-opacity': ((_ref5 = renderModel.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderModel.fill.a / 255.0,
         'stroke-width': (_ref6 = renderModel.surface['stroke-width']) != null ? _ref6 : 1
-      }).path(renderModel.projected.points);
+      }).path(renderModel.projected.points).fill();
     };
 
     return PathPainter;
@@ -953,12 +960,12 @@
     }
 
     TextPainter.prototype.paint = function(renderModel, context) {
-      var _ref6;
+      var xform, _ref6;
+      xform = renderModel.transform.copy().multiply(renderModel.projection);
       return context.text().style({
         fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
-        stroke: renderModel.stroke == null ? 'none' : renderModel.stroke.hex(),
         'text-anchor': (_ref6 = renderModel.surface.anchor) != null ? _ref6 : 'middle'
-      }).transform(renderModel.transform.copy().multiply(renderModel.projection)).text(renderModel.surface.text);
+      }).text(xform, renderModel.surface.text);
     };
 
     return TextPainter;
@@ -1037,9 +1044,15 @@
         set.barycenter.add(p);
       }
       set.barycenter.divide(set.points.length);
-      set.v0.set(set.points[1]).subtract(set.points[0]);
-      set.v1.set(set.points[points.length - 1]).subtract(set.points[0]);
-      return set.normal.set(set.v0).cross(set.v1).normalize();
+      if (set.points.length < 2) {
+        set.v0.set(seen.Points.Z);
+        set.v1.set(seen.Points.Z);
+        return set.normal.set(seen.Points.Z);
+      } else {
+        set.v0.set(set.points[1]).subtract(set.points[0]);
+        set.v1.set(set.points[points.length - 1]).subtract(set.points[0]);
+        return set.normal.set(set.v0).cross(set.v1).normalize();
+      }
     };
 
     return RenderModel;
@@ -1175,27 +1188,43 @@
     }).join('L');
   };
 
-  _styleElement = function(el, style) {
-    var key, str, val;
-    str = '';
-    for (key in style) {
-      val = style[key];
-      str += "" + key + ":" + val + ";";
-    }
-    return el.setAttribute('style', str);
-  };
+  seen.SvgStyler = (function() {
+    function SvgStyler() {}
 
-  seen.SvgPathPainter = (function() {
-    function SvgPathPainter() {}
-
-    SvgPathPainter.prototype.setElement = function(el) {
+    SvgStyler.prototype.setElement = function(el) {
       this.el = el;
     };
 
-    SvgPathPainter.prototype.style = function(style) {
-      _styleElement(this.el, style);
+    SvgStyler.prototype.style = function(style) {
+      var key, str, val;
+      str = '';
+      for (key in style) {
+        val = style[key];
+        str += "" + key + ":" + val + ";";
+      }
+      this.el.setAttribute('style', str);
       return this;
     };
+
+    SvgStyler.prototype.fill = function() {
+      return this;
+    };
+
+    SvgStyler.prototype.draw = function() {
+      return this;
+    };
+
+    return SvgStyler;
+
+  })();
+
+  seen.SvgPathPainter = (function(_super) {
+    __extends(SvgPathPainter, _super);
+
+    function SvgPathPainter() {
+      _ref6 = SvgPathPainter.__super__.constructor.apply(this, arguments);
+      return _ref6;
+    }
 
     SvgPathPainter.prototype.path = function(points) {
       this.el.setAttribute('d', _line(points));
@@ -1204,49 +1233,37 @@
 
     return SvgPathPainter;
 
-  })();
+  })(seen.SvgStyler);
 
-  seen.SvgTextPainter = (function() {
-    function SvgTextPainter() {}
+  seen.SvgTextPainter = (function(_super) {
+    __extends(SvgTextPainter, _super);
 
-    SvgTextPainter.prototype.setElement = function(el) {
-      this.el = el;
-    };
+    function SvgTextPainter() {
+      _ref7 = SvgTextPainter.__super__.constructor.apply(this, arguments);
+      return _ref7;
+    }
 
-    SvgTextPainter.prototype.style = function(style) {
-      _styleElement(this.el, style);
-      return this;
-    };
-
-    SvgTextPainter.prototype.transform = function(transform) {
+    SvgTextPainter.prototype.text = function(transform, text) {
       var m;
       m = seen.Matrices.flipY().multiply(transform).m;
       this.el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
-      return this;
-    };
-
-    SvgTextPainter.prototype.text = function(text) {
       this.el.textContent = text;
       return this;
     };
 
     return SvgTextPainter;
 
-  })();
+  })(seen.SvgStyler);
 
-  seen.SvgRectPainter = (function() {
-    function SvgRectPainter() {}
+  seen.SvgRectPainter = (function(_super) {
+    __extends(SvgRectPainter, _super);
 
-    SvgRectPainter.prototype.setElement = function(el) {
-      this.el = el;
-    };
+    function SvgRectPainter() {
+      _ref8 = SvgRectPainter.__super__.constructor.apply(this, arguments);
+      return _ref8;
+    }
 
-    SvgRectPainter.prototype.style = function(style) {
-      _styleElement(this.el, style);
-      return this;
-    };
-
-    SvgRectPainter.prototype.size = function(_arg) {
+    SvgRectPainter.prototype.rect = function(_arg) {
       var height, width;
       width = _arg.width, height = _arg.height;
       this.el.setAttribute('width', width);
@@ -1256,7 +1273,7 @@
 
     return SvgRectPainter;
 
-  })();
+  })(seen.SvgStyler);
 
   seen.SvgLayerRenderContext = (function(_super) {
     __extends(SvgLayerRenderContext, _super);
@@ -1360,12 +1377,12 @@
     return seen.LayersScene(context, scene, width, height);
   };
 
-  seen.CanvasPathPainter = (function() {
-    function CanvasPathPainter(ctx) {
+  seen.CanvasStyler = (function() {
+    function CanvasStyler(ctx) {
       this.ctx = ctx;
     }
 
-    CanvasPathPainter.prototype.style = function(style) {
+    CanvasStyler.prototype.style = function(style) {
       var key, val;
       for (key in style) {
         val = style[key];
@@ -1379,6 +1396,28 @@
       }
       return this;
     };
+
+    CanvasStyler.prototype.draw = function() {
+      this.ctx.stroke();
+      return this;
+    };
+
+    CanvasStyler.prototype.fill = function() {
+      this.ctx.fill();
+      return this;
+    };
+
+    return CanvasStyler;
+
+  })();
+
+  seen.CanvasPathPainter = (function(_super) {
+    __extends(CanvasPathPainter, _super);
+
+    function CanvasPathPainter() {
+      _ref9 = CanvasPathPainter.__super__.constructor.apply(this, arguments);
+      return _ref9;
+    }
 
     CanvasPathPainter.prototype.path = function(points) {
       var i, p, _i, _len;
@@ -1392,82 +1431,72 @@
         }
       }
       this.ctx.closePath();
-      this.ctx.fill();
       return this;
     };
 
     return CanvasPathPainter;
 
-  })();
+  })(seen.CanvasStyler);
 
-  seen.CanvasTextPainter = (function() {
-    function CanvasTextPainter(ctx) {
-      this.ctx = ctx;
+  seen.CanvasRectPainter = (function(_super) {
+    __extends(CanvasRectPainter, _super);
+
+    function CanvasRectPainter() {
+      _ref10 = CanvasRectPainter.__super__.constructor.apply(this, arguments);
+      return _ref10;
     }
 
-    CanvasTextPainter.prototype.style = function(style) {
-      var key, val;
-      for (key in style) {
-        val = style[key];
-        switch (key) {
-          case 'fill':
-            this.ctx.fillStyle = val;
-            break;
-          case 'stroke':
-            this.ctx.strokeStyle = val;
-        }
-      }
-      this.ctx.font = '16px Roboto';
-      return this;
-    };
-
-    CanvasTextPainter.prototype.text = function(text) {
-      this.ctx.fillText(text, 0, 0);
-      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-      return this;
-    };
-
-    CanvasTextPainter.prototype.transform = function(transform) {
-      var m;
-      m = seen.Matrices.flipY().multiply(transform).m;
-      this.ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7]);
-      return this;
-    };
-
-    return CanvasTextPainter;
-
-  })();
-
-  seen.CanvasRectPainter = (function() {
-    function CanvasRectPainter(ctx) {
-      this.ctx = ctx;
-    }
-
-    CanvasRectPainter.prototype.style = function(style) {
-      var key, val;
-      for (key in style) {
-        val = style[key];
-        switch (key) {
-          case 'fill':
-            this.ctx.fillStyle = val;
-            break;
-          case 'stroke':
-            this.ctx.strokeStyle = val;
-        }
-      }
-      return this;
-    };
-
-    CanvasRectPainter.prototype.size = function(_arg) {
+    CanvasRectPainter.prototype.rect = function(_arg) {
       var height, width;
       width = _arg.width, height = _arg.height;
-      this.ctx.fillRect(0, 0, width, height);
+      this.ctx.rect(0, 0, width, height);
       return this;
     };
 
     return CanvasRectPainter;
 
-  })();
+  })(seen.CanvasStyler);
+
+  seen.CanvasPointPainter = (function(_super) {
+    __extends(CanvasPointPainter, _super);
+
+    function CanvasPointPainter() {
+      _ref11 = CanvasPointPainter.__super__.constructor.apply(this, arguments);
+      return _ref11;
+    }
+
+    CanvasPointPainter.prototype.circle = function(point, radius) {
+      this.ctx.beginPath();
+      this.ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI, true);
+      return this;
+    };
+
+    return CanvasPointPainter;
+
+  })(seen.CanvasStyler);
+
+  seen.CanvasTextPainter = (function(_super) {
+    __extends(CanvasTextPainter, _super);
+
+    function CanvasTextPainter() {
+      _ref12 = CanvasTextPainter.__super__.constructor.apply(this, arguments);
+      return _ref12;
+    }
+
+    CanvasTextPainter.prototype.text = function(transform, text) {
+      var m;
+      m = seen.Matrices.flipY().multiply(transform).m;
+      this.ctx.save();
+      this.ctx.font = '16px Roboto';
+      this.ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7]);
+      this.ctx.fillText(text, 0, 0);
+      this.ctx.restore();
+      return this;
+    };
+
+    return CanvasTextPainter;
+
+  })(seen.CanvasStyler);
 
   seen.CanvasLayerRenderContext = (function(_super) {
     __extends(CanvasLayerRenderContext, _super);
@@ -1475,12 +1504,17 @@
     function CanvasLayerRenderContext(ctx) {
       this.ctx = ctx;
       this.pathPainter = new seen.CanvasPathPainter(this.ctx);
+      this.pointPainter = new seen.CanvasPointPainter(this.ctx);
       this.textPainter = new seen.CanvasTextPainter(this.ctx);
       this.rectPainter = new seen.CanvasRectPainter(this.ctx);
     }
 
     CanvasLayerRenderContext.prototype.path = function() {
       return this.pathPainter;
+    };
+
+    CanvasLayerRenderContext.prototype.point = function() {
+      return this.pointPainter;
     };
 
     CanvasLayerRenderContext.prototype.text = function() {
@@ -1543,23 +1577,26 @@
   seen.MouseEvents = (function() {
     function MouseEvents(el, options) {
       this.el = el;
+      this._onMouseWheel = __bind(this._onMouseWheel, this);
       this._onMouseUp = __bind(this._onMouseUp, this);
       this._onMouseDown = __bind(this._onMouseDown, this);
       this._onMouseMove = __bind(this._onMouseMove, this);
       seen.Util.defaults(this, options, this.defaults);
       this._uid = seen.Util.uniqueId('mouser-');
-      this.dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp');
+      this.dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp', 'mouseWheel');
       this.on = this.dispatch.on;
       this._mouseDown = false;
       this.attach();
     }
 
     MouseEvents.prototype.attach = function() {
-      return this.el.addEventListener('mousedown', this._onMouseDown);
+      this.el.addEventListener('mousedown', this._onMouseDown);
+      return this.el.addEventListener('mousewheel', this._onMouseWheel);
     };
 
     MouseEvents.prototype.detach = function() {
-      return this.el.removeEventListener('mousedown', this._onMouseDown);
+      this.el.removeEventListener('mousedown', this._onMouseDown);
+      return this.el.removeEventListener('mousewheel', this._onMouseWheel);
     };
 
     MouseEvents.prototype._onMouseMove = function(e) {
@@ -1583,6 +1620,10 @@
       seen.WindowEvents.on("mouseMove." + this._uid, null);
       this.dispatch.mouseUp(e);
       return this.dispatch.dragEnd(e);
+    };
+
+    MouseEvents.prototype._onMouseWheel = function(e) {
+      return this.dispatch.mouseWheel(e);
     };
 
     return MouseEvents;
@@ -1735,6 +1776,36 @@
 
   })();
 
+  seen.Zoom = (function() {
+    function Zoom(el) {
+      var mouser;
+      this.el = el;
+      this._onMouseWheel = __bind(this._onMouseWheel, this);
+      this.el = seen.Util.element(this.el);
+      this._uid = seen.Util.uniqueId('zoomer-');
+      this.dispatch = seen.Events.dispatch('zoom');
+      this.on = this.dispatch.on;
+      mouser = new seen.MouseEvents(this.el);
+      mouser.on("mouseWheel." + this._uid, this._onMouseWheel);
+    }
+
+    Zoom.prototype._onMouseWheel = function(e) {
+      var sign, zoom, zoomFactor;
+      sign = e.wheelDelta / Math.abs(e.wheelDelta);
+      zoomFactor = Math.abs(e.wheelDelta) / 120;
+      zoom = Math.pow(2, sign * zoomFactor);
+      return this.dispatch.zoom({
+        sign: sign,
+        zoomFactor: zoomFactor,
+        zoom: zoom,
+        e: e
+      });
+    };
+
+    return Zoom;
+
+  })();
+
   seen.Surface = (function() {
     Surface.prototype.cullBackfaces = true;
 
@@ -1815,11 +1886,11 @@
     };
 
     Model.prototype.eachShape = function(f) {
-      var child, _i, _len, _ref6, _results;
-      _ref6 = this.children;
+      var child, _i, _len, _ref13, _results;
+      _ref13 = this.children;
       _results = [];
-      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
-        child = _ref6[_i];
+      for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
+        child = _ref13[_i];
         if (child instanceof seen.Shape) {
           f.call(this, child);
         }
@@ -1837,22 +1908,22 @@
     };
 
     Model.prototype._eachRenderable = function(lightFn, shapeFn, lightModels, transform) {
-      var child, light, _i, _j, _len, _len1, _ref6, _ref7, _results;
+      var child, light, _i, _j, _len, _len1, _ref13, _ref14, _results;
       if (this.lights.length > 0) {
         lightModels = lightModels.slice();
       }
-      _ref6 = this.lights;
-      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
-        light = _ref6[_i];
+      _ref13 = this.lights;
+      for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
+        light = _ref13[_i];
         if (!light.enabled) {
           continue;
         }
         lightModels.push(lightFn.call(this, light, light.m.copy().multiply(transform)));
       }
-      _ref7 = this.children;
+      _ref14 = this.children;
       _results = [];
-      for (_j = 0, _len1 = _ref7.length; _j < _len1; _j++) {
-        child = _ref7[_j];
+      for (_j = 0, _len1 = _ref14.length; _j < _len1; _j++) {
+        child = _ref14[_j];
         if (child instanceof seen.Shape) {
           shapeFn.call(this, child, lightModels, child.m.copy().multiply(transform));
         }
@@ -1959,7 +2030,7 @@
       return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
     },
     patch: function(nx, ny) {
-      var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref6, _ref7;
+      var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref13, _ref14;
       if (nx == null) {
         nx = 20;
       }
@@ -1974,9 +2045,9 @@
         for (y = _j = 0; 0 <= ny ? _j < ny : _j > ny; y = 0 <= ny ? ++_j : --_j) {
           pts0 = [seen.P(x, y), seen.P(x + 1, y - 0.5), seen.P(x + 1, y + 0.5)];
           pts1 = [seen.P(x, y), seen.P(x + 1, y + 0.5), seen.P(x, y + 1)];
-          _ref6 = [pts0, pts1];
-          for (_k = 0, _len = _ref6.length; _k < _len; _k++) {
-            pts = _ref6[_k];
+          _ref13 = [pts0, pts1];
+          for (_k = 0, _len = _ref13.length; _k < _len; _k++) {
+            pts = _ref13[_k];
             for (_l = 0, _len1 = pts.length; _l < _len1; _l++) {
               p = pts[_l];
               p.x *= EQUILATERAL_TRIANGLE_ALTITUDE;
@@ -1986,9 +2057,9 @@
           }
         }
         if (x % 2 !== 0) {
-          _ref7 = column[0];
-          for (_m = 0, _len2 = _ref7.length; _m < _len2; _m++) {
-            p = _ref7[_m];
+          _ref14 = column[0];
+          for (_m = 0, _len2 = _ref14.length; _m < _len2; _m++) {
+            p = _ref14[_m];
             p.y += ny;
           }
           column.push(column.shift());
@@ -2028,7 +2099,7 @@
       return new seen.Shape('text', [surface]);
     },
     extrude: function(points, distance) {
-      var back, front, i, len, p, surfaces, _i, _ref6;
+      var back, front, i, len, p, surfaces, _i, _ref13;
       if (distance == null) {
         distance = 1;
       }
@@ -2051,7 +2122,7 @@
         }
         return _results;
       })());
-      for (i = _i = 1, _ref6 = points.length; 1 <= _ref6 ? _i < _ref6 : _i > _ref6; i = 1 <= _ref6 ? ++_i : --_i) {
+      for (i = _i = 1, _ref13 = points.length; 1 <= _ref13 ? _i < _ref13 : _i > _ref13; i = 1 <= _ref13 ? ++_i : --_i) {
         surfaces.push(new seen.Surface([front.points[i - 1].copy(), back.points[i - 1].copy(), back.points[i].copy(), front.points[i].copy()]));
       }
       len = points.length;
@@ -2086,11 +2157,11 @@
       return new seen.Shape('path', [new seen.Surface(points)]);
     },
     custom: function(s) {
-      var f, p, surfaces, _i, _len, _ref6;
+      var f, p, surfaces, _i, _len, _ref13;
       surfaces = [];
-      _ref6 = s.surfaces;
-      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
-        f = _ref6[_i];
+      _ref13 = s.surfaces;
+      for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
+        f = _ref13[_i];
         surfaces.push(new seen.Surface((function() {
           var _j, _len1, _results;
           _results = [];
@@ -2125,11 +2196,11 @@
     }
 
     ObjParser.prototype.parse = function(contents) {
-      var command, data, line, _i, _len, _ref6, _results;
-      _ref6 = contents.split(/[\r\n]+/);
+      var command, data, line, _i, _len, _ref13, _results;
+      _ref13 = contents.split(/[\r\n]+/);
       _results = [];
-      for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
-        line = _ref6[_i];
+      for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
+        line = _ref13[_i];
         data = line.trim().split(/[ ]+/);
         if (data.length < 2) {
           continue;
@@ -2405,6 +2476,7 @@
     };
 
     function Scene(options) {
+      this.flush = __bind(this.flush, this);
       this.render = __bind(this.render, this);
       seen.Util.defaults(this, options, this.defaults);
       this._renderModelCache = {};
@@ -2418,19 +2490,19 @@
       this.model.eachRenderable(function(light, transform) {
         return new seen.LightRenderModel(light, transform);
       }, function(shape, lights, transform) {
-        var p, renderModel, surface, _i, _j, _len, _len1, _ref6, _ref7, _ref8, _ref9, _results;
-        _ref6 = shape.surfaces;
+        var p, renderModel, surface, _i, _j, _len, _len1, _ref13, _ref14, _ref15, _ref16, _results;
+        _ref13 = shape.surfaces;
         _results = [];
-        for (_i = 0, _len = _ref6.length; _i < _len; _i++) {
-          surface = _ref6[_i];
+        for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
+          surface = _ref13[_i];
           renderModel = _this._renderSurface(surface, transform, projection);
           if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
-            renderModel.fill = (_ref7 = surface.fill) != null ? _ref7.render(lights, _this.shader, renderModel.transformed) : void 0;
-            renderModel.stroke = (_ref8 = surface.stroke) != null ? _ref8.render(lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel.fill = (_ref14 = surface.fill) != null ? _ref14.render(lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel.stroke = (_ref15 = surface.stroke) != null ? _ref15.render(lights, _this.shader, renderModel.transformed) : void 0;
             if (_this.fractionalPoints !== true) {
-              _ref9 = renderModel.projected.points;
-              for (_j = 0, _len1 = _ref9.length; _j < _len1; _j++) {
-                p = _ref9[_j];
+              _ref16 = renderModel.projected.points;
+              for (_j = 0, _len1 = _ref16.length; _j < _len1; _j++) {
+                p = _ref16[_j];
                 p.round();
               }
             }
@@ -2456,6 +2528,10 @@
         renderModel.update(transform, projection);
       }
       return renderModel;
+    };
+
+    Scene.prototype.flush = function() {
+      return this._renderModelCache = {};
     };
 
     return Scene;
