@@ -1,5 +1,5 @@
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TRANSPOSE_INDICES, TextPainter, seen, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _svg,
+  var ARRAY_POOL, Ambient, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TRANSPOSE_INDICES, TextPainter, seen, _ref, _ref1, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -989,15 +989,13 @@
     }
 
     TextPainter.prototype.paint = function(renderModel, context) {
-      var painter, xform, _ref6;
+      var style, xform, _ref6;
       xform = renderModel.transform.copy().multiply(renderModel.projection);
-      painter = context.text().text(xform, renderModel.surface.text);
-      if (renderModel.fill != null) {
-        return painter.fill({
-          fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
-          'text-anchor': (_ref6 = renderModel.surface.anchor) != null ? _ref6 : 'middle'
-        });
-      }
+      style = {
+        fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
+        'text-anchor': (_ref6 = renderModel.surface.anchor) != null ? _ref6 : 'middle'
+      };
+      return context.text().fillText(xform, renderModel.surface.text, style);
     };
 
     return TextPainter;
@@ -1174,8 +1172,8 @@
     }
 
     DebugLayer.prototype.render = function(context) {
-      return context.text().text(this._msg, seen.M().translate(10, 20).scale(1, -1, 1)).fill({
-        'fill': '#000'
+      return context.text().fillText(seen.M().translate(10, 20).scale(1, -1, 1), this._msg, {
+        fill: '#000'
       });
     };
 
@@ -1283,44 +1281,41 @@
 
   })(seen.SvgStyler);
 
-  seen.SvgTextPainter = (function(_super) {
-    __extends(SvgTextPainter, _super);
-
-    function SvgTextPainter() {
-      _ref7 = SvgTextPainter.__super__.constructor.apply(this, arguments);
-      return _ref7;
-    }
-
+  seen.SvgTextPainter = (function() {
     SvgTextPainter.prototype._svgTag = 'text';
 
-    SvgTextPainter.prototype._textContent = '';
+    function SvgTextPainter(elementFactory) {
+      this.elementFactory = elementFactory;
+    }
 
-    SvgTextPainter.prototype.text = function(transform, text) {
-      var m;
+    SvgTextPainter.prototype.fillText = function(transform, text, style) {
+      var el, key, m, str, value;
+      if (style == null) {
+        style = {};
+      }
+      el = this.elementFactory(this._svgTag);
       m = seen.Matrices.flipY().multiply(transform).m;
-      this._attributes.transform = "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")";
-      this._attributes['font-family'] = 'Roboto';
-      this._textContent = text;
-      return this;
-    };
-
-    SvgTextPainter.prototype._paint = function(style) {
-      var el;
-      el = SvgTextPainter.__super__._paint.call(this, style);
-      el.textContent = this._textContent;
-      return el;
+      el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
+      el.setAttribute('font-family', 'Roboto');
+      str = '';
+      for (key in style) {
+        value = style[key];
+        str += "" + key + ":" + value + ";";
+      }
+      el.setAttribute('style', str);
+      return el.textContent = text;
     };
 
     return SvgTextPainter;
 
-  })(seen.SvgStyler);
+  })();
 
   seen.SvgRectPainter = (function(_super) {
     __extends(SvgRectPainter, _super);
 
     function SvgRectPainter() {
-      _ref8 = SvgRectPainter.__super__.constructor.apply(this, arguments);
-      return _ref8;
+      _ref7 = SvgRectPainter.__super__.constructor.apply(this, arguments);
+      return _ref7;
     }
 
     SvgRectPainter.prototype._svgTag = 'rect';
@@ -1339,8 +1334,8 @@
     __extends(SvgCirclePainter, _super);
 
     function SvgCirclePainter() {
-      _ref9 = SvgCirclePainter.__super__.constructor.apply(this, arguments);
-      return _ref9;
+      _ref8 = SvgCirclePainter.__super__.constructor.apply(this, arguments);
+      return _ref8;
     }
 
     SvgCirclePainter.prototype._svgTag = 'circle';
@@ -1382,7 +1377,7 @@
     };
 
     SvgLayerRenderContext.prototype.text = function() {
-      return this.textPainter.clear();
+      return this.textPainter;
     };
 
     SvgLayerRenderContext.prototype.reset = function() {
@@ -1498,8 +1493,8 @@
     __extends(CanvasPathPainter, _super);
 
     function CanvasPathPainter() {
-      _ref10 = CanvasPathPainter.__super__.constructor.apply(this, arguments);
-      return _ref10;
+      _ref9 = CanvasPathPainter.__super__.constructor.apply(this, arguments);
+      return _ref9;
     }
 
     CanvasPathPainter.prototype.path = function(points) {
@@ -1525,8 +1520,8 @@
     __extends(CanvasRectPainter, _super);
 
     function CanvasRectPainter() {
-      _ref11 = CanvasRectPainter.__super__.constructor.apply(this, arguments);
-      return _ref11;
+      _ref10 = CanvasRectPainter.__super__.constructor.apply(this, arguments);
+      return _ref10;
     }
 
     CanvasRectPainter.prototype.rect = function(width, height) {
@@ -1542,8 +1537,8 @@
     __extends(CanvasCirclePainter, _super);
 
     function CanvasCirclePainter() {
-      _ref12 = CanvasCirclePainter.__super__.constructor.apply(this, arguments);
-      return _ref12;
+      _ref11 = CanvasCirclePainter.__super__.constructor.apply(this, arguments);
+      return _ref11;
     }
 
     CanvasCirclePainter.prototype.circle = function(center, radius) {
@@ -1556,20 +1551,26 @@
 
   })(seen.CanvasStyler);
 
-  seen.CanvasTextPainter = (function(_super) {
-    __extends(CanvasTextPainter, _super);
-
-    function CanvasTextPainter() {
-      _ref13 = CanvasTextPainter.__super__.constructor.apply(this, arguments);
-      return _ref13;
+  seen.CanvasTextPainter = (function() {
+    function CanvasTextPainter(ctx) {
+      this.ctx = ctx;
     }
 
-    CanvasTextPainter.prototype.text = function(transform, text) {
+    CanvasTextPainter.prototype.fillText = function(transform, text, style) {
       var m;
+      if (style == null) {
+        style = {};
+      }
       m = seen.Matrices.flipY().multiply(transform).m;
       this.ctx.save();
       this.ctx.font = '16px Roboto';
       this.ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7]);
+      if (style.fill != null) {
+        this.ctx.fillStyle = style.fill;
+      }
+      if (style['text-anchor'] != null) {
+        this.ctx.textAlign = style['text-anchor'];
+      }
       this.ctx.fillText(text, 0, 0);
       this.ctx.restore();
       return this;
@@ -1577,7 +1578,7 @@
 
     return CanvasTextPainter;
 
-  })(seen.CanvasStyler);
+  })();
 
   seen.CanvasLayerRenderContext = (function(_super) {
     __extends(CanvasLayerRenderContext, _super);
@@ -1688,7 +1689,6 @@
     };
 
     MouseEvents.prototype._onMouseDown = function(e) {
-      console.log('down');
       this._mouseDown = true;
       seen.WindowEvents.on("mouseUp." + this._uid, this._onMouseUp);
       seen.WindowEvents.on("mouseMove." + this._uid, this._onMouseMove);
@@ -1697,7 +1697,6 @@
     };
 
     MouseEvents.prototype._onMouseUp = function(e) {
-      console.log('up');
       this._mouseDown = false;
       seen.WindowEvents.on("mouseUp." + this._uid, null);
       seen.WindowEvents.on("mouseMove." + this._uid, null);
@@ -1971,11 +1970,11 @@
     };
 
     Model.prototype.eachShape = function(f) {
-      var child, _i, _len, _ref14, _results;
-      _ref14 = this.children;
+      var child, _i, _len, _ref12, _results;
+      _ref12 = this.children;
       _results = [];
-      for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
-        child = _ref14[_i];
+      for (_i = 0, _len = _ref12.length; _i < _len; _i++) {
+        child = _ref12[_i];
         if (child instanceof seen.Shape) {
           f.call(this, child);
         }
@@ -1993,22 +1992,22 @@
     };
 
     Model.prototype._eachRenderable = function(lightFn, shapeFn, lightModels, transform) {
-      var child, light, _i, _j, _len, _len1, _ref14, _ref15, _results;
+      var child, light, _i, _j, _len, _len1, _ref12, _ref13, _results;
       if (this.lights.length > 0) {
         lightModels = lightModels.slice();
       }
-      _ref14 = this.lights;
-      for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
-        light = _ref14[_i];
+      _ref12 = this.lights;
+      for (_i = 0, _len = _ref12.length; _i < _len; _i++) {
+        light = _ref12[_i];
         if (!light.enabled) {
           continue;
         }
         lightModels.push(lightFn.call(this, light, light.m.copy().multiply(transform)));
       }
-      _ref15 = this.children;
+      _ref13 = this.children;
       _results = [];
-      for (_j = 0, _len1 = _ref15.length; _j < _len1; _j++) {
-        child = _ref15[_j];
+      for (_j = 0, _len1 = _ref13.length; _j < _len1; _j++) {
+        child = _ref13[_j];
         if (child instanceof seen.Shape) {
           shapeFn.call(this, child, lightModels, child.m.copy().multiply(transform));
         }
@@ -2115,7 +2114,7 @@
       return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
     },
     patch: function(nx, ny) {
-      var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref14, _ref15;
+      var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref12, _ref13;
       if (nx == null) {
         nx = 20;
       }
@@ -2130,9 +2129,9 @@
         for (y = _j = 0; 0 <= ny ? _j < ny : _j > ny; y = 0 <= ny ? ++_j : --_j) {
           pts0 = [seen.P(x, y), seen.P(x + 1, y - 0.5), seen.P(x + 1, y + 0.5)];
           pts1 = [seen.P(x, y), seen.P(x + 1, y + 0.5), seen.P(x, y + 1)];
-          _ref14 = [pts0, pts1];
-          for (_k = 0, _len = _ref14.length; _k < _len; _k++) {
-            pts = _ref14[_k];
+          _ref12 = [pts0, pts1];
+          for (_k = 0, _len = _ref12.length; _k < _len; _k++) {
+            pts = _ref12[_k];
             for (_l = 0, _len1 = pts.length; _l < _len1; _l++) {
               p = pts[_l];
               p.x *= EQUILATERAL_TRIANGLE_ALTITUDE;
@@ -2142,9 +2141,9 @@
           }
         }
         if (x % 2 !== 0) {
-          _ref15 = column[0];
-          for (_m = 0, _len2 = _ref15.length; _m < _len2; _m++) {
-            p = _ref15[_m];
+          _ref13 = column[0];
+          for (_m = 0, _len2 = _ref13.length; _m < _len2; _m++) {
+            p = _ref13[_m];
             p.y += ny;
           }
           column.push(column.shift());
@@ -2184,7 +2183,7 @@
       return new seen.Shape('text', [surface]);
     },
     extrude: function(points, distance) {
-      var back, front, i, len, p, surfaces, _i, _ref14;
+      var back, front, i, len, p, surfaces, _i, _ref12;
       if (distance == null) {
         distance = 1;
       }
@@ -2207,7 +2206,7 @@
         }
         return _results;
       })());
-      for (i = _i = 1, _ref14 = points.length; 1 <= _ref14 ? _i < _ref14 : _i > _ref14; i = 1 <= _ref14 ? ++_i : --_i) {
+      for (i = _i = 1, _ref12 = points.length; 1 <= _ref12 ? _i < _ref12 : _i > _ref12; i = 1 <= _ref12 ? ++_i : --_i) {
         surfaces.push(new seen.Surface([front.points[i - 1].copy(), back.points[i - 1].copy(), back.points[i].copy(), front.points[i].copy()]));
       }
       len = points.length;
@@ -2242,11 +2241,11 @@
       return new seen.Shape('path', [new seen.Surface(points)]);
     },
     custom: function(s) {
-      var f, p, surfaces, _i, _len, _ref14;
+      var f, p, surfaces, _i, _len, _ref12;
       surfaces = [];
-      _ref14 = s.surfaces;
-      for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
-        f = _ref14[_i];
+      _ref12 = s.surfaces;
+      for (_i = 0, _len = _ref12.length; _i < _len; _i++) {
+        f = _ref12[_i];
         surfaces.push(new seen.Surface((function() {
           var _j, _len1, _results;
           _results = [];
@@ -2281,11 +2280,11 @@
     }
 
     ObjParser.prototype.parse = function(contents) {
-      var command, data, line, _i, _len, _ref14, _results;
-      _ref14 = contents.split(/[\r\n]+/);
+      var command, data, line, _i, _len, _ref12, _results;
+      _ref12 = contents.split(/[\r\n]+/);
       _results = [];
-      for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
-        line = _ref14[_i];
+      for (_i = 0, _len = _ref12.length; _i < _len; _i++) {
+        line = _ref12[_i];
         data = line.trim().split(/[ ]+/);
         if (data.length < 2) {
           continue;
@@ -2575,19 +2574,19 @@
       this.model.eachRenderable(function(light, transform) {
         return new seen.LightRenderModel(light, transform);
       }, function(shape, lights, transform) {
-        var p, renderModel, surface, _i, _j, _len, _len1, _ref14, _ref15, _ref16, _ref17, _results;
-        _ref14 = shape.surfaces;
+        var p, renderModel, surface, _i, _j, _len, _len1, _ref12, _ref13, _ref14, _ref15, _results;
+        _ref12 = shape.surfaces;
         _results = [];
-        for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
-          surface = _ref14[_i];
+        for (_i = 0, _len = _ref12.length; _i < _len; _i++) {
+          surface = _ref12[_i];
           renderModel = _this._renderSurface(surface, transform, projection);
           if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
-            renderModel.fill = (_ref15 = surface.fill) != null ? _ref15.render(lights, _this.shader, renderModel.transformed) : void 0;
-            renderModel.stroke = (_ref16 = surface.stroke) != null ? _ref16.render(lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel.fill = (_ref13 = surface.fill) != null ? _ref13.render(lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel.stroke = (_ref14 = surface.stroke) != null ? _ref14.render(lights, _this.shader, renderModel.transformed) : void 0;
             if (_this.fractionalPoints !== true) {
-              _ref17 = renderModel.projected.points;
-              for (_j = 0, _len1 = _ref17.length; _j < _len1; _j++) {
-                p = _ref17[_j];
+              _ref15 = renderModel.projected.points;
+              for (_j = 0, _len1 = _ref15.length; _j < _len1; _j++) {
+                p = _ref15[_j];
                 p.round();
               }
             }

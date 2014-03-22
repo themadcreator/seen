@@ -42,12 +42,18 @@ class seen.CanvasCirclePainter extends seen.CanvasStyler
     @ctx.arc(center.x, center.y, radius, 0, 2*Math.PI, true)
     return @
 
-class seen.CanvasTextPainter extends seen.CanvasStyler
-  text: (transform, text) ->
+class seen.CanvasTextPainter
+  constructor : (@ctx) ->
+
+  fillText : (transform, text, style = {}) ->
     m = seen.Matrices.flipY().multiply(transform).m
     @ctx.save()
     @ctx.font = '16px Roboto' # TODO method
     @ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
+
+    if style.fill? then @ctx.fillStyle = style.fill
+    if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
+
     @ctx.fillText(text, 0, 0)
     @ctx.restore()
     return @

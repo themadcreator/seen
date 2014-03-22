@@ -36,7 +36,6 @@ class seen.MouseEvents
     if @_mouseDown then @dispatch.drag(e)
 
   _onMouseDown : (e) =>
-    console.log 'down'
     @_mouseDown = true
     seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
     seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
@@ -44,7 +43,6 @@ class seen.MouseEvents
     @dispatch.dragStart(e)
 
   _onMouseUp : (e) =>
-    console.log 'up'
     @_mouseDown = false
     seen.WindowEvents.on "mouseUp.#{@_uid}", null
     seen.WindowEvents.on "mouseMove.#{@_uid}", null

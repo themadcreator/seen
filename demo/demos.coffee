@@ -14,7 +14,7 @@ Demos = [
   width  : 900
   height : 500
 ,
-  title  : 'Shapes gallery'
+  title  : 'Noisy Wave Patch'
   view   : 'demo-shapes'
   width  : 900
   height : 500

@@ -38,21 +38,26 @@ class seen.SvgPathPainter extends seen.SvgStyler
     @_attributes.d = 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
     return @
 
-class seen.SvgTextPainter extends seen.SvgStyler
+class seen.SvgTextPainter
   _svgTag      : 'text'
-  _textContent : ''
 
-  text : (transform, text) ->
+  constructor : (@elementFactory) ->
+
+  fillText : (transform, text, style = {}) ->
+    el = @elementFactory(@_svgTag)
+
     m = seen.Matrices.flipY().multiply(transform).m
-    @_attributes.transform      = "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})"
-    @_attributes['font-family'] = 'Roboto'
-    @_textContent               = text
-    return @
 
-  _paint : (style) ->
-    el = super(style)
-    el.textContent = @_textContent
-    return el
+    el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
+    el.setAttribute('font-family', 'Roboto')
+
+    str = ''
+    for key, value of style
+      str += "#{key}:#{value};"
+    el.setAttribute('style', str)
+
+    el.textContent = text
+
 
 class seen.SvgRectPainter extends seen.SvgStyler
   _svgTag : 'rect'
@@ -82,7 +87,7 @@ class seen.SvgLayerRenderContext extends seen.RenderLayerContext
   path   : () -> @pathPainter.clear()
   rect   : () -> @rectPainter.clear()
   circle : () -> @circlePainter.clear()
-  text   : () -> @textPainter.clear()
+  text   : () -> @textPainter
 
   reset : ->
     @_i = 0

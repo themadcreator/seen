@@ -811,13 +811,12 @@ class PathPainter extends seen.Painter
 
 class TextPainter extends seen.Painter
   paint : (renderModel, context) ->
-    xform   = renderModel.transform.copy().multiply renderModel.projection
-    painter = context.text().text(xform, renderModel.surface.text)
-    if renderModel.fill?
-      painter.fill(
-        fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
-        'text-anchor' : renderModel.surface.anchor ? 'middle'
-      )
+    xform = renderModel.transform.copy().multiply renderModel.projection
+    style = {
+      fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
+      'text-anchor' : renderModel.surface.anchor ? 'middle'
+    }
+    context.text().fillText(xform, renderModel.surface.text, style)
 
 seen.Painters = {
   path  : new PathPainter()
@@ -931,8 +930,7 @@ class seen.DebugLayer extends seen.RenderLayer
 
   render : (context) =>
     context.text()
-      .text(@_msg, seen.M().translate(10 , 20).scale(1,-1,1))
-      .fill('fill' : '#000')
+      .fillText(seen.M().translate(10 , 20).scale(1,-1,1), @_msg, {fill : '#000'})
 
   _renderStart: =>
     @_renderStartTime = new Date()
@@ -993,21 +991,26 @@ class seen.SvgPathPainter extends seen.SvgStyler
     @_attributes.d = 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
     return @
 
-class seen.SvgTextPainter extends seen.SvgStyler
+class seen.SvgTextPainter
   _svgTag      : 'text'
-  _textContent : ''
 
-  text : (transform, text) ->
+  constructor : (@elementFactory) ->
+
+  fillText : (transform, text, style = {}) ->
+    el = @elementFactory(@_svgTag)
+
     m = seen.Matrices.flipY().multiply(transform).m
-    @_attributes.transform      = "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})"
-    @_attributes['font-family'] = 'Roboto'
-    @_textContent               = text
-    return @
 
-  _paint : (style) ->
-    el = super(style)
-    el.textContent = @_textContent
-    return el
+    el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
+    el.setAttribute('font-family', 'Roboto')
+
+    str = ''
+    for key, value of style
+      str += "#{key}:#{value};"
+    el.setAttribute('style', str)
+
+    el.textContent = text
+
 
 class seen.SvgRectPainter extends seen.SvgStyler
   _svgTag : 'rect'
@@ -1037,7 +1040,7 @@ class seen.SvgLayerRenderContext extends seen.RenderLayerContext
   path   : () -> @pathPainter.clear()
   rect   : () -> @rectPainter.clear()
   circle : () -> @circlePainter.clear()
-  text   : () -> @textPainter.clear()
+  text   : () -> @textPainter
 
   reset : ->
     @_i = 0
@@ -1128,12 +1131,18 @@ class seen.CanvasCirclePainter extends seen.CanvasStyler
     @ctx.arc(center.x, center.y, radius, 0, 2*Math.PI, true)
     return @
 
-class seen.CanvasTextPainter extends seen.CanvasStyler
-  text: (transform, text) ->
+class seen.CanvasTextPainter
+  constructor : (@ctx) ->
+
+  fillText : (transform, text, style = {}) ->
     m = seen.Matrices.flipY().multiply(transform).m
     @ctx.save()
     @ctx.font = '16px Roboto' # TODO method
     @ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
+
+    if style.fill? then @ctx.fillStyle = style.fill
+    if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
+
     @ctx.fillText(text, 0, 0)
     @ctx.restore()
     return @
@@ -1211,7 +1220,6 @@ class seen.MouseEvents
     if @_mouseDown then @dispatch.drag(e)
 
   _onMouseDown : (e) =>
-    console.log 'down'
     @_mouseDown = true
     seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
     seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
@@ -1219,7 +1227,6 @@ class seen.MouseEvents
     @dispatch.dragStart(e)
 
   _onMouseUp : (e) =>
-    console.log 'up'
     @_mouseDown = false
     seen.WindowEvents.on "mouseUp.#{@_uid}", null
     seen.WindowEvents.on "mouseMove.#{@_uid}", null

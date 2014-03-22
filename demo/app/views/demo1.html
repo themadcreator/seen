@@ -5,19 +5,41 @@
 {% endblock %}
 
 {% block demo %}
-<script type="text/coffeescript" src="/demo.coffee"></script>
 <script type="text/coffeescript">
   w = 500
   h = 500
 
-  demo = seen.demo.tetrahedra()
+  model = seen.Models.default()
+
+  # shapes!
+  model.add(seen.Shapes.unitcube().scale(30))
+  model.add(seen.Shapes.tetrahedron().scale(10).translate(50,50))
+  model.add(seen.Shapes.tetrahedron().scale(10).roty(0.5 * Math.PI).translate(-50,30))
+
+  inside     = model.append()
+  outside    = model.append()
+  faroutside = model.append()
+  around     = model.append()
+
+  for i in [0...360] by 4
+    inside.add     seen.Shapes.tetrahedron().scale(1).translate(-70).roty(i / 180.0 * Math.PI).rotz(0.5 * Math.sin(i / 60  * Math.PI))
+    outside.add    seen.Shapes.tetrahedron().scale(2).translate(0,-90).rotz(i / 180.0 * Math.PI).rotx(0.125 * Math.sin(i / 30  * Math.PI))
+    faroutside.add seen.Shapes.tetrahedron().scale(3).translate(0,-120).rotz(i / 180.0 * Math.PI).rotx(0.25 * Math.sin(i / 30  * Math.PI))
+
+  for i in [0...360] by 8
+    around.add seen.Shapes.tetrahedron().scale(1).translate(0,-50)
+      .rotz(i / 180.0 * Math.PI).rotx(0.25 * Math.sin(i / 30  * Math.PI))
+      .roty(1)
+      .rotz(1)
+
+  model.eachShape seen.Colors.randomShape
+  model.scale(1.5)
 
   scene = new seen.Scene
     #fractionalPoints : true
-    model  : demo.model
+    model  : model
     camera : new seen.Camera
       viewport : seen.Viewports.center(w, h)
-
 
   context = new seen.SvgRenderContext(document.getElementById('seen-canvas'))
   context
@@ -30,12 +52,12 @@
 
   anim.onBefore(->
     for i in [0...3]
-      demo.model.children[i].rotx(0.01 * (i+1))
-      demo.model.children[i].roty(0.02).rotx(0.015)
-    demo.outside.roty(0.02).rotx(0.015)
-    demo.inside.roty(-0.01).rotx(-0.02)
-    demo.faroutside.roty(0.02).rotz(0.02)
-    demo.around.roty(0.01)
+      model.children[i].rotx(0.01 * (i+1))
+      model.children[i].roty(0.02).rotx(0.015)
+    outside.roty(0.02).rotx(0.015)
+    inside.roty(-0.01).rotx(-0.02)
+    faroutside.roty(0.02).rotz(0.02)
+    around.roty(0.01)
   )
   .onRender(context.render)
   .start(20)

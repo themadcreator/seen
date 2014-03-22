@@ -13,6 +13,6 @@
     camera : new seen.Camera
       viewport : seen.Viewports.center(width, height)
 
-  seen.SvgContext('seen-canvas', scene, width, height).render()
+  seen.Contexts.createWithScene('seen-canvas', scene, width, height).render()
 </script>
 {% endblock %}

@@ -27,13 +27,12 @@ class PathPainter extends seen.Painter
 
 class TextPainter extends seen.Painter
   paint : (renderModel, context) ->
-    xform   = renderModel.transform.copy().multiply renderModel.projection
-    painter = context.text().text(xform, renderModel.surface.text)
-    if renderModel.fill?
-      painter.fill(
-        fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
-        'text-anchor' : renderModel.surface.anchor ? 'middle'
-      )
+    xform = renderModel.transform.copy().multiply renderModel.projection
+    style = {
+      fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
+      'text-anchor' : renderModel.surface.anchor ? 'middle'
+    }
+    context.text().fillText(xform, renderModel.surface.text, style)
 
 seen.Painters = {
   path  : new PathPainter()

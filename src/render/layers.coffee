@@ -29,8 +29,7 @@ class seen.DebugLayer extends seen.RenderLayer
 
   render : (context) =>
     context.text()
-      .text(@_msg, seen.M().translate(10 , 20).scale(1,-1,1))
-      .fill('fill' : '#000')
+      .fillText(seen.M().translate(10 , 20).scale(1,-1,1), @_msg, {fill : '#000'})
 
   _renderStart: =>
     @_renderStartTime = new Date()
