@@ -36,6 +36,7 @@ class seen.MouseEvents
     if @_mouseDown then @dispatch.drag(e)
 
   _onMouseDown : (e) =>
+    console.log 'down'
     @_mouseDown = true
     seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
     seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
@@ -43,6 +44,7 @@ class seen.MouseEvents
     @dispatch.dragStart(e)
 
   _onMouseUp : (e) =>
+    console.log 'up'
     @_mouseDown = false
     seen.WindowEvents.on "mouseUp.#{@_uid}", null
     seen.WindowEvents.on "mouseMove.#{@_uid}", null
@@ -171,7 +173,11 @@ class seen.Drag
     @_inertiaRunning = false
 
 class seen.Zoom
-  constructor : (@el) ->
+  defaults :
+    speed : 0.25
+
+  constructor : (@el,  options) ->
+    seen.Util.defaults(@, options, @defaults)
     @el       = seen.Util.element(@el)
     @_uid     = seen.Util.uniqueId('zoomer-')
     @dispatch = seen.Events.dispatch('zoom')
@@ -182,6 +188,7 @@ class seen.Zoom
 
   _onMouseWheel : (e) =>
     sign       = e.wheelDelta / Math.abs(e.wheelDelta)
-    zoomFactor = Math.abs(e.wheelDelta) / 120
+    zoomFactor = Math.abs(e.wheelDelta) / 120 * @speed
     zoom       = Math.pow(2, sign*zoomFactor)
-    @dispatch.zoom({sign, zoomFactor, zoom, e})
+
+    @dispatch.zoom({zoom})

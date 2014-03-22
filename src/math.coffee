@@ -12,6 +12,11 @@ IDENTITY = [1.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 1.0, 0.0,
             0.0, 0.0, 0.0, 1.0]
 
+TRANSPOSE_INDICES = [0,  4,  8, 12,
+                     1,  5,  9, 13,
+                     2,  6, 10, 14,
+                     3,  7, 11, 15]
+
 # The `Matrix` class stores transformations in the scene. These include:
 # (1) Camera Projection and Viewport transformations.
 # (2) Transformations of any `Transformable` type object, such as `Shapes`
@@ -28,6 +33,10 @@ class seen.Matrix
   # Returns a new matrix instances with a copy of the value array
   copy: ->
     return new seen.Matrix(@m.slice())
+
+  # Returns a new matrix which is the transpose of this matrix
+  transpose: ->
+    return new seen.Matrix(TRANSPOSE_INDICES.map((i) => @m[i]))
 
   # Resets the matrix to the identity matrix.
   reset: ->
@@ -81,10 +90,11 @@ class seen.Matrix
     return @
 
   # Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
-  scale: (sx, sy, sz) ->
+  scale: (sx, sy, sz, sw) ->
     sx     ?= 1
     sy     ?= sx
     sz     ?= sy
+    sw     ?= sz
     @m[0]  *= sx
     @m[5]  *= sy
     @m[10] *= sz

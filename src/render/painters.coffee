@@ -10,25 +10,30 @@ class seen.Painter
 
 class PathPainter extends seen.Painter
   paint : (renderModel, context) ->
-    context.path()
-      .style(
+    painter = context.path().path(renderModel.projected.points)
+
+    if renderModel.fill?
+      painter.fill(
         fill           : if not renderModel.fill? then 'none' else renderModel.fill.hex()
-        stroke         : if not renderModel.stroke? then 'none' else renderModel.stroke.hex()
         'fill-opacity' : if not renderModel.fill?.a? then 1.0 else (renderModel.fill.a / 255.0)
+      )
+
+    if renderModel.stroke?
+      painter.draw(
+        fill           : 'none'
+        stroke         : if not renderModel.stroke? then 'none' else renderModel.stroke.hex()
         'stroke-width' : renderModel.surface['stroke-width'] ? 1
       )
-      .path(renderModel.projected.points)
-      .fill()
 
 class TextPainter extends seen.Painter
   paint : (renderModel, context) ->
-    xform = renderModel.transform.copy().multiply renderModel.projection
-    context.text()
-      .style(
+    xform   = renderModel.transform.copy().multiply renderModel.projection
+    painter = context.text().text(xform, renderModel.surface.text)
+    if renderModel.fill?
+      painter.fill(
         fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
         'text-anchor' : renderModel.surface.anchor ? 'middle'
       )
-      .text(xform, renderModel.surface.text)
 
 seen.Painters = {
   path  : new PathPainter()

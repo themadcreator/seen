@@ -95,24 +95,17 @@ class seen.Events.Dispatcher
 
 # Internal event object for storing listener callbacks and a map for easy lookup.
 seen.Events.Event = ->
-  listeners = []
-  listenerMap = {}
-
   event = ->
-    for l in listeners
+    for name, l of event.listenerMap
       if l? then l.apply(@, arguments)
 
-  event.on = (name, listener) ->
-    existing = listenerMap[name]
+  event.listenerMap = {}
 
-    if existing
-      i = listeners.indexOf(existing)
-      if i > 0 then listeners.splice(i, 1)
-      delete listenerMap[name]
+  event.on = (name, listener) ->
+    delete event.listenerMap[name]
 
     if listener
-      listeners.push listener
-      listenerMap[name] = listener
+      event.listenerMap[name] = listener
 
   return event
 
@@ -131,6 +124,11 @@ IDENTITY = [1.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 1.0, 0.0,
             0.0, 0.0, 0.0, 1.0]
 
+TRANSPOSE_INDICES = [0,  4,  8, 12,
+                     1,  5,  9, 13,
+                     2,  6, 10, 14,
+                     3,  7, 11, 15]
+
 # The `Matrix` class stores transformations in the scene. These include:
 # (1) Camera Projection and Viewport transformations.
 # (2) Transformations of any `Transformable` type object, such as `Shapes`
@@ -147,6 +145,10 @@ class seen.Matrix
   # Returns a new matrix instances with a copy of the value array
   copy: ->
     return new seen.Matrix(@m.slice())
+
+  # Returns a new matrix which is the transpose of this matrix
+  transpose: ->
+    return new seen.Matrix(TRANSPOSE_INDICES.map((i) => @m[i]))
 
   # Resets the matrix to the identity matrix.
   reset: ->
@@ -200,10 +202,11 @@ class seen.Matrix
     return @
 
   # Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
-  scale: (sx, sy, sz) ->
+  scale: (sx, sy, sz, sw) ->
     sx     ?= 1
     sy     ?= sx
     sz     ?= sy
+    sw     ?= sz
     @m[0]  *= sx
     @m[5]  *= sy
     @m[10] *= sz
@@ -767,6 +770,17 @@ class seen.RenderLayerContext
   reset   : ->
   cleanup : ->
 
+seen.Contexts = {
+  create : (elementId, width, height) ->
+    tag = seen.Util.element(elementId)?.tagName
+    switch tag
+      when 'SVG'    then return new seen.SvgRenderContext(elementId, width, height)
+      when 'CANVAS' then return new seen.CanvasRenderContext(elementId, width, height)
+  
+  createWithScene : (elementId, scene, width, height) ->
+    context = seen.Contexts.create(elementId, width, height)
+    return seen.LayersScene(context, scene, width, height)
+}
 
 
 # ## Painters
@@ -780,25 +794,30 @@ class seen.Painter
 
 class PathPainter extends seen.Painter
   paint : (renderModel, context) ->
-    context.path()
-      .style(
+    painter = context.path().path(renderModel.projected.points)
+
+    if renderModel.fill?
+      painter.fill(
         fill           : if not renderModel.fill? then 'none' else renderModel.fill.hex()
-        stroke         : if not renderModel.stroke? then 'none' else renderModel.stroke.hex()
         'fill-opacity' : if not renderModel.fill?.a? then 1.0 else (renderModel.fill.a / 255.0)
+      )
+
+    if renderModel.stroke?
+      painter.draw(
+        fill           : 'none'
+        stroke         : if not renderModel.stroke? then 'none' else renderModel.stroke.hex()
         'stroke-width' : renderModel.surface['stroke-width'] ? 1
       )
-      .path(renderModel.projected.points)
-      .fill()
 
 class TextPainter extends seen.Painter
   paint : (renderModel, context) ->
-    xform = renderModel.transform.copy().multiply renderModel.projection
-    context.text()
-      .style(
+    xform   = renderModel.transform.copy().multiply renderModel.projection
+    painter = context.text().text(xform, renderModel.surface.text)
+    if renderModel.fill?
+      painter.fill(
         fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
         'text-anchor' : renderModel.surface.anchor ? 'middle'
       )
-      .text(xform, renderModel.surface.text)
 
 seen.Painters = {
   path  : new PathPainter()
@@ -892,14 +911,8 @@ class seen.FillLayer extends seen.RenderLayer
 
   render: (context) =>
     context.rect()
-      .style(
-        fill : @fill
-      )
-      .size(
-        width  : @width
-        height : @height
-      )
-
+      .rect(@width, @height)
+      .fill(fill : @fill)
 
 class seen.SceneLayer extends seen.RenderLayer
   constructor : (@scene) ->
@@ -907,7 +920,6 @@ class seen.SceneLayer extends seen.RenderLayer
   render : (context) =>
     for renderModel in @scene.render()
       renderModel.surface.painter.paint(renderModel, context)
-
 
 class seen.DebugLayer extends seen.RenderLayer
   constructor: (animator) ->
@@ -919,13 +931,8 @@ class seen.DebugLayer extends seen.RenderLayer
 
   render : (context) =>
     context.text()
-      .style(
-        'fill' : '#000'
-      )
-      .transform(
-        seen.M().translate(10 , 20).scale(1,-1,1)
-      )
-      .text(@_msg)
+      .text(@_msg, seen.M().translate(10 , 20).scale(1,-1,1))
+      .fill('fill' : '#000')
 
   _renderStart: =>
     @_renderStartTime = new Date()
@@ -946,68 +953,91 @@ seen.LayersScene = (context, scene, width = 400, height = 400) ->
   return context
 
 
-
 _svg = (name) ->
   return document.createElementNS('http://www.w3.org/2000/svg', name)
 
-_line = (points) ->
-  return 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
-
 class seen.SvgStyler
-  setElement: (@el) ->
+  _attributes : {}
+  _svgTag     : 'g'
 
-  style: (style) ->
-    str = ''
-    for key,val of style
-      str += "#{key}:#{val};"
-    @el.setAttribute('style', str)
+  constructor : (@elementFactory) ->
 
+  clear : () ->
+    @_attributes = {}
     return @
 
-  # Included for compatibility with the common API w/ canvas
-  fill : -> return @
-  draw : -> return @
+  fill : (style = {}) ->
+    @_paint(style)
+    return @
+
+  draw : (style = {}) ->
+    @_paint(style)
+    return @
+
+  _paint : (style) ->
+    el = @elementFactory(@_svgTag)
+
+    str = ''
+    for key, value of style
+      str += "#{key}:#{value};"
+    el.setAttribute('style', str)
+
+    for key, value of @_attributes
+      el.setAttribute(key, value)
+    return el
 
 class seen.SvgPathPainter extends seen.SvgStyler
-  path: (points) ->
-    @el.setAttribute('d', _line(points))
+  _svgTag : 'path'
+
+  path : (points) ->
+    @_attributes.d = 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
     return @
 
 class seen.SvgTextPainter extends seen.SvgStyler
-  text: (transform, text) ->
+  _svgTag      : 'text'
+  _textContent : ''
+
+  text : (transform, text) ->
     m = seen.Matrices.flipY().multiply(transform).m
-    @el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
-    @el.textContent = text
+    @_attributes.transform      = "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})"
+    @_attributes['font-family'] = 'Roboto'
+    @_textContent               = text
     return @
 
+  _paint : (style) ->
+    el = super(style)
+    el.textContent = @_textContent
+    return el
+
 class seen.SvgRectPainter extends seen.SvgStyler
-  rect: ({width, height}) ->
-    @el.setAttribute('width', width)
-    @el.setAttribute('height', height)
+  _svgTag : 'rect'
+
+  rect : (width, height) ->
+    @_attributes.width  = width
+    @_attributes.height = height
+    return @
+
+class seen.SvgCirclePainter extends seen.SvgStyler
+  _svgTag : 'circle'
+
+  circle: (center, radius) ->
+    @_attributes.cx = center.x
+    @_attributes.cy = center.y
+    @_attributes.r  = radius
     return @
 
 class seen.SvgLayerRenderContext extends seen.RenderLayerContext
   constructor : (@group) ->
-    @pathPainter = new seen.SvgPathPainter()
-    @textPainter = new seen.SvgTextPainter()
-    @rectPainter = new seen.SvgRectPainter()
+    @pathPainter   = new seen.SvgPathPainter(@_elementFactory)
+    @textPainter   = new seen.SvgTextPainter(@_elementFactory)
+    @circlePainter = new seen.SvgCirclePainter(@_elementFactory)
+    @rectPainter   = new seen.SvgRectPainter(@_elementFactory)
     @_i = 0
 
-  path : () ->
-    el = @_manifest('path')
-    @pathPainter.setElement el
-    return @pathPainter
-
-  text : () ->
-    el = @_manifest('text')
-    el.setAttribute 'font-family', 'Roboto'
-    @textPainter.setElement el
-    return @textPainter
-
-  rect : (dims) ->
-    el = @_manifest('rect')
-    @rectPainter.setElement el
-    return @rectPainter
+  path   : () -> @pathPainter.clear()
+  rect   : () -> @rectPainter.clear()
+  circle : () -> @circlePainter.clear()
+  text   : () -> @textPainter.clear()
 
   reset : ->
     @_i = 0
@@ -1018,7 +1048,7 @@ class seen.SvgLayerRenderContext extends seen.RenderLayerContext
       children[@_i].setAttribute('style', 'display: none;')
       @_i++
 
-  _manifest : (type) ->
+  _elementFactory : (type) =>
     children = @group.childNodes
     if @_i >= children.length
       path = _svg(type)
@@ -1057,18 +1087,20 @@ seen.SvgContext = (elementId, scene, width, height) ->
 class seen.CanvasStyler
   constructor : (@ctx) ->
 
-  style: (style) ->
-    for key, val of style
-      switch key
-        when 'fill' then @ctx.fillStyle = val
-        when 'stroke' then @ctx.strokeStyle = val
-    return @
+  draw : (style = {}) ->
+    # Copy over SVG CSS attributes
+    if style.stroke? then @ctx.strokeStyle = style.stroke
+    if style['stroke-width']? then @ctx.lineWidth = style['stroke-width']
+    if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
 
-  draw : ->
     @ctx.stroke()
     return @
 
-  fill : ->
+  fill : (style = {}) ->
+    # Copy over SVG CSS attributes
+    if style.fill? then @ctx.fillStyle = style.fill
+    if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
+
     @ctx.fill()
     return @
 
@@ -1086,14 +1118,14 @@ class seen.CanvasPathPainter extends seen.CanvasStyler
     return @
 
 class seen.CanvasRectPainter extends seen.CanvasStyler
-  rect: ({width, height}) ->
+  rect: (width, height) ->
     @ctx.rect(0, 0, width, height)
     return @
 
-class seen.CanvasPointPainter extends seen.CanvasStyler
-  circle: (point, radius) ->
+class seen.CanvasCirclePainter extends seen.CanvasStyler
+  circle: (center, radius) ->
     @ctx.beginPath()
-    @ctx.arc(point.x, point.y, radius, 0, 2*Math.PI, true)
+    @ctx.arc(center.x, center.y, radius, 0, 2*Math.PI, true)
     return @
 
 class seen.CanvasTextPainter extends seen.CanvasStyler
@@ -1109,21 +1141,14 @@ class seen.CanvasTextPainter extends seen.CanvasStyler
 class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
   constructor : (@ctx) ->
     @pathPainter  = new seen.CanvasPathPainter(@ctx)
-    @pointPainter = new seen.CanvasPointPainter(@ctx)
+    @ciclePainter = new seen.CanvasCirclePainter(@ctx)
     @textPainter  = new seen.CanvasTextPainter(@ctx)
     @rectPainter  = new seen.CanvasRectPainter(@ctx)
-
-  path : () ->
-    return @pathPainter
-
-  point : () ->
-    return @pointPainter
-
-  text : () ->
-    return @textPainter
-
-  rect : () ->
-    return @rectPainter
+  
+  path   : () -> @pathPainter
+  rect   : () -> @rectPainter
+  circle : () -> @ciclePainter
+  text   : () -> @textPainter
 
 class seen.CanvasRenderContext extends seen.RenderContext
   constructor: (@el, @width, @height) ->
@@ -1186,6 +1211,7 @@ class seen.MouseEvents
     if @_mouseDown then @dispatch.drag(e)
 
   _onMouseDown : (e) =>
+    console.log 'down'
     @_mouseDown = true
     seen.WindowEvents.on "mouseUp.#{@_uid}", @_onMouseUp
     seen.WindowEvents.on "mouseMove.#{@_uid}", @_onMouseMove
@@ -1193,6 +1219,7 @@ class seen.MouseEvents
     @dispatch.dragStart(e)
 
   _onMouseUp : (e) =>
+    console.log 'up'
     @_mouseDown = false
     seen.WindowEvents.on "mouseUp.#{@_uid}", null
     seen.WindowEvents.on "mouseMove.#{@_uid}", null
@@ -1321,7 +1348,11 @@ class seen.Drag
     @_inertiaRunning = false
 
 class seen.Zoom
-  constructor : (@el) ->
+  defaults :
+    speed : 0.25
+
+  constructor : (@el,  options) ->
+    seen.Util.defaults(@, options, @defaults)
     @el       = seen.Util.element(@el)
     @_uid     = seen.Util.uniqueId('zoomer-')
     @dispatch = seen.Events.dispatch('zoom')
@@ -1332,9 +1363,10 @@ class seen.Zoom
 
   _onMouseWheel : (e) =>
     sign       = e.wheelDelta / Math.abs(e.wheelDelta)
-    zoomFactor = Math.abs(e.wheelDelta) / 120
+    zoomFactor = Math.abs(e.wheelDelta) / 120 * @speed
     zoom       = Math.pow(2, sign*zoomFactor)
-    @dispatch.zoom({sign, zoomFactor, zoom, e})
+
+    @dispatch.zoom({zoom})
 
 
 

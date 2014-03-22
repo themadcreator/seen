@@ -9,14 +9,8 @@ class seen.FillLayer extends seen.RenderLayer
 
   render: (context) =>
     context.rect()
-      .style(
-        fill : @fill
-      )
-      .size(
-        width  : @width
-        height : @height
-      )
-
+      .rect(@width, @height)
+      .fill(fill : @fill)
 
 class seen.SceneLayer extends seen.RenderLayer
   constructor : (@scene) ->
@@ -24,7 +18,6 @@ class seen.SceneLayer extends seen.RenderLayer
   render : (context) =>
     for renderModel in @scene.render()
       renderModel.surface.painter.paint(renderModel, context)
-
 
 class seen.DebugLayer extends seen.RenderLayer
   constructor: (animator) ->
@@ -36,13 +29,8 @@ class seen.DebugLayer extends seen.RenderLayer
 
   render : (context) =>
     context.text()
-      .style(
-        'fill' : '#000'
-      )
-      .transform(
-        seen.M().translate(10 , 20).scale(1,-1,1)
-      )
-      .text(@_msg)
+      .text(@_msg, seen.M().translate(10 , 20).scale(1,-1,1))
+      .fill('fill' : '#000')
 
   _renderStart: =>
     @_renderStartTime = new Date()

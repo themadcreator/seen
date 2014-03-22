@@ -1,65 +1,88 @@
-
 _svg = (name) ->
   return document.createElementNS('http://www.w3.org/2000/svg', name)
 
-_line = (points) ->
-  return 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
-
 class seen.SvgStyler
-  setElement: (@el) ->
+  _attributes : {}
+  _svgTag     : 'g'
 
-  style: (style) ->
-    str = ''
-    for key,val of style
-      str += "#{key}:#{val};"
-    @el.setAttribute('style', str)
+  constructor : (@elementFactory) ->
 
+  clear : () ->
+    @_attributes = {}
     return @
 
-  # Included for compatibility with the common API w/ canvas
-  fill : -> return @
-  draw : -> return @
+  fill : (style = {}) ->
+    @_paint(style)
+    return @
+
+  draw : (style = {}) ->
+    @_paint(style)
+    return @
+
+  _paint : (style) ->
+    el = @elementFactory(@_svgTag)
+
+    str = ''
+    for key, value of style
+      str += "#{key}:#{value};"
+    el.setAttribute('style', str)
+
+    for key, value of @_attributes
+      el.setAttribute(key, value)
+    return el
 
 class seen.SvgPathPainter extends seen.SvgStyler
-  path: (points) ->
-    @el.setAttribute('d', _line(points))
+  _svgTag : 'path'
+
+  path : (points) ->
+    @_attributes.d = 'M' + points.map((p) -> "#{p.x} #{p.y}").join 'L'
     return @
 
 class seen.SvgTextPainter extends seen.SvgStyler
-  text: (transform, text) ->
+  _svgTag      : 'text'
+  _textContent : ''
+
+  text : (transform, text) ->
     m = seen.Matrices.flipY().multiply(transform).m
-    @el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
-    @el.textContent = text
+    @_attributes.transform      = "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})"
+    @_attributes['font-family'] = 'Roboto'
+    @_textContent               = text
     return @
 
+  _paint : (style) ->
+    el = super(style)
+    el.textContent = @_textContent
+    return el
+
 class seen.SvgRectPainter extends seen.SvgStyler
-  rect: ({width, height}) ->
-    @el.setAttribute('width', width)
-    @el.setAttribute('height', height)
+  _svgTag : 'rect'
+
+  rect : (width, height) ->
+    @_attributes.width  = width
+    @_attributes.height = height
+    return @
+
+class seen.SvgCirclePainter extends seen.SvgStyler
+  _svgTag : 'circle'
+
+  circle: (center, radius) ->
+    @_attributes.cx = center.x
+    @_attributes.cy = center.y
+    @_attributes.r  = radius
     return @
 
 class seen.SvgLayerRenderContext extends seen.RenderLayerContext
   constructor : (@group) ->
-    @pathPainter = new seen.SvgPathPainter()
-    @textPainter = new seen.SvgTextPainter()
-    @rectPainter = new seen.SvgRectPainter()
+    @pathPainter   = new seen.SvgPathPainter(@_elementFactory)
+    @textPainter   = new seen.SvgTextPainter(@_elementFactory)
+    @circlePainter = new seen.SvgCirclePainter(@_elementFactory)
+    @rectPainter   = new seen.SvgRectPainter(@_elementFactory)
     @_i = 0
 
-  path : () ->
-    el = @_manifest('path')
-    @pathPainter.setElement el
-    return @pathPainter
-
-  text : () ->
-    el = @_manifest('text')
-    el.setAttribute 'font-family', 'Roboto'
-    @textPainter.setElement el
-    return @textPainter
-
-  rect : (dims) ->
-    el = @_manifest('rect')
-    @rectPainter.setElement el
-    return @rectPainter
+  path   : () -> @pathPainter.clear()
+  rect   : () -> @rectPainter.clear()
+  circle : () -> @circlePainter.clear()
+  text   : () -> @textPainter.clear()
 
   reset : ->
     @_i = 0
@@ -70,7 +93,7 @@ class seen.SvgLayerRenderContext extends seen.RenderLayerContext
       children[@_i].setAttribute('style', 'display: none;')
       @_i++
 
-  _manifest : (type) ->
+  _elementFactory : (type) =>
     children = @group.childNodes
     if @_i >= children.length
       path = _svg(type)

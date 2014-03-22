@@ -41,3 +41,15 @@ class seen.RenderLayerContext
 
   reset   : ->
   cleanup : ->
+
+seen.Contexts = {
+  create : (elementId, width, height) ->
+    tag = seen.Util.element(elementId)?.tagName
+    switch tag
+      when 'SVG'    then return new seen.SvgRenderContext(elementId, width, height)
+      when 'CANVAS' then return new seen.CanvasRenderContext(elementId, width, height)
+  
+  createWithScene : (elementId, scene, width, height) ->
+    context = seen.Contexts.create(elementId, width, height)
+    return seen.LayersScene(context, scene, width, height)
+}

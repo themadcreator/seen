@@ -1,18 +1,20 @@
 class seen.CanvasStyler
   constructor : (@ctx) ->
 
-  style: (style) ->
-    for key, val of style
-      switch key
-        when 'fill' then @ctx.fillStyle = val
-        when 'stroke' then @ctx.strokeStyle = val
-    return @
+  draw : (style = {}) ->
+    # Copy over SVG CSS attributes
+    if style.stroke? then @ctx.strokeStyle = style.stroke
+    if style['stroke-width']? then @ctx.lineWidth = style['stroke-width']
+    if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
 
-  draw : ->
     @ctx.stroke()
     return @
 
-  fill : ->
+  fill : (style = {}) ->
+    # Copy over SVG CSS attributes
+    if style.fill? then @ctx.fillStyle = style.fill
+    if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
+
     @ctx.fill()
     return @
 
@@ -30,14 +32,14 @@ class seen.CanvasPathPainter extends seen.CanvasStyler
     return @
 
 class seen.CanvasRectPainter extends seen.CanvasStyler
-  rect: ({width, height}) ->
+  rect: (width, height) ->
     @ctx.rect(0, 0, width, height)
     return @
 
-class seen.CanvasPointPainter extends seen.CanvasStyler
-  circle: (point, radius) ->
+class seen.CanvasCirclePainter extends seen.CanvasStyler
+  circle: (center, radius) ->
     @ctx.beginPath()
-    @ctx.arc(point.x, point.y, radius, 0, 2*Math.PI, true)
+    @ctx.arc(center.x, center.y, radius, 0, 2*Math.PI, true)
     return @
 
 class seen.CanvasTextPainter extends seen.CanvasStyler
@@ -53,21 +55,14 @@ class seen.CanvasTextPainter extends seen.CanvasStyler
 class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
   constructor : (@ctx) ->
     @pathPainter  = new seen.CanvasPathPainter(@ctx)
-    @pointPainter = new seen.CanvasPointPainter(@ctx)
+    @ciclePainter = new seen.CanvasCirclePainter(@ctx)
     @textPainter  = new seen.CanvasTextPainter(@ctx)
     @rectPainter  = new seen.CanvasRectPainter(@ctx)
-
-  path : () ->
-    return @pathPainter
-
-  point : () ->
-    return @pointPainter
-
-  text : () ->
-    return @textPainter
-
-  rect : () ->
-    return @rectPainter
+  
+  path   : () -> @pathPainter
+  rect   : () -> @rectPainter
+  circle : () -> @ciclePainter
+  text   : () -> @textPainter
 
 class seen.CanvasRenderContext extends seen.RenderContext
   constructor: (@el, @width, @height) ->

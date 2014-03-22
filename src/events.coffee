@@ -35,23 +35,16 @@ class seen.Events.Dispatcher
 
 # Internal event object for storing listener callbacks and a map for easy lookup.
 seen.Events.Event = ->
-  listeners = []
-  listenerMap = {}
-
   event = ->
-    for l in listeners
+    for name, l of event.listenerMap
       if l? then l.apply(@, arguments)
 
-  event.on = (name, listener) ->
-    existing = listenerMap[name]
+  event.listenerMap = {}
 
-    if existing
-      i = listeners.indexOf(existing)
-      if i > 0 then listeners.splice(i, 1)
-      delete listenerMap[name]
+  event.on = (name, listener) ->
+    delete event.listenerMap[name]
 
     if listener
-      listeners.push listener
-      listenerMap[name] = listener
+      event.listenerMap[name] = listener
 
   return event

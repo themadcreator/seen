@@ -1,5 +1,5 @@
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TextPainter, seen, _line, _ref, _ref1, _ref10, _ref11, _ref12, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _svg,
+  var ARRAY_POOL, Ambient, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TRANSPOSE_INDICES, TextPainter, seen, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -92,14 +92,13 @@
   })();
 
   seen.Events.Event = function() {
-    var event, listenerMap, listeners;
-    listeners = [];
-    listenerMap = {};
+    var event;
     event = function() {
-      var l, _i, _len, _results;
+      var l, name, _ref, _results;
+      _ref = event.listenerMap;
       _results = [];
-      for (_i = 0, _len = listeners.length; _i < _len; _i++) {
-        l = listeners[_i];
+      for (name in _ref) {
+        l = _ref[name];
         if (l != null) {
           _results.push(l.apply(this, arguments));
         } else {
@@ -108,19 +107,11 @@
       }
       return _results;
     };
+    event.listenerMap = {};
     event.on = function(name, listener) {
-      var existing, i;
-      existing = listenerMap[name];
-      if (existing) {
-        i = listeners.indexOf(existing);
-        if (i > 0) {
-          listeners.splice(i, 1);
-        }
-        delete listenerMap[name];
-      }
+      delete event.listenerMap[name];
       if (listener) {
-        listeners.push(listener);
-        return listenerMap[name] = listener;
+        return event.listenerMap[name] = listener;
       }
     };
     return event;
@@ -129,6 +120,8 @@
   ARRAY_POOL = new Array(16);
 
   IDENTITY = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+
+  TRANSPOSE_INDICES = [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15];
 
   seen.Matrix = (function() {
     function Matrix(m) {
@@ -141,6 +134,13 @@
 
     Matrix.prototype.copy = function() {
       return new seen.Matrix(this.m.slice());
+    };
+
+    Matrix.prototype.transpose = function() {
+      var _this = this;
+      return new seen.Matrix(TRANSPOSE_INDICES.map(function(i) {
+        return _this.m[i];
+      }));
     };
 
     Matrix.prototype.reset = function() {
@@ -205,7 +205,7 @@
       return this;
     };
 
-    Matrix.prototype.scale = function(sx, sy, sz) {
+    Matrix.prototype.scale = function(sx, sy, sz, sw) {
       if (sx == null) {
         sx = 1;
       }
@@ -214,6 +214,9 @@
       }
       if (sz == null) {
         sz = sy;
+      }
+      if (sw == null) {
+        sw = sz;
       }
       this.m[0] *= sx;
       this.m[5] *= sy;
@@ -920,6 +923,24 @@
 
   })();
 
+  seen.Contexts = {
+    create: function(elementId, width, height) {
+      var tag, _ref4;
+      tag = (_ref4 = seen.Util.element(elementId)) != null ? _ref4.tagName : void 0;
+      switch (tag) {
+        case 'SVG':
+          return new seen.SvgRenderContext(elementId, width, height);
+        case 'CANVAS':
+          return new seen.CanvasRenderContext(elementId, width, height);
+      }
+    },
+    createWithScene: function(elementId, scene, width, height) {
+      var context;
+      context = seen.Contexts.create(elementId, width, height);
+      return seen.LayersScene(context, scene, width, height);
+    }
+  };
+
   seen.Painter = (function() {
     function Painter() {}
 
@@ -938,13 +959,21 @@
     }
 
     PathPainter.prototype.paint = function(renderModel, context) {
-      var _ref5, _ref6;
-      return context.path().style({
-        fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
-        stroke: renderModel.stroke == null ? 'none' : renderModel.stroke.hex(),
-        'fill-opacity': ((_ref5 = renderModel.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderModel.fill.a / 255.0,
-        'stroke-width': (_ref6 = renderModel.surface['stroke-width']) != null ? _ref6 : 1
-      }).path(renderModel.projected.points).fill();
+      var painter, _ref5, _ref6;
+      painter = context.path().path(renderModel.projected.points);
+      if (renderModel.fill != null) {
+        painter.fill({
+          fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
+          'fill-opacity': ((_ref5 = renderModel.fill) != null ? _ref5.a : void 0) == null ? 1.0 : renderModel.fill.a / 255.0
+        });
+      }
+      if (renderModel.stroke != null) {
+        return painter.draw({
+          fill: 'none',
+          stroke: renderModel.stroke == null ? 'none' : renderModel.stroke.hex(),
+          'stroke-width': (_ref6 = renderModel.surface['stroke-width']) != null ? _ref6 : 1
+        });
+      }
     };
 
     return PathPainter;
@@ -960,12 +989,15 @@
     }
 
     TextPainter.prototype.paint = function(renderModel, context) {
-      var xform, _ref6;
+      var painter, xform, _ref6;
       xform = renderModel.transform.copy().multiply(renderModel.projection);
-      return context.text().style({
-        fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
-        'text-anchor': (_ref6 = renderModel.surface.anchor) != null ? _ref6 : 'middle'
-      }).text(xform, renderModel.surface.text);
+      painter = context.text().text(xform, renderModel.surface.text);
+      if (renderModel.fill != null) {
+        return painter.fill({
+          fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
+          'text-anchor': (_ref6 = renderModel.surface.anchor) != null ? _ref6 : 'middle'
+        });
+      }
     };
 
     return TextPainter;
@@ -1096,11 +1128,8 @@
     }
 
     FillLayer.prototype.render = function(context) {
-      return context.rect().style({
+      return context.rect().rect(this.width, this.height).fill({
         fill: this.fill
-      }).size({
-        width: this.width,
-        height: this.height
       });
     };
 
@@ -1145,9 +1174,9 @@
     }
 
     DebugLayer.prototype.render = function(context) {
-      return context.text().style({
+      return context.text().text(this._msg, seen.M().translate(10, 20).scale(1, -1, 1)).fill({
         'fill': '#000'
-      }).transform(seen.M().translate(10, 20).scale(1, -1, 1)).text(this._msg);
+      });
     };
 
     DebugLayer.prototype._renderStart = function() {
@@ -1182,36 +1211,51 @@
     return document.createElementNS('http://www.w3.org/2000/svg', name);
   };
 
-  _line = function(points) {
-    return 'M' + points.map(function(p) {
-      return "" + p.x + " " + p.y;
-    }).join('L');
-  };
-
   seen.SvgStyler = (function() {
-    function SvgStyler() {}
+    SvgStyler.prototype._attributes = {};
 
-    SvgStyler.prototype.setElement = function(el) {
-      this.el = el;
+    SvgStyler.prototype._svgTag = 'g';
+
+    function SvgStyler(elementFactory) {
+      this.elementFactory = elementFactory;
+    }
+
+    SvgStyler.prototype.clear = function() {
+      this._attributes = {};
+      return this;
     };
 
-    SvgStyler.prototype.style = function(style) {
-      var key, str, val;
+    SvgStyler.prototype.fill = function(style) {
+      if (style == null) {
+        style = {};
+      }
+      this._paint(style);
+      return this;
+    };
+
+    SvgStyler.prototype.draw = function(style) {
+      if (style == null) {
+        style = {};
+      }
+      this._paint(style);
+      return this;
+    };
+
+    SvgStyler.prototype._paint = function(style) {
+      var el, key, str, value, _ref6;
+      el = this.elementFactory(this._svgTag);
       str = '';
       for (key in style) {
-        val = style[key];
-        str += "" + key + ":" + val + ";";
+        value = style[key];
+        str += "" + key + ":" + value + ";";
       }
-      this.el.setAttribute('style', str);
-      return this;
-    };
-
-    SvgStyler.prototype.fill = function() {
-      return this;
-    };
-
-    SvgStyler.prototype.draw = function() {
-      return this;
+      el.setAttribute('style', str);
+      _ref6 = this._attributes;
+      for (key in _ref6) {
+        value = _ref6[key];
+        el.setAttribute(key, value);
+      }
+      return el;
     };
 
     return SvgStyler;
@@ -1226,8 +1270,12 @@
       return _ref6;
     }
 
+    SvgPathPainter.prototype._svgTag = 'path';
+
     SvgPathPainter.prototype.path = function(points) {
-      this.el.setAttribute('d', _line(points));
+      this._attributes.d = 'M' + points.map(function(p) {
+        return "" + p.x + " " + p.y;
+      }).join('L');
       return this;
     };
 
@@ -1243,12 +1291,24 @@
       return _ref7;
     }
 
+    SvgTextPainter.prototype._svgTag = 'text';
+
+    SvgTextPainter.prototype._textContent = '';
+
     SvgTextPainter.prototype.text = function(transform, text) {
       var m;
       m = seen.Matrices.flipY().multiply(transform).m;
-      this.el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
-      this.el.textContent = text;
+      this._attributes.transform = "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")";
+      this._attributes['font-family'] = 'Roboto';
+      this._textContent = text;
       return this;
+    };
+
+    SvgTextPainter.prototype._paint = function(style) {
+      var el;
+      el = SvgTextPainter.__super__._paint.call(this, style);
+      el.textContent = this._textContent;
+      return el;
     };
 
     return SvgTextPainter;
@@ -1263,15 +1323,36 @@
       return _ref8;
     }
 
-    SvgRectPainter.prototype.rect = function(_arg) {
-      var height, width;
-      width = _arg.width, height = _arg.height;
-      this.el.setAttribute('width', width);
-      this.el.setAttribute('height', height);
+    SvgRectPainter.prototype._svgTag = 'rect';
+
+    SvgRectPainter.prototype.rect = function(width, height) {
+      this._attributes.width = width;
+      this._attributes.height = height;
       return this;
     };
 
     return SvgRectPainter;
+
+  })(seen.SvgStyler);
+
+  seen.SvgCirclePainter = (function(_super) {
+    __extends(SvgCirclePainter, _super);
+
+    function SvgCirclePainter() {
+      _ref9 = SvgCirclePainter.__super__.constructor.apply(this, arguments);
+      return _ref9;
+    }
+
+    SvgCirclePainter.prototype._svgTag = 'circle';
+
+    SvgCirclePainter.prototype.circle = function(center, radius) {
+      this._attributes.cx = center.x;
+      this._attributes.cy = center.y;
+      this._attributes.r = radius;
+      return this;
+    };
+
+    return SvgCirclePainter;
 
   })(seen.SvgStyler);
 
@@ -1280,32 +1361,28 @@
 
     function SvgLayerRenderContext(group) {
       this.group = group;
-      this.pathPainter = new seen.SvgPathPainter();
-      this.textPainter = new seen.SvgTextPainter();
-      this.rectPainter = new seen.SvgRectPainter();
+      this._elementFactory = __bind(this._elementFactory, this);
+      this.pathPainter = new seen.SvgPathPainter(this._elementFactory);
+      this.textPainter = new seen.SvgTextPainter(this._elementFactory);
+      this.circlePainter = new seen.SvgCirclePainter(this._elementFactory);
+      this.rectPainter = new seen.SvgRectPainter(this._elementFactory);
       this._i = 0;
     }
 
     SvgLayerRenderContext.prototype.path = function() {
-      var el;
-      el = this._manifest('path');
-      this.pathPainter.setElement(el);
-      return this.pathPainter;
+      return this.pathPainter.clear();
+    };
+
+    SvgLayerRenderContext.prototype.rect = function() {
+      return this.rectPainter.clear();
+    };
+
+    SvgLayerRenderContext.prototype.circle = function() {
+      return this.circlePainter.clear();
     };
 
     SvgLayerRenderContext.prototype.text = function() {
-      var el;
-      el = this._manifest('text');
-      el.setAttribute('font-family', 'Roboto');
-      this.textPainter.setElement(el);
-      return this.textPainter;
-    };
-
-    SvgLayerRenderContext.prototype.rect = function(dims) {
-      var el;
-      el = this._manifest('rect');
-      this.rectPainter.setElement(el);
-      return this.rectPainter;
+      return this.textPainter.clear();
     };
 
     SvgLayerRenderContext.prototype.reset = function() {
@@ -1323,7 +1400,7 @@
       return _results;
     };
 
-    SvgLayerRenderContext.prototype._manifest = function(type) {
+    SvgLayerRenderContext.prototype._elementFactory = function(type) {
       var children, current, path;
       children = this.group.childNodes;
       if (this._i >= children.length) {
@@ -1382,27 +1459,33 @@
       this.ctx = ctx;
     }
 
-    CanvasStyler.prototype.style = function(style) {
-      var key, val;
-      for (key in style) {
-        val = style[key];
-        switch (key) {
-          case 'fill':
-            this.ctx.fillStyle = val;
-            break;
-          case 'stroke':
-            this.ctx.strokeStyle = val;
-        }
+    CanvasStyler.prototype.draw = function(style) {
+      if (style == null) {
+        style = {};
       }
-      return this;
-    };
-
-    CanvasStyler.prototype.draw = function() {
+      if (style.stroke != null) {
+        this.ctx.strokeStyle = style.stroke;
+      }
+      if (style['stroke-width'] != null) {
+        this.ctx.lineWidth = style['stroke-width'];
+      }
+      if (style['text-anchor'] != null) {
+        this.ctx.textAlign = style['text-anchor'];
+      }
       this.ctx.stroke();
       return this;
     };
 
-    CanvasStyler.prototype.fill = function() {
+    CanvasStyler.prototype.fill = function(style) {
+      if (style == null) {
+        style = {};
+      }
+      if (style.fill != null) {
+        this.ctx.fillStyle = style.fill;
+      }
+      if (style['text-anchor'] != null) {
+        this.ctx.textAlign = style['text-anchor'];
+      }
       this.ctx.fill();
       return this;
     };
@@ -1415,8 +1498,8 @@
     __extends(CanvasPathPainter, _super);
 
     function CanvasPathPainter() {
-      _ref9 = CanvasPathPainter.__super__.constructor.apply(this, arguments);
-      return _ref9;
+      _ref10 = CanvasPathPainter.__super__.constructor.apply(this, arguments);
+      return _ref10;
     }
 
     CanvasPathPainter.prototype.path = function(points) {
@@ -1442,13 +1525,11 @@
     __extends(CanvasRectPainter, _super);
 
     function CanvasRectPainter() {
-      _ref10 = CanvasRectPainter.__super__.constructor.apply(this, arguments);
-      return _ref10;
+      _ref11 = CanvasRectPainter.__super__.constructor.apply(this, arguments);
+      return _ref11;
     }
 
-    CanvasRectPainter.prototype.rect = function(_arg) {
-      var height, width;
-      width = _arg.width, height = _arg.height;
+    CanvasRectPainter.prototype.rect = function(width, height) {
       this.ctx.rect(0, 0, width, height);
       return this;
     };
@@ -1457,21 +1538,21 @@
 
   })(seen.CanvasStyler);
 
-  seen.CanvasPointPainter = (function(_super) {
-    __extends(CanvasPointPainter, _super);
+  seen.CanvasCirclePainter = (function(_super) {
+    __extends(CanvasCirclePainter, _super);
 
-    function CanvasPointPainter() {
-      _ref11 = CanvasPointPainter.__super__.constructor.apply(this, arguments);
-      return _ref11;
+    function CanvasCirclePainter() {
+      _ref12 = CanvasCirclePainter.__super__.constructor.apply(this, arguments);
+      return _ref12;
     }
 
-    CanvasPointPainter.prototype.circle = function(point, radius) {
+    CanvasCirclePainter.prototype.circle = function(center, radius) {
       this.ctx.beginPath();
-      this.ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI, true);
+      this.ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI, true);
       return this;
     };
 
-    return CanvasPointPainter;
+    return CanvasCirclePainter;
 
   })(seen.CanvasStyler);
 
@@ -1479,8 +1560,8 @@
     __extends(CanvasTextPainter, _super);
 
     function CanvasTextPainter() {
-      _ref12 = CanvasTextPainter.__super__.constructor.apply(this, arguments);
-      return _ref12;
+      _ref13 = CanvasTextPainter.__super__.constructor.apply(this, arguments);
+      return _ref13;
     }
 
     CanvasTextPainter.prototype.text = function(transform, text) {
@@ -1504,7 +1585,7 @@
     function CanvasLayerRenderContext(ctx) {
       this.ctx = ctx;
       this.pathPainter = new seen.CanvasPathPainter(this.ctx);
-      this.pointPainter = new seen.CanvasPointPainter(this.ctx);
+      this.ciclePainter = new seen.CanvasCirclePainter(this.ctx);
       this.textPainter = new seen.CanvasTextPainter(this.ctx);
       this.rectPainter = new seen.CanvasRectPainter(this.ctx);
     }
@@ -1513,16 +1594,16 @@
       return this.pathPainter;
     };
 
-    CanvasLayerRenderContext.prototype.point = function() {
-      return this.pointPainter;
+    CanvasLayerRenderContext.prototype.rect = function() {
+      return this.rectPainter;
+    };
+
+    CanvasLayerRenderContext.prototype.circle = function() {
+      return this.ciclePainter;
     };
 
     CanvasLayerRenderContext.prototype.text = function() {
       return this.textPainter;
-    };
-
-    CanvasLayerRenderContext.prototype.rect = function() {
-      return this.rectPainter;
     };
 
     return CanvasLayerRenderContext;
@@ -1607,6 +1688,7 @@
     };
 
     MouseEvents.prototype._onMouseDown = function(e) {
+      console.log('down');
       this._mouseDown = true;
       seen.WindowEvents.on("mouseUp." + this._uid, this._onMouseUp);
       seen.WindowEvents.on("mouseMove." + this._uid, this._onMouseMove);
@@ -1615,6 +1697,7 @@
     };
 
     MouseEvents.prototype._onMouseUp = function(e) {
+      console.log('up');
       this._mouseDown = false;
       seen.WindowEvents.on("mouseUp." + this._uid, null);
       seen.WindowEvents.on("mouseMove." + this._uid, null);
@@ -1777,10 +1860,15 @@
   })();
 
   seen.Zoom = (function() {
-    function Zoom(el) {
+    Zoom.prototype.defaults = {
+      speed: 0.25
+    };
+
+    function Zoom(el, options) {
       var mouser;
       this.el = el;
       this._onMouseWheel = __bind(this._onMouseWheel, this);
+      seen.Util.defaults(this, options, this.defaults);
       this.el = seen.Util.element(this.el);
       this._uid = seen.Util.uniqueId('zoomer-');
       this.dispatch = seen.Events.dispatch('zoom');
@@ -1792,13 +1880,10 @@
     Zoom.prototype._onMouseWheel = function(e) {
       var sign, zoom, zoomFactor;
       sign = e.wheelDelta / Math.abs(e.wheelDelta);
-      zoomFactor = Math.abs(e.wheelDelta) / 120;
+      zoomFactor = Math.abs(e.wheelDelta) / 120 * this.speed;
       zoom = Math.pow(2, sign * zoomFactor);
       return this.dispatch.zoom({
-        sign: sign,
-        zoomFactor: zoomFactor,
-        zoom: zoom,
-        e: e
+        zoom: zoom
       });
     };
 
@@ -1886,11 +1971,11 @@
     };
 
     Model.prototype.eachShape = function(f) {
-      var child, _i, _len, _ref13, _results;
-      _ref13 = this.children;
+      var child, _i, _len, _ref14, _results;
+      _ref14 = this.children;
       _results = [];
-      for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
-        child = _ref13[_i];
+      for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
+        child = _ref14[_i];
         if (child instanceof seen.Shape) {
           f.call(this, child);
         }
@@ -1908,22 +1993,22 @@
     };
 
     Model.prototype._eachRenderable = function(lightFn, shapeFn, lightModels, transform) {
-      var child, light, _i, _j, _len, _len1, _ref13, _ref14, _results;
+      var child, light, _i, _j, _len, _len1, _ref14, _ref15, _results;
       if (this.lights.length > 0) {
         lightModels = lightModels.slice();
       }
-      _ref13 = this.lights;
-      for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
-        light = _ref13[_i];
+      _ref14 = this.lights;
+      for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
+        light = _ref14[_i];
         if (!light.enabled) {
           continue;
         }
         lightModels.push(lightFn.call(this, light, light.m.copy().multiply(transform)));
       }
-      _ref14 = this.children;
+      _ref15 = this.children;
       _results = [];
-      for (_j = 0, _len1 = _ref14.length; _j < _len1; _j++) {
-        child = _ref14[_j];
+      for (_j = 0, _len1 = _ref15.length; _j < _len1; _j++) {
+        child = _ref15[_j];
         if (child instanceof seen.Shape) {
           shapeFn.call(this, child, lightModels, child.m.copy().multiply(transform));
         }
@@ -2030,7 +2115,7 @@
       return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
     },
     patch: function(nx, ny) {
-      var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref13, _ref14;
+      var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref14, _ref15;
       if (nx == null) {
         nx = 20;
       }
@@ -2045,9 +2130,9 @@
         for (y = _j = 0; 0 <= ny ? _j < ny : _j > ny; y = 0 <= ny ? ++_j : --_j) {
           pts0 = [seen.P(x, y), seen.P(x + 1, y - 0.5), seen.P(x + 1, y + 0.5)];
           pts1 = [seen.P(x, y), seen.P(x + 1, y + 0.5), seen.P(x, y + 1)];
-          _ref13 = [pts0, pts1];
-          for (_k = 0, _len = _ref13.length; _k < _len; _k++) {
-            pts = _ref13[_k];
+          _ref14 = [pts0, pts1];
+          for (_k = 0, _len = _ref14.length; _k < _len; _k++) {
+            pts = _ref14[_k];
             for (_l = 0, _len1 = pts.length; _l < _len1; _l++) {
               p = pts[_l];
               p.x *= EQUILATERAL_TRIANGLE_ALTITUDE;
@@ -2057,9 +2142,9 @@
           }
         }
         if (x % 2 !== 0) {
-          _ref14 = column[0];
-          for (_m = 0, _len2 = _ref14.length; _m < _len2; _m++) {
-            p = _ref14[_m];
+          _ref15 = column[0];
+          for (_m = 0, _len2 = _ref15.length; _m < _len2; _m++) {
+            p = _ref15[_m];
             p.y += ny;
           }
           column.push(column.shift());
@@ -2099,7 +2184,7 @@
       return new seen.Shape('text', [surface]);
     },
     extrude: function(points, distance) {
-      var back, front, i, len, p, surfaces, _i, _ref13;
+      var back, front, i, len, p, surfaces, _i, _ref14;
       if (distance == null) {
         distance = 1;
       }
@@ -2122,7 +2207,7 @@
         }
         return _results;
       })());
-      for (i = _i = 1, _ref13 = points.length; 1 <= _ref13 ? _i < _ref13 : _i > _ref13; i = 1 <= _ref13 ? ++_i : --_i) {
+      for (i = _i = 1, _ref14 = points.length; 1 <= _ref14 ? _i < _ref14 : _i > _ref14; i = 1 <= _ref14 ? ++_i : --_i) {
         surfaces.push(new seen.Surface([front.points[i - 1].copy(), back.points[i - 1].copy(), back.points[i].copy(), front.points[i].copy()]));
       }
       len = points.length;
@@ -2157,11 +2242,11 @@
       return new seen.Shape('path', [new seen.Surface(points)]);
     },
     custom: function(s) {
-      var f, p, surfaces, _i, _len, _ref13;
+      var f, p, surfaces, _i, _len, _ref14;
       surfaces = [];
-      _ref13 = s.surfaces;
-      for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
-        f = _ref13[_i];
+      _ref14 = s.surfaces;
+      for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
+        f = _ref14[_i];
         surfaces.push(new seen.Surface((function() {
           var _j, _len1, _results;
           _results = [];
@@ -2196,11 +2281,11 @@
     }
 
     ObjParser.prototype.parse = function(contents) {
-      var command, data, line, _i, _len, _ref13, _results;
-      _ref13 = contents.split(/[\r\n]+/);
+      var command, data, line, _i, _len, _ref14, _results;
+      _ref14 = contents.split(/[\r\n]+/);
       _results = [];
-      for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
-        line = _ref13[_i];
+      for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
+        line = _ref14[_i];
         data = line.trim().split(/[ ]+/);
         if (data.length < 2) {
           continue;
@@ -2490,19 +2575,19 @@
       this.model.eachRenderable(function(light, transform) {
         return new seen.LightRenderModel(light, transform);
       }, function(shape, lights, transform) {
-        var p, renderModel, surface, _i, _j, _len, _len1, _ref13, _ref14, _ref15, _ref16, _results;
-        _ref13 = shape.surfaces;
+        var p, renderModel, surface, _i, _j, _len, _len1, _ref14, _ref15, _ref16, _ref17, _results;
+        _ref14 = shape.surfaces;
         _results = [];
-        for (_i = 0, _len = _ref13.length; _i < _len; _i++) {
-          surface = _ref13[_i];
+        for (_i = 0, _len = _ref14.length; _i < _len; _i++) {
+          surface = _ref14[_i];
           renderModel = _this._renderSurface(surface, transform, projection);
           if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
-            renderModel.fill = (_ref14 = surface.fill) != null ? _ref14.render(lights, _this.shader, renderModel.transformed) : void 0;
-            renderModel.stroke = (_ref15 = surface.stroke) != null ? _ref15.render(lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel.fill = (_ref15 = surface.fill) != null ? _ref15.render(lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel.stroke = (_ref16 = surface.stroke) != null ? _ref16.render(lights, _this.shader, renderModel.transformed) : void 0;
             if (_this.fractionalPoints !== true) {
-              _ref16 = renderModel.projected.points;
-              for (_j = 0, _len1 = _ref16.length; _j < _len1; _j++) {
-                p = _ref16[_j];
+              _ref17 = renderModel.projected.points;
+              for (_j = 0, _len1 = _ref17.length; _j < _len1; _j++) {
+                p = _ref17[_j];
                 p.round();
               }
             }
