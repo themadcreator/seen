@@ -926,7 +926,7 @@
   seen.Contexts = {
     create: function(elementId, width, height) {
       var tag, _ref4;
-      tag = (_ref4 = seen.Util.element(elementId)) != null ? _ref4.tagName : void 0;
+      tag = (_ref4 = seen.Util.element(elementId)) != null ? _ref4.tagName.toUpperCase() : void 0;
       switch (tag) {
         case 'SVG':
           return new seen.SvgRenderContext(elementId, width, height);
@@ -937,7 +937,8 @@
     createWithScene: function(elementId, scene, width, height) {
       var context;
       context = seen.Contexts.create(elementId, width, height);
-      return seen.LayersScene(context, scene, width, height);
+      seen.LayersScene(context, scene, width, height);
+      return context;
     }
   };
 

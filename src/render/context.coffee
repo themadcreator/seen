@@ -33,23 +33,25 @@ class seen.RenderContext
   reset   : ->
   cleanup : ->
 
-# The `RenderLayerContext` defines the interface for producing builders that can paint various things into the current layer.
+# The `RenderLayerContext` defines the interface for producing painters that can paint various things into the current layer.
 class seen.RenderLayerContext
-  path    : -> # Return a path builder
-  text    : -> # Return a text builder
-  rect    : -> # Return a rect builder
-
+  path    : -> # Return a path painter
+  rect    : -> # Return a rect painter
+  circle  : -> # Return a circle painter
+  text    : -> # Return a text painter
+  
   reset   : ->
   cleanup : ->
 
 seen.Contexts = {
   create : (elementId, width, height) ->
-    tag = seen.Util.element(elementId)?.tagName
+    tag = seen.Util.element(elementId)?.tagName.toUpperCase()
     switch tag
       when 'SVG'    then return new seen.SvgRenderContext(elementId, width, height)
       when 'CANVAS' then return new seen.CanvasRenderContext(elementId, width, height)
   
   createWithScene : (elementId, scene, width, height) ->
     context = seen.Contexts.create(elementId, width, height)
-    return seen.LayersScene(context, scene, width, height)
+    seen.LayersScene(context, scene, width, height)
+    return context
 }
