@@ -62,20 +62,23 @@
   </div>
 </div>
 
-<script type="text/coffeescript">
+<script type="text/coffeescript" id="code">
   width  = {{width}}
   height = {{height}}
 
+  # Create empty scene and render context
   scene = new seen.Scene
     model  : seen.Models.default()
     camera : new seen.Camera
       viewport : seen.Viewports.center(width, height)
 
-  shape = null
-  group = scene.model.append().scale(100)
-
   context = seen.SvgContext('seen-canvas', scene, width, height).render()
 
+  # Create pre-scaled group to add the shape to
+  group = scene.model.append().scale(100)
+  shape = null
+
+  # Enable drag-to-rotate
   dragger = new seen.Drag(document.getElementById('seen-canvas'), {inertia : true})
   dragger.on('drag.rotate', (e) ->
     xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
@@ -83,11 +86,18 @@
     context.render()
   )
 
+  # Factories for generating sample shapes
   shapeFactory =
     sphere      : -> seen.Shapes.sphere(3).scale(2)
     tetrahedron : -> seen.Shapes.tetrahedron()
     cube        : -> seen.Shapes.cube()
     patch       : -> seen.Shapes.patch(4, 4).translate(-1, -1).scale(0.5)
+
+  # =============================================
+  #
+  # Methods for updating scene from UI
+  #
+  # =============================================
 
   updateHue = ->
     hue = parseFloat($('#hue-slider').slider('value')) / 100.0
@@ -130,7 +140,7 @@
     scene.shader = seen.Shaders[shaderType]
     context.render()
 
-  # Interactions
+  # UI Events
   $(document).ready ->
     $('#shape-radios').buttonset().click(updateShape)
     $('#hue-slider').slider(slide : updateHue)
@@ -145,6 +155,7 @@
     $('#light-toggles').buttonset().click(updateLights)
     $('#lighting-model-radios').buttonset().click(updateLightingModel)
 
+    # Initialize scene with UI values
     updateShape()
 
 </script>

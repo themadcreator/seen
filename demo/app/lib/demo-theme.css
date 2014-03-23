@@ -6,6 +6,23 @@ svg text {
 body {
   background-color : #AAAAAD;
   font-family      : 'Roboto', 'San-serif';
+
+  -webkit-touch-callout : none;
+  -webkit-user-select   : none;
+  -khtml-user-select    : none;
+  -moz-user-select      : none;
+  -ms-user-select       : none;
+  user-select           : none;
+}
+
+#code-view {
+  -webkit-touch-callout : text;
+  -webkit-user-select   : text;
+  -khtml-user-select    : text;
+  -moz-user-select      : text;
+  -ms-user-select       : text;
+  user-select           : text;
+
 }
 
 .page {
@@ -27,6 +44,10 @@ h1 {
 a {
   text-decoration : none;
   color           : #444;
+}
+
+td {
+  padding : 0px 0px 0px 0px;
 }
 
 a:visited {

@@ -1,7 +1,7 @@
 {% extends 'demo-template-2.html' %}
 
 {% block demo %}
-<script type="text/coffeescript">
+<script type="text/coffeescript" id="code">
   width  = {{width}}
   height = {{height}}
 
@@ -14,5 +14,6 @@
       viewport : seen.Viewports.center(width, height)
 
   seen.Contexts.createWithScene('seen-canvas', scene, width, height).render()
+  
 </script>
 {% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'demo-template-2.html' %}
+
+{% block canvases %}
+  <table callpadding="0" cellspacing="0" border="0">
+    <tr><th><h2>HTML5 Canvas</h2></th><th><h2>SVG</h2></th></tr>
+    <tr><td><canvas width="450" height="200" id="seen-canvas-0"></canvas></td><td><svg width="450" height="200" id="seen-svg-0"></svg></td></tr>
+    <tr><td><canvas width="450" height="200" id="seen-canvas-1"></canvas></td><td><svg width="450" height="200" id="seen-svg-1"></svg></td></tr>
+    <tr><td><canvas width="450" height="200" id="seen-canvas-2"></canvas></td><td><svg width="450" height="200" id="seen-svg-2"></svg></td></tr>
+  </table>
+{% endblock %}
+
+{% block demo %}
+<script src="lib/jquery.js"></script>
+<script type="text/coffeescript" id="code">
+  width  = 450
+  height = 200
+
+  # Create one shape to be shared between the SVG and Canvas
+  shapes = [0...3].map (i) ->
+    shape = seen.Shapes.sphere(i).scale(height * 0.4)
+    seen.Colors.randomSurfaces2(shape)
+    return shape
+
+  # Create one scene for each shape
+  scenes = shapes.map (shape) -> new seen.Scene
+    model  : seen.Models.default().add(shape)
+    camera : new seen.Camera
+      viewport : seen.Viewports.center(width, height)
+
+  # Create a render context for each SVG and Canvas
+  contexts = []
+  for scene, i in scenes
+    for type in ['canvas', 'svg']
+      contexts.push seen.Contexts.createWithScene("seen-#{type}-#{i}", scene, width, height).render()
+
+  # Slowly rotate shapes
+  new seen.Animator().onRender(->
+    for shape in shapes then shape.rotx(0.01).roty(0.007)
+    for context in contexts then context.render()
+  ).start()
+
+</script>
+{% endblock %}
+

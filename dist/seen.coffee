@@ -761,12 +761,13 @@ class seen.RenderContext
   reset   : ->
   cleanup : ->
 
-# The `RenderLayerContext` defines the interface for producing builders that can paint various things into the current layer.
+# The `RenderLayerContext` defines the interface for producing painters that can paint various things into the current layer.
 class seen.RenderLayerContext
-  path    : -> # Return a path builder
-  text    : -> # Return a text builder
-  rect    : -> # Return a rect builder
-
+  path    : -> # Return a path painter
+  rect    : -> # Return a rect painter
+  circle  : -> # Return a circle painter
+  text    : -> # Return a text painter
+  
   reset   : ->
   cleanup : ->
 

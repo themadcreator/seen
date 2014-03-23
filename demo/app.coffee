@@ -14,7 +14,7 @@ app.set 'views', path.join(__dirname, 'app', 'views')
 app.engine '.html', consolidate.swig
 
 for i in [1..14] then do (i) ->
-  app.get "/#{i}", (req, res) -> res.render "demo#{i}"
+  app.get "/#{i}", (req, res) -> res.render "old/demo#{i}"
 
 for demo, i in demos then do (demo, i) ->
   demo.prev = demos[i - 1]

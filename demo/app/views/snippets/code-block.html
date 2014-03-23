@@ -1,0 +1,9 @@
+<link href='lib/highlightjs-monokai-sublime.css' rel='stylesheet' type='text/css'/>
+<script src="lib/highlight.pack.js"></script>
+<pre id="code-view"></pre>
+<script type="text/javascript">
+  var view = document.getElementById('code-view');
+  var code = document.getElementById('code');
+  view.innerHTML = code.innerHTML;
+  hljs.highlightBlock(view);
+</script>
