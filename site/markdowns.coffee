@@ -1,9 +1,9 @@
 module.exports = [
-  title  : 'Developers Guide'
-  route  : '/docs/guide'
-  path   : '../docs/guide.md'
+  title : 'Developers Guide'
+  route : 'guide'
+  path  : 'markdown/guide.md'
 ,
-  title  : 'Release Notes'
-  route  : '/docs/release-notes'
-  path   : '../docs/release-notes.md'
+  title : 'Release Notes'
+  route : 'release-notes'
+  path  : 'markdown/release-notes.md'
 ]

@@ -2,9 +2,10 @@
 
 {% block demo %}
 
-<script src="/lib/jquery.js"></script>
-<script src="/lib/jquery-ui.js"></script>
-<link href="/lib/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<script src="{{cdns.jquery.script}}"></script>
+<script src="{{cdns.jqueryui.script}}"></script>
+<link href="{{cdns.jqueryui.style}}" rel="stylesheet" type="text/css"/>
+
 <style>
   .parameters-container {
     padding : 2em 10em;

@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block demo %}
-<script src="/lib/jquery.js"></script>
+<script src="{{cdns.jquery.script}}"></script>
 <script type="text/coffeescript" id="code">
   dims = [
     [600, 300]
@@ -44,7 +44,7 @@
 
   # Load the object file using jquery
   shape = null
-  $.get '/assets/bunny-low.obj', {}, (contents) ->
+  $.get 'assets/bunny-low.obj', {}, (contents) ->
     # Create shape from object file
     shape = seen.Shapes.obj(contents, false)
     shape.scale(8).translate(0,-30)

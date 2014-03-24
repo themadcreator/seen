@@ -1,3 +1,10 @@
+fs           = require 'fs'
+_            = require 'lodash'
+path         = require 'path'
+{exec}       = require 'child_process'
+UglifyJS     = require 'uglify-js'
+CoffeeScript = require 'coffee-script'
+packageJson  = require './package.json'
 
 DISTS = {
   'seen.js' : [
@@ -26,20 +33,18 @@ DISTS = {
   ]
 }
 
+DIST      = path.join(__dirname, 'dist', packageJson.version)
+SITE_DIST = path.join(__dirname, 'site-dist')
+
 # =======
 # TASKS
 # =======
-
-fs           = require 'fs'
-path         = require 'path'
-{exec}       = require 'child_process'
-UglifyJS     = require 'uglify-js'
-CoffeeScript = require 'coffee-script'
 
 task 'build', 'Build and uglify seen', () ->
 
   # Prepare output path
   if not fs.existsSync(path.join(__dirname, 'dist')) then fs.mkdirSync(path.join(__dirname, 'dist'))
+  if not fs.existsSync(DIST) then fs.mkdirSync(DIST)
 
   license = fs.readFileSync(path.join(__dirname, 'LICENSE.md'), 'utf-8')
   license = license.split('\n').join('\n# ')
@@ -50,29 +55,83 @@ task 'build', 'Build and uglify seen', () ->
     # Concat all coffeescript together for Docco
     coffeeCode = sources.map((source) -> fs.readFileSync(source, 'utf-8')).join('\n\n')
     coffeeCode = "\n\n# #{license}\n\n" + coffeeCode
-    fs.writeFileSync path.join(__dirname, 'dist', javascript.replace(/\.js$/, '.coffee')), coffeeCode, {flags: 'w'}
-    console.log "Joined."
+    fs.writeFileSync path.join(DIST, javascript.replace(/\.js$/, '.coffee')), coffeeCode, {flags: 'w'}
+    console.log '  Joined.'
 
     # Compile to javascript
     jsCode = CoffeeScript.compile coffeeCode
-    fs.writeFileSync path.join(__dirname, 'dist', javascript), jsCode, {flags: 'w'}
-    console.log "Compiled."
+    fs.writeFileSync path.join(DIST, javascript), jsCode, {flags: 'w'}
+    console.log '  Compiled.'
 
     # Uglify
-    ugly = UglifyJS.minify path.join(__dirname, 'dist', javascript),
+    ugly = UglifyJS.minify path.join(DIST, javascript),
       outSourceMap : "#{javascript}.map"
-    fs.writeFileSync path.join(__dirname, 'dist', javascript.replace(/\.js$/,'.min.js')), ugly.code, {flags: 'w'}
-    fs.writeFileSync path.join(__dirname, 'dist', "#{javascript}.map"), ugly.map, {flags: 'w'}
+    fs.writeFileSync path.join(DIST, javascript.replace(/\.js$/,'.min.js')), ugly.code, {flags: 'w'}
+    fs.writeFileSync path.join(DIST, "#{javascript}.map"), ugly.map, {flags: 'w'}
+    console.log '  Minified.'
 
-    console.log "Minified."
+    latest = path.join(__dirname, 'dist', 'latest')
+    exec("rm #{latest}; ln -s #{DIST} #{latest}")
+    console.log '  Symlinked.'
+
+task 'site', 'Build seen website', (options) ->
+  swig        = require 'swig'
+  marked      = require 'marked'
+  highlight   = require 'highlight.js'
+  demos       = require './site/demos'
+  markdowns   = require './site/markdowns'
+  pageOptions = require './site/options'
+
+  renderPage = (filename, view, opts) ->
+    opts = _.defaults(opts, pageOptions)
+    opts.version = packageJson.version
+    page = swig.renderFile path.join(__dirname, 'site', 'views', "#{view}.html"), opts
+    fs.writeFileSync(path.join(SITE_DIST, "#{filename}.html"), page)
+
+  # Prepare output path
+  if not fs.existsSync(SITE_DIST) then fs.mkdirSync(SITE_DIST)
+  exec("rm -rf #{SITE_DIST}/*", (err) -> throw err if err)
+
+  # Copy static resources
+  for resource in ['lib', 'css', 'assets']
+    exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}", (err) -> throw err if err)
+  exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.", (err) -> throw err if err)
+  console.log 'Copied static resources'
+
+  # Generate docco
+  script = path.join('node_modules' , '.bin', 'docco')
+  exec("#{script} --output #{SITE_DIST}/docco dist/latest/seen.coffee", (err) -> throw err if err)
+
+  # Demo pages
+  for demo, i in demos then do (demo, i) ->
+    demo.prev = demos[i - 1]
+    demo.next = demos[i + 1]
+    renderPage(demo.view, demo.view, demo)
+    console.log "Rendered '#{demo.title}' demo"
+
+  # Markdowned pages
+  renderer = new marked.Renderer()
+  renderer.code = (code, lang, escaped) ->
+    highlighted = highlight.highlight(lang, code).value
+    return """<pre><code class="hljs #{lang}">#{highlighted}</code></pre>"""
+  marked.setOptions(renderer : renderer)
+  markdowns.forEach (markdown) ->
+    content = fs.readFileSync path.join(__dirname, 'site', markdown.path), {encoding : 'UTF-8'}
+    renderPage(markdown.route, 'markdown-template',
+      title    : markdown.title
+      markdown : marked(content)
+      scripts  : [pageOptions.cdns.highlightjs.script]
+      styles   : pageOptions.styles.concat [pageOptions.cdns.highlightjs.style]
+    )
+    console.log "Rendered '#{markdown.title}' markdown"
+
+  # Index page
+  renderPage 'index', 'index', {demos}
+  console.log 'Rendered index'
 
 
-task 'docs', 'Build seen documentation', (options) ->
-  for javascript, sources of DISTS
-    coffee = path.join('dist', javascript.replace(/\.js$/, '.coffee'))
-    script = path.join('node_modules' , '.bin', 'docco')
-    exec("#{script} --output docs/docco #{coffee}", (err) -> throw err if err)
-    console.log "Documented."
+
+
 
 
 

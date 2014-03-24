@@ -1,9 +1,12 @@
 <html>
 <head>
   <title>{{title}} | seen.js</title>
-  <link href="//fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
-  <link href="/css/theme.css" rel="stylesheet" type="text/css"/>
-  <link href="/lib/highlightjs-monokai-sublime.css" rel="stylesheet" type="text/css"/>
+  {% for style in styles %}
+  <link href="{{style}}" rel="stylesheet" type="text/css"/>
+  {% endfor %}
+  {% for script in scripts %}
+  <script src="{{script}}"></script>
+  {% endfor %}
 </head>
 <body>
   <div class="page">

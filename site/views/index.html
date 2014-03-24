@@ -1,10 +1,12 @@
 <html>
 <head>
   <title>seen.js</title>
-  <link href="//fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
-  <link href="/css/theme.css" rel="stylesheet" type="text/css"/>
-  <script src="dist/seen.js"></script>
-  <script src="lib/coffee-script.min.js"></script>
+  {% for style in styles %}
+  <link href="{{style}}" rel="stylesheet" type="text/css"/>
+  {% endfor %}
+  {% for script in scripts %}
+  <script src="{{script}}"></script>
+  {% endfor %}
 </head>
 <body>
   <div class="page">
@@ -15,38 +17,38 @@
     <div class="content">
       <h2>Download</h2>
 
-      <a href="//seenjs.org/dist/0.1/seen.min.js">
+      <a href="lib/seen.min.js">
         <div class="download-button">
-          <div class="download-title">Download seen.min.js v0.1</div>
+          <div class="download-title">Download seen.min.js v{{version}}</div>
         </div>
       </a>
       <p>seen.js has no dependencies.</p>
 
-      <p>To see what is new in this version, see the <a href="/docs/release-notes">release notes</a>.</p>
+      <p>To see what is new in this version, see the <a href="release-notes.html">release notes</a>.</p>
 
       <h2>Demos</h2>
 
       <ul class="demo-list">
         {% for demo in demos %}
-          <a href="/demo/{{demo.view}}"><li>{{demo.title}}</li></a>
+          <a href="{{demo.view}}.html"><li>{{demo.title}}</li></a>
         {% endfor %}
       </ul>
 
       <h2> Guide </h2>
-      To better understand the opinions of this library, please <a href="/docs/guide">read the guide</a>.
+      To better understand the opinions of this library, please <a href="guide.html">read the guide</a>.
 
       <h2> Docs </h2>
-      You can read the Docco-generated <a href="/docs/docco/seen.html">annotated source</a>.
+      You can read the Docco-generated <a href="docco/seen.html">annotated source</a>.
 
       <h2> Source </h2>
-      The full source is available on <a href="//github.com/themadcreator">github</a>.
+      The full source is available on <a href="http://github.com/themadcreator">github</a>.
     </div>
 
-    <div class="footer">seen.js was created by <a href="//github.com/themadcreator">themadcreator@github</a></div>
+    <div class="footer">seen.js was created by <a href="http://github.com/themadcreator">themadcreator@github</a></div>
 
   </div>
 
-  <script type="text/coffeescript" src="/lib/simplex-noise.coffee"></script>
+  <script type="text/coffeescript" src="lib/simplex-noise.coffee"></script>
   <script type="text/coffeescript">
     width               = 900
     height              = 150
