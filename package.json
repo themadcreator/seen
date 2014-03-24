@@ -4,22 +4,26 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prepublish": "cake build docs",
-    "start": "./node_modules/.bin/nodemon ./site/index.coffee",
-    "test" : "./node_modules/.bin/phantomjs ./test/phantom/render-scenes.coffee"
+    "prepublish"  : "npm run build",
+    "build"       : "cake build docs",
+    "start"       : "nodemon ./site/index.coffee",
+    "test-render" : "phantomjs ./test/phantom/render-scenes.coffee",
+    "test"        : "mocha ./test/mocha/*.coffee"
   },
   "dependencies": {
-    "express": "3.x",
-    "uglify-js": "*",
-    "coffee-script": "*",
-    "path": "*",
-    "docco": "*",
-    "nodemon": "^1.0.17",
-    "swig": "^1.3.2",
-    "marked": "^0.3.2",
-    "highlight.js": "^8.0.0",
-    "pngjs": "^0.4.0",
-    "mocha": "^1.18.2",
-    "phantomjs": "^1.9.7-1"
+    "express"       : "^3.5.0",
+    "coffee-script" : "^1.7.1",
+    "path"          : "^0.4.9",
+    "docco"         : "^0.6.3",
+    "nodemon"       : "^1.0.17",
+    "swig"          : "^1.3.2",
+    "marked"        : "^0.3.2",
+    "highlight.js"  : "^8.0.0",
+    "pngjs"         : "^0.4.0",
+    "mocha"         : "^1.18.2",
+    "phantomjs"     : "^1.9.7-1",
+    "uglify-js"     : "^2.4.13",
+    "chai"          : "^1.9.1",
+    "q"             : "^1.0.1"
   }
 }
