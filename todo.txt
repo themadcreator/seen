@@ -1,11 +1,10 @@
 TODO before v1.0
   Full documentation and some demos
+  Fix canvas painter opacity
 
 
 1.0 Demos
   Shape Gallery with origin and units
-  front,side,top orth + persp views
-  Lights/Material/Shader gallery with parameter sliders
   Area Chart
 
 
@@ -25,11 +24,7 @@ TODO Features
   3D ortho to 2D affine projection
     Image Textures
 
-  Alternate Renderers
-    (/) HTML5 Canvas
-
   Shapes
     Triangulated Torus
     Pipes
-    (/) JSON format objects
 

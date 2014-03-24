@@ -70,9 +70,8 @@ task 'build', 'Build and uglify seen', () ->
 task 'docs', 'Build seen documentation', (options) ->
   for javascript, sources of DISTS
     coffee = path.join('dist', javascript.replace(/\.js$/, '.coffee'))
-    #script = path.join('node_modules' , 'codo', 'bin', 'codo')
-    script = path.join('node_modules' , 'docco', 'bin', 'docco')
-    exec("#{script}  #{coffee}", (err) -> throw err if err)
+    script = path.join('node_modules' , '.bin', 'docco')
+    exec("#{script} --output docs/docco #{coffee}", (err) -> throw err if err)
     console.log "Documented."
 
 

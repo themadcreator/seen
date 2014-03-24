@@ -775,7 +775,7 @@ seen.Contexts = {
   create : (elementId, width, height) ->
     tag = seen.Util.element(elementId)?.tagName.toUpperCase()
     switch tag
-      when 'SVG'    then return new seen.SvgRenderContext(elementId, width, height)
+      when 'SVG'    then return new seen.SvgRenderContext(elementId)
       when 'CANVAS' then return new seen.CanvasRenderContext(elementId, width, height)
   
   createWithScene : (elementId, scene, width, height) ->

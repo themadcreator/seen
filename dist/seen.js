@@ -928,7 +928,7 @@
       tag = (_ref = seen.Util.element(elementId)) != null ? _ref.tagName.toUpperCase() : void 0;
       switch (tag) {
         case 'SVG':
-          return new seen.SvgRenderContext(elementId, width, height);
+          return new seen.SvgRenderContext(elementId);
         case 'CANVAS':
           return new seen.CanvasRenderContext(elementId, width, height);
       }

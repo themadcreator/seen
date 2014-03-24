@@ -1,0 +1,21 @@
+    <div class="nav-bar">
+      <div class="nav-button-wrapper" style="text-align : left;">
+        {% if prev %}
+          <a href="/demo/{{prev.view}}"><div class="nav-button">
+          <div class="label">prev</div><div class="title">{{prev.title}}</div>
+          </div></a>
+        {% endif %}
+      </div>
+      <div class="nav-button-wrapper" style="text-align : center;">
+          <a href="/"><div class="nav-button">
+          <div class="label">up</div><div class="title">to index</div>
+          </div></a>
+      </div>
+      <div class="nav-button-wrapper" style="text-align : right;">
+        {% if next %}
+          <a href="/demo/{{next.view}}"><div class="nav-button">
+          <div class="label">next</div><div class="title">{{next.title}}</div>
+          </div></a>
+        {% endif %}
+      </div>
+    </div>

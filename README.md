@@ -37,7 +37,6 @@ Render event hierarchy:
 ## Demos
 Install nodejs from here ().
 Clone this repo and start the demo server on http://localhost:5000 like so:
-  cd demos
   npm install
   cake build
   npm start

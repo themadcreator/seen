@@ -1,0 +1,31 @@
+<html>
+<head>
+  <title>{{title}} | seen.js</title>
+  <link href="//fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
+  <link href="/css/theme.css" rel="stylesheet" type="text/css"/>
+  <script src="/dist/seen.js"></script>
+  <script src="/lib/coffee-script.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>{{title}}</h1>
+    <div>{{description}}</div>
+
+    {% include "snippets/demo-nav.html" %}
+
+    {% block canvases %}
+    <canvas width="{{width}}" height="{{height}}" id="seen-canvas"></canvas>
+    {% endblock %}
+
+    {% block description %}
+    {% endblock %}
+
+    {% block demo %}
+    {% endblock %}
+
+    {% block code %}
+    {% include "snippets/code-block.html" %}
+    {% endblock %}
+  </div>
+</body>
+</html>
