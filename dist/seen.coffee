@@ -1105,6 +1105,7 @@ class seen.CanvasStyler
     # Copy over SVG CSS attributes
     if style.fill? then @ctx.fillStyle = style.fill
     if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
+    if style['fill-opacity'] then @ctx.globalAlpha = style['fill-opacity']
 
     @ctx.fill()
     return @

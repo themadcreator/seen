@@ -1476,6 +1476,9 @@
       if (style['text-anchor'] != null) {
         this.ctx.textAlign = style['text-anchor'];
       }
+      if (style['fill-opacity']) {
+        this.ctx.globalAlpha = style['fill-opacity'];
+      }
       this.ctx.fill();
       return this;
     };

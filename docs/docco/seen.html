@@ -2639,6 +2639,7 @@ seen.<span class="hljs-function"><span class="hljs-title">SvgContext</span> = <s
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> style.fill? <span class="hljs-keyword">then</span> <span class="hljs-property">@ctx</span>.fillStyle = style.fill
     <span class="hljs-keyword">if</span> style[<span class="hljs-string">'text-anchor'</span>]? <span class="hljs-keyword">then</span> <span class="hljs-property">@ctx</span>.textAlign = style[<span class="hljs-string">'text-anchor'</span>]
+    <span class="hljs-keyword">if</span> style[<span class="hljs-string">'fill-opacity'</span>] <span class="hljs-keyword">then</span> <span class="hljs-property">@ctx</span>.globalAlpha = style[<span class="hljs-string">'fill-opacity'</span>]
 
     <span class="hljs-property">@ctx</span>.fill()
     <span class="hljs-keyword">return</span> @
