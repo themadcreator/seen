@@ -25,7 +25,7 @@ initPage = (page) ->
     height : height 
   }
 
-  page.injectJs('dist/seen.js')
+  page.injectJs('dist/latest/seen.min.js')
 
 evaluateScene = (page, scene) ->
   page.evaluate(->
