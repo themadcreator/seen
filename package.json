@@ -1,13 +1,22 @@
 {
-  "name": "seen",
-  "description": "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "build"       : "cake build",
-    "start"       : "nodemon ./site/index.coffee",
-    "test-render" : "phantomjs ./test/phantom/render-scenes.coffee",
-    "test"        : "mocha ./test/mocha/*.coffee"
+  "name"        : "seen",
+  "description" : "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
+  "version"     : "0.1.0",
+  "keywords"    : "",
+  "author"      : "Bill Dwyer",
+  "private"     : true,
+  "main"        : "./dist/latest/seen.min.js",
+  "keywords"    : [
+    "3d",
+    "svg",
+    "canvas"
+  ],
+  "license" : "Apache 2.0",
+  "scripts" : {
+    "build"        : "cake build",
+    "preview-site" : "nodemon ./site/index.coffee",
+    "test-render"  : "phantomjs ./test/phantom/render-scenes.coffee",
+    "test"         : "mocha ./test/mocha/*.coffee"
   },
   "dependencies": {
     "express"       : "^3.5.0",
