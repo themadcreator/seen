@@ -6,11 +6,11 @@
 # Since we support both SVG and Canvas painters, the `RenderContext` and `RenderLayerContext` define a common interface.
 class seen.RenderContext
   constructor: ->
-    @layers = {}
+    @layers = []
 
   render: () =>
     @reset()
-    for key, layer of @layers
+    for layer in @layers
       layer.context.reset()
       layer.layer.render(layer.context)
       layer.context.cleanup()
@@ -23,11 +23,15 @@ class seen.RenderContext
 
   # Add a new `RenderLayerContext` to this context. This allows us to easily stack paintable components such as
   # a fill backdrop, or even multiple scenes in one context.
-  layer: (name, layer) ->
-    @layers[name] = {
+  layer: (layer) ->
+    @layers.push {
       layer   : layer
       context : @
     }
+    return @ 
+
+  sceneLayer : (scene) ->
+    @layer(new seen.SceneLayer(scene))
     return @
 
   reset   : ->
@@ -43,15 +47,13 @@ class seen.RenderLayerContext
   reset   : ->
   cleanup : ->
 
-seen.Contexts = {
-  create : (elementId, width, height) ->
-    tag = seen.Util.element(elementId)?.tagName.toUpperCase()
-    switch tag
-      when 'SVG'    then return new seen.SvgRenderContext(elementId)
-      when 'CANVAS' then return new seen.CanvasRenderContext(elementId, width, height)
-  
-  createWithScene : (elementId, scene, width, height) ->
-    context = seen.Contexts.create(elementId, width, height)
-    seen.LayersScene(context, scene, width, height)
-    return context
-}
+# Create a render context for the element with the specified `elementId`. elementId
+# should correspond to either an SVG or Canvas element.
+seen.Context = (elementId, scene = null) ->
+  tag = seen.Util.element(elementId)?.tagName.toUpperCase()
+  context = switch tag
+    when 'SVG'    then new seen.SvgRenderContext(elementId)
+    when 'CANVAS' then new seen.CanvasRenderContext(elementId)
+  if context? and scene?
+    context.sceneLayer(scene)
+  return context

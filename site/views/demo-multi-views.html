@@ -57,7 +57,7 @@
     renderAll()
 
   # Create rendering contexts
-  contexts = scenes.map (scene,i) -> seen.Contexts.createWithScene("seen-canvas-#{i}", scene, dims[i]...)
+  contexts = scenes.map (scene,i) -> seen.Context("seen-canvas-#{i}", scene)
 
   renderAll = ->
     context.render() for context in contexts

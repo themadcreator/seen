@@ -18,7 +18,7 @@
     camera           : new seen.Camera
       viewport : seen.Viewports.center(width, height)
 
-  context = seen.Contexts.createWithScene('seen-canvas', scene, width, height).render()
+  context = seen.Context('seen-canvas', scene).render()
 
   # Create a copy of the surface points so we can manipulate them later
   for surf in shape.surfaces

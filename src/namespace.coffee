@@ -4,4 +4,6 @@
 # ------------------
 
 # Declare and attach seen namespace
-seen = (exports ? this).seen = {}
+seen = {}
+if window? then window.seen = seen
+if module?.exports? then module.exports = seen

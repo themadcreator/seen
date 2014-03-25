@@ -72,23 +72,24 @@ class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
   text   : () -> @textPainter
 
 class seen.CanvasRenderContext extends seen.RenderContext
-  constructor: (@el, @width, @height) ->
+  constructor: (@el) ->
     super()
     @el  = seen.Util.element(@el)
     @ctx = @el.getContext('2d')
 
-  layer : (name, layer) ->
-    @layers[name] = {
+  layer : (layer) ->
+    @layers.push {
       layer   : layer
       context : new seen.CanvasLayerRenderContext(@ctx)
     }
     return @
 
   reset : ->
-    @ctx.clearRect(0, 0, @width, @height)
+    @ctx.setTransform(1, 0, 0, 1, 0, 0)
+    @ctx.clearRect(0, 0, @el.width, @el.height)
 
-
-seen.CanvasContext = (elementId, scene, width, height) ->
-  context = new seen.CanvasRenderContext(elementId, width, height)
-  return seen.LayersScene(context, scene, width, height)
+seen.CanvasContext = (elementId, scene) ->
+  context = new seen.CanvasRenderContext(elementId)
+  if scene? then context.sceneLayer(scene)
+  return context
 

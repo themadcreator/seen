@@ -73,7 +73,7 @@
     camera : new seen.Camera
       viewport : seen.Viewports.center(width, height)
 
-  context = seen.Contexts.createWithScene('seen-canvas', scene, width, height).render()
+  context = seen.Context('seen-canvas', scene).render()
 
   # Create pre-scaled group to add the shape to
   group = scene.model.append().scale(100)

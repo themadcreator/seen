@@ -17,6 +17,16 @@ class seen.Model extends seen.Transformable
         @lights.push child
     return @
 
+  # Remove a shape, model, or light from the model. NOTE: the scene may still
+  # contain a renderModel in its cache. If you are adding and removing many items,
+  # consider calling `.flush()` on the scene to flush its renderModel cache.
+  remove : (childs...) ->
+    for child in childs
+      while (i = @children.indexOf(child)) >= 0
+        @children.splice(i,1)
+      while (i = @lights.indexOf(child)) >= 0
+        @lights.splice(i,1)
+
   # Create a new child model and return it.
   append: () ->
     model = new seen.Model
@@ -74,3 +84,4 @@ seen.Models = {
 
     return model
 }
+ 

@@ -16,7 +16,7 @@
       viewport : seen.Viewports.center(width, height)
 
   # Create render context from canvas
-  context = seen.Contexts.createWithScene('seen-canvas', scene, width, height).render()
+  context = seen.Context('seen-canvas', scene).render()
 
   # Slowly rotate sphere
   context.animate()

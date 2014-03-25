@@ -26,7 +26,7 @@
     camera : new seen.Camera
       viewport : seen.Viewports.center(width, height)
 
-  context = seen.Contexts.createWithScene('seen-canvas', scene, width, height).render()
+  context = seen.Context('seen-canvas', scene).render()
 
   # Apply animated 3D simplex noise to patch vertices
   t = 0

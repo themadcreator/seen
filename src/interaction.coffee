@@ -4,9 +4,9 @@
 # A global window event dispatcher.
 seen.WindowEvents = do ->
   dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp')
-  window.addEventListener('mouseup', dispatch.mouseUp, true)
-  window.addEventListener('mousedown', dispatch.mouseDown, true)
-  window.addEventListener('mousemove', dispatch.mouseMove, true)
+  window?.addEventListener('mouseup', dispatch.mouseUp, true)
+  window?.addEventListener('mousedown', dispatch.mouseDown, true)
+  window?.addEventListener('mousemove', dispatch.mouseMove, true)
   return {on : dispatch.on}
 
 # An event dispatcher for mouse and drag events on a single dom element.

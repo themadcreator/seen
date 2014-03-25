@@ -1,3 +1,11 @@
+### v0.1.1
+
++ Removed default fill layer and change default create context method for simplicity and clarity.
+
++ Removed width/height requirement for creating contexts. Now width/height is only necessary to align viewport.
+
++ Updated tests to include both SVG and Canvas renderings
+
 ### v0.1.0 - *INITIAL RELEASE*
 
 #### Features

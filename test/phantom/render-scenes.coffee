@@ -1,6 +1,6 @@
 
 
-initPage = (page) ->
+initPage = (tagType, page) ->
   page.onConsoleMessage = (msg) -> console.log(msg)
   page.onError = (msg) -> console.error(msg)
 
@@ -9,7 +9,7 @@ initPage = (page) ->
 
   page.setContent """
   <body style="background-color:white;padding:0 0 0 0;margin:0 0 0 0;">
-  <canvas id="seen-canvas" width="#{width}" height="#{height}"></canvas>
+  <#{tagType} id="seen-canvas" width="#{width}" height="#{height}"></#{tagType}>
   </body>
   """, 'test.html'
 
@@ -37,7 +37,7 @@ evaluateScene = (page, scene) ->
         model  : @model
         camera : new seen.Camera
           viewport : seen.Viewports.center(@width, @height)
-      @context = seen.Contexts.createWithScene('seen-canvas', @scene, @width, @height)
+      @context = seen.Context('seen-canvas', @scene)
       return @
   )
   page.evaluate(scene.script)
@@ -46,10 +46,11 @@ evaluateScene = (page, scene) ->
   )
 
 scenes = require('./phantom-scenes')
-for scene in scenes
-  page = require('webpage').create()
-  initPage(page)
-  evaluateScene(page, scene)
-  page.render("test/phantom/renders/#{scene.png}")
+for tagType in ['svg', 'canvas']
+  for scene in scenes
+    page = require('webpage').create()
+    initPage(tagType, page)
+    evaluateScene(page, scene)
+    page.render("test/phantom/renders/#{tagType}-#{scene.png}")
   
 phantom.exit()

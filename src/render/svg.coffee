@@ -121,14 +121,15 @@ class seen.SvgRenderContext extends seen.RenderContext
     super()
     @svg = seen.Util.element(@svg)
 
-  layer : (name, layer) ->
+  layer : (layer) ->
     @svg.appendChild(group = _svg('g'))
-    @layers[name] = {
+    @layers.push {
       layer   : layer
       context : new seen.SvgLayerRenderContext(group)
     }
     return @
 
-seen.SvgContext = (elementId, scene, width, height) ->
+seen.SvgContext = (elementId, scene) ->
   context = new seen.SvgRenderContext(elementId)
-  return seen.LayersScene(context, scene, width, height)
+  if scene? then context.sceneLayer(scene)
+  return context

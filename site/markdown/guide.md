@@ -35,7 +35,7 @@ Step 2. Create a scene with a single shape and render it using a context.
       viewport : seen.Viewports.center(400, 400)
 
   # Create render context from canvas
-  context = seen.Contexts.createWithScene('seen-canvas', scene, 400, 400)
+  context = seen.Context('seen-canvas', scene)
 
   # Render it!
   context.render()
@@ -93,12 +93,12 @@ Finally, a graphics `context` is defined to render the scene into SVG or HTML5 C
 
 ```coffeescript 
   # Create an empty context then add the scene to it
-  context = seen.Contexts.create('id-of-svg-or-canvas', width, height)
-  context.layer('scene', new seen.SceneLayer(scene))
+  context = seen.Context('id-of-svg-or-canvas')
+  context.sceneLayer(scene)
   context.render()
 
-  # Create a context that contains the scene layer and a background layer.
-  context = seen.Contexts.createWithScene('id-of-svg-or-canvas', scene, width, height)
+  # Create a context that contains the scene layer
+  context = seen.Context('id-of-svg-or-canvas', scene)
   context.render()
 ```
 

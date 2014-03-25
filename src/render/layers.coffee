@@ -1,8 +1,13 @@
 
-
 class seen.RenderLayer
   render: (context) =>
 
+class seen.SceneLayer extends seen.RenderLayer
+  constructor : (@scene) ->
+
+  render : (context) =>
+    for renderModel in @scene.render()
+      renderModel.surface.painter.paint(renderModel, context)
 
 class seen.FillLayer extends seen.RenderLayer
   constructor : (@width = 500, @height = 500, @fill = '#EEE') ->
@@ -11,13 +16,6 @@ class seen.FillLayer extends seen.RenderLayer
     context.rect()
       .rect(@width, @height)
       .fill(fill : @fill)
-
-class seen.SceneLayer extends seen.RenderLayer
-  constructor : (@scene) ->
-
-  render : (context) =>
-    for renderModel in @scene.render()
-      renderModel.surface.painter.paint(renderModel, context)
 
 class seen.DebugLayer extends seen.RenderLayer
   constructor: (animator) ->
@@ -41,10 +39,3 @@ class seen.DebugLayer extends seen.RenderLayer
     if frameTime != NaN then @_fps += (frameTime - @_fps) / 20
     # Record debug message
     @_msg = "fps: #{@_fps.toFixed(1)}" #" surfaces: #{e.length}"
-
-
-seen.LayersScene = (context, scene, width = 400, height = 400) ->
-  context
-    .layer('background', new seen.FillLayer(width, height))
-    .layer('scene',      new seen.SceneLayer(scene))
-  return context

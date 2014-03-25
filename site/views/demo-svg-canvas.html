@@ -30,7 +30,7 @@
   contexts = []
   for scene, i in scenes
     for type in ['canvas', 'svg']
-      contexts.push seen.Contexts.createWithScene("seen-#{type}-#{i}", scene, width, height).render()
+      contexts.push seen.Context("seen-#{type}-#{i}", scene).render()
 
   # Slowly rotate shapes
   new seen.Animator().onRender(->

@@ -6,6 +6,11 @@ pngjs        = require 'pngjs'
 {assert}     = require 'chai'
 Q            = require 'q'
 
+TAG_TYPES = [
+  'svg'
+  'canvas'
+]
+
 RENDERS = [
   'lights-ambient'
   'lights-directional'
@@ -56,15 +61,17 @@ describe 'render smoke test', ->
     )
 
   describe 'rendered all test scenes', () ->
-    RENDERS.forEach (render) ->
-      it "rendered #{render}", ->
-        assert(fs.existsSync(path.join(__dirname, '..', 'phantom', 'renders', "#{render}.png")))
+    TAG_TYPES.forEach (tagType) ->
+      RENDERS.forEach (render) ->
+        it "rendered #{tagType} #{render}", ->
+          assert(fs.existsSync(path.join(__dirname, '..', 'phantom', 'renders', "#{tagType}-#{render}.png")))
 
   describe 'all renders match canonical renders', () ->
-    RENDERS.forEach (render) ->
-      it "rendered #{render} matches canonical #{render}", (done) ->
-        compareRenders(
-          path.join(__dirname, '..', 'phantom', 'canonical', "#{render}.png")
-          path.join(__dirname, '..', 'phantom', 'renders', "#{render}.png")
-          done
-        )
+    TAG_TYPES.forEach (tagType) ->
+      RENDERS.forEach (render) ->
+        it "rendered #{tagType} #{render} matches canonical", (done) ->
+          compareRenders(
+            path.join(__dirname, '..', 'phantom', 'canonical', "#{tagType}-#{render}.png")
+            path.join(__dirname, '..', 'phantom', 'renders', "#{tagType}-#{render}.png")
+            done
+          )
