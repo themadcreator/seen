@@ -29,6 +29,8 @@
 
 + Performance: z-order painter's algorithm, backface culling, point rounding, rendermodel caching, lazy evaluation of tranformations.
 
++ No dependencies
+
 #### Bug Fixes
 
 + n/a

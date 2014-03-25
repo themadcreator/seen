@@ -4,8 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prepublish"  : "npm run build",
-    "build"       : "cake build docs",
+    "build"       : "cake build",
     "start"       : "nodemon ./site/index.coffee",
     "test-render" : "phantomjs ./test/phantom/render-scenes.coffee",
     "test"        : "mocha ./test/mocha/*.coffee"
