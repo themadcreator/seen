@@ -1,0 +1,26 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'run', 'site' ]
+2 info using npm@1.4.4
+3 info using node@v0.10.26
+4 verbose run-script [ 'presite', 'site', 'postsite' ]
+5 info presite seen@0.1.2
+6 info site seen@0.1.2
+7 verbose unsafe-perm in lifecycle true
+8 info seen@0.1.2 Failed to exec site script
+9 error seen@0.1.2 site: `cake build site && nodemon ./site/index.coffee`
+9 error Exit status 8
+10 error Failed at the seen@0.1.2 site script.
+10 error This is most likely a problem with the seen package,
+10 error not with npm itself.
+10 error Tell the author that this fails on your system:
+10 error     cake build site && nodemon ./site/index.coffee
+10 error You can get their info via:
+10 error     npm owner ls seen
+10 error There is likely additional logging output above.
+11 error System Darwin 12.5.0
+12 error command "node" "/usr/local/bin/npm" "run" "site"
+13 error cwd /Users/bdwyer/git/seen
+14 error node -v v0.10.26
+15 error npm -v 1.4.4
+16 error code ELIFECYCLE
+17 verbose exit [ 1, true ]
