@@ -14,12 +14,13 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
-# if [ $UNCOMMITED_CHANGES != '' ]; then
-#   echo "you have uncommited changes. exiting."
-#   exit 1
-# fi
+UNCOMMITED_CHANGES=`git status --short | wc -l`
+if [ $UNCOMMITED_CHANGES != 0 ]; then
+  echo "you have uncommited changes. exiting."
+  exit 1
+fi
 
-# git checkout -b gh-pages
-# cp -rf site-dist/* .
-# git add --all .
-# git commit -m 'updating site'
+git checkout gh-pages
+cp -r site-dist/* .
+git add --all .
+git commit -m 'updating site'
