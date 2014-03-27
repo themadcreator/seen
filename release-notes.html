@@ -1,0 +1,80 @@
+<html>
+<head>
+  <title>Release Notes | seen.js</title>
+  
+  <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
+  
+  <link href="css/theme.css" rel="stylesheet" type="text/css"/>
+  
+  <link href="http://yandex.st/highlightjs/8.0/styles/monokai_sublime.min.css" rel="stylesheet" type="text/css"/>
+  
+  
+  <script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+  
+</head>
+<body>
+  <div class="page">
+    <h1>Release Notes</h1>
+    <div class="content">
+      <h3 id="v0-1-2">v0.1.2</h3>
+<ul>
+<li><p>Add flag to disable renderModel caching (not recommended)</p>
+</li>
+<li><p>Moving build dependencies to devDependencies in package.json</p>
+</li>
+<li><p>More documentation for Docco.</p>
+</li>
+</ul>
+<h3 id="v0-1-1">v0.1.1</h3>
+<ul>
+<li><p>Removed default fill layer and change default create context method for simplicity and clarity.</p>
+</li>
+<li><p>Removed width/height requirement for creating contexts. Now width/height is only necessary to align viewport.</p>
+</li>
+<li><p>Updated tests to include both SVG and Canvas renderings</p>
+</li>
+</ul>
+<h3 id="v0-1-0-initial-release-">v0.1.0 - <em>INITIAL RELEASE</em></h3>
+<h4 id="features">Features</h4>
+<ul>
+<li><p>Render 3D scenes into SVG or HTML5 Canvas elements.</p>
+</li>
+<li><p>Shape primivites :</p>
+<ul>
+<li>tetrahedron</li>
+<li>cube</li>
+<li>sphere (sub-divided icosahedron)</li>
+<li>patch (triangulated)</li>
+<li>Wavefront .obj format parser</li>
+</ul>
+</li>
+<li><p>Perspective and orthographic projections. 1:1 pixel-aligned viewport in z=1 plane.</p>
+</li>
+<li><p>Hierarchically transformed and lit scene models.</p>
+</li>
+<li><p>Ambient, point, and directional light sources.</p>
+</li>
+<li><p>Phong ambient, diffuse and specular lighting model per surface.</p>
+</li>
+<li><p>Simple event-based animator.</p>
+</li>
+<li><p>Mouse drag and scroll adapters for mouse-look and mousewheel-zoom.</p>
+</li>
+<li><p>Scene layering and re-contextualization. Use multiple scenes in one context or use one scene in multiple contexts.</p>
+</li>
+<li><p>Customizeable shapes, painters, and shaders.</p>
+</li>
+<li><p>Performance: z-order painter&#39;s algorithm, backface culling, point rounding, rendermodel caching, lazy evaluation of tranformations.</p>
+</li>
+<li><p>No dependencies</p>
+</li>
+</ul>
+<h4 id="bug-fixes">Bug Fixes</h4>
+<ul>
+<li>n/a</li>
+</ul>
+
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<html>
+<head>
+  <title>Same Scene, Canvas vs. SVG | seen.js</title>
+  
+  <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
+  
+  <link href="css/theme.css" rel="stylesheet" type="text/css"/>
+  
+  
+  <script src="lib/seen.min.js"></script>
+  
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js"></script>
+  
+</head>
+<body>
+  <div class="page">
+    <h1>Same Scene, Canvas vs. SVG</h1>
+    <div></div>
+
+        <div class="nav-bar">
+      <div class="nav-button-wrapper" style="text-align : left;">
+        
+          <a href="demo-noisy-sphere.html"><div class="nav-button">
+          <div class="label">prev</div><div class="title">Noisy Sphere</div>
+          </div></a>
+        
+      </div>
+      <div class="nav-button-wrapper" style="text-align : center;">
+          <a href="index.html"><div class="nav-button">
+          <div class="label">up</div><div class="title">to index</div>
+          </div></a>
+      </div>
+      <div class="nav-button-wrapper" style="text-align : right;">
+        
+          <a href="demo-multi-views.html"><div class="nav-button">
+          <div class="label">next</div><div class="title">Same Scene, Multiple Angles</div>
+          </div></a>
+        
+      </div>
+    </div>
+
+    
+  <table callpadding="0" cellspacing="0" border="0">
+    <tr><th><h2>HTML5 Canvas</h2></th><th><h2>SVG</h2></th></tr>
+    <tr><td><canvas width="450" height="200" id="seen-canvas-0"></canvas></td><td><svg width="450" height="200" id="seen-svg-0"></svg></td></tr>
+    <tr><td><canvas width="450" height="200" id="seen-canvas-1"></canvas></td><td><svg width="450" height="200" id="seen-svg-1"></svg></td></tr>
+    <tr><td><canvas width="450" height="200" id="seen-canvas-2"></canvas></td><td><svg width="450" height="200" id="seen-svg-2"></svg></td></tr>
+  </table>
+
+
+    
+    
+
+    
+<script type="text/coffeescript" id="code">
+  width  = 450
+  height = 200
+
+  # Create one shape to be shared between the SVG and Canvas
+  shapes = [0...3].map (i) ->
+    shape = seen.Shapes.sphere(i).scale(height * 0.4)
+    seen.Colors.randomSurfaces2(shape)
+    return shape
+
+  # Create one scene for each shape
+  scenes = shapes.map (shape) -> new seen.Scene
+    model  : seen.Models.default().add(shape)
+    camera : new seen.Camera
+      viewport : seen.Viewports.center(width, height)
+
+  # Create a render context for each SVG and Canvas
+  contexts = []
+  for scene, i in scenes
+    for type in ['canvas', 'svg']
+      contexts.push seen.Context("seen-#{type}-#{i}", scene).render()
+
+  # Slowly rotate shapes
+  new seen.Animator().onRender(->
+    for shape in shapes then shape.rotx(0.01).roty(0.007)
+    for context in contexts then context.render()
+  ).start()
+
+</script>
+
+
+    
+    <link href="http://yandex.st/highlightjs/8.0/styles/monokai_sublime.min.css" rel="stylesheet" type="text/css"/>
+<script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+<pre id="code-view"></pre>
+<script type="text/javascript">
+  var view = document.getElementById('code-view');
+  var code = document.getElementById('code');
+  view.innerHTML = code.innerHTML;
+  hljs.highlightBlock(view);
+</script>
+    
+  </div>
+</body>
+</html>

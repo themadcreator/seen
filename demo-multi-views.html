@@ -1,0 +1,126 @@
+<html>
+<head>
+  <title>Same Scene, Multiple Angles | seen.js</title>
+  
+  <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
+  
+  <link href="css/theme.css" rel="stylesheet" type="text/css"/>
+  
+  
+  <script src="lib/seen.min.js"></script>
+  
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js"></script>
+  
+</head>
+<body>
+  <div class="page">
+    <h1>Same Scene, Multiple Angles</h1>
+    <div></div>
+
+        <div class="nav-bar">
+      <div class="nav-button-wrapper" style="text-align : left;">
+        
+          <a href="demo-svg-canvas.html"><div class="nav-button">
+          <div class="label">prev</div><div class="title">Same Scene, Canvas vs. SVG</div>
+          </div></a>
+        
+      </div>
+      <div class="nav-button-wrapper" style="text-align : center;">
+          <a href="index.html"><div class="nav-button">
+          <div class="label">up</div><div class="title">to index</div>
+          </div></a>
+      </div>
+      <div class="nav-button-wrapper" style="text-align : right;">
+        
+      </div>
+    </div>
+
+    
+  <table callpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td rowspan="2"><canvas width="600" height="300" id="seen-canvas-0"></canvas></td>
+      <td><canvas width="150" height="150" id="seen-canvas-1"></canvas></td>
+      <td><canvas width="150" height="150" id="seen-canvas-2"></canvas></td>
+    </tr>
+    <tr>
+      <td><canvas width="150" height="150" id="seen-canvas-3"></canvas></td>
+      <td><canvas width="150" height="150" id="seen-canvas-4"></canvas></td>
+    </tr>
+  </table>
+
+
+    
+    
+
+    
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script type="text/coffeescript" id="code">
+  dims = [
+    [600, 300]
+    [150, 150]
+    [150, 150]
+    [150, 150]
+    [150, 150]
+  ]
+
+  # One model shared between scenes
+  model  = seen.Models.default()
+
+  scenes = [0...5].map (i) -> new seen.Scene
+    model  : model
+    camera : new seen.Camera
+      viewport : seen.Viewports.center(dims[i]...)
+
+  # Alter camera matrix for main viewport
+  scenes[0].camera.camera = seen.M().scale(2).rotx(Math.PI/4).roty(-Math.PI/4).rotz(-Math.PI/4)
+
+  # Rotate mini viewports
+  scenes[1].camera.camera = seen.M()
+  scenes[2].camera.camera = seen.M().rotx(Math.PI/2)
+  scenes[3].camera.camera = seen.M().rotx(-Math.PI/2)
+  scenes[4].camera.camera = seen.M().roty(-Math.PI/2)
+
+  # Load the object file using jquery
+  shape = null
+  $.get 'assets/bunny-low.obj', {}, (contents) ->
+    # Create shape from object file
+    shape = seen.Shapes.obj(contents, false)
+    shape.scale(8).translate(0,-30)
+
+    # Apply random colors to surfaces
+    seen.Colors.randomSurfaces2(shape)
+
+    # Update scene model
+    model.add(shape)
+    renderAll()
+
+  # Create rendering contexts
+  contexts = scenes.map (scene,i) -> seen.Context("seen-canvas-#{i}", scene)
+
+  renderAll = ->
+    context.render() for context in contexts
+
+  # Enable drag-to-rotate on main viewport
+  dragger = new seen.Drag('seen-canvas-0', {inertia : true})
+  dragger.on('drag.rotate', (e) ->
+    xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
+    shape?.transform(xform)
+    renderAll()
+  )
+</script>
+
+
+    
+    <link href="http://yandex.st/highlightjs/8.0/styles/monokai_sublime.min.css" rel="stylesheet" type="text/css"/>
+<script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+<pre id="code-view"></pre>
+<script type="text/javascript">
+  var view = document.getElementById('code-view');
+  var code = document.getElementById('code');
+  view.innerHTML = code.innerHTML;
+  hljs.highlightBlock(view);
+</script>
+    
+  </div>
+</body>
+</html>
