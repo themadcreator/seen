@@ -105,8 +105,9 @@ task 'site', 'Build seen website', (options) ->
 
   # Copy static resources
   for resource in ['lib', 'css', 'assets', 'CNAME']
-    exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}")
-  exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.")
+    exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}") # copy site resources
+  exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.") # copy dist for download
+  exec("cp site/favicons/* #{SITE_DIST}/.") # copy favicons
   console.log '  Copied static resources'
 
   # Generate docco
