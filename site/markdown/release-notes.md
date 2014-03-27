@@ -6,6 +6,8 @@
 
 + More documentation for Docco.
 
++ Git repository maintenance.
+
 ### v0.1.1
 
 + Removed default fill layer and change default create context method for simplicity and clarity.
