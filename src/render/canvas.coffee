@@ -1,3 +1,6 @@
+# ## HTML5 Canvas Context
+# ------------------
+
 class seen.CanvasStyler
   constructor : (@ctx) ->
 

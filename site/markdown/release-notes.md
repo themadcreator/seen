@@ -1,3 +1,11 @@
+### v0.1.2
+
++ Add flag to disable renderModel caching (not recommended)
+
++ Moving build dependencies to devDependencies in package.json
+
++ More documentation for Docco.
+
 ### v0.1.1
 
 + Removed default fill layer and change default create context method for simplicity and clarity.

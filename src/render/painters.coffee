@@ -1,10 +1,10 @@
 
 # ## Painters
-# #### Defines the methods of painting a surface.
+# #### Surface painters
 # ------------------
 
-# Each `Painter` overrides the paint method. It uses the supplied `RenderLayerContext`'s builders
-# to create and style the geometry on screen.
+# Each `Painter` overrides the paint method. It uses the supplied
+# `RenderLayerContext`'s builders to create and style the geometry on screen.
 class seen.Painter
   paint : (renderModel, context) ->
 

@@ -1,5 +1,4 @@
-# ## Contexts
-# #### Base classes for rendering context and layers
+# ## Render Contexts
 # ------------------
 
 # The `RenderContext` uses `RenderModel`s produced by the scene's render method to paint the shapes into an HTML element.

@@ -1,3 +1,7 @@
+# ## SVG Context
+# ------------------
+
+# Creates a new SVG element in the SVG namespace.
 _svg = (name) ->
   return document.createElementNS('http://www.w3.org/2000/svg', name)
 
@@ -98,6 +102,13 @@ class seen.SvgLayerRenderContext extends seen.RenderLayerContext
       children[@_i].setAttribute('style', 'display: none;')
       @_i++
 
+  # Returns an element with tagname `type`.
+  #
+  # This method uses an internal iterator to add new elements as they are
+  # drawn. If there is no child element at the current index, we append one
+  # and return it. If an element exists at the current index and it is the
+  # same type, we return that. If the element is a different type, we create
+  # one and replace it then return it.
   _elementFactory : (type) =>
     children = @group.childNodes
     if @_i >= children.length

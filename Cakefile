@@ -1,3 +1,5 @@
+require 'coffee-script/register'
+
 fs           = require 'fs'
 _            = require 'lodash'
 path         = require 'path'
@@ -82,6 +84,8 @@ task 'build', 'Build and uglify seen', () ->
     console.log '  Symlinked.'
 
 task 'site', 'Build seen website', (options) ->
+  console.log  "Building static site..."
+
   swig        = require 'swig'
   marked      = require 'marked'
   highlight   = require 'highlight.js'
@@ -103,19 +107,19 @@ task 'site', 'Build seen website', (options) ->
   for resource in ['lib', 'css', 'assets']
     exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}")
   exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.")
-  console.log 'Copied static resources'
+  console.log '  Copied static resources'
 
   # Generate docco
   script = path.join('node_modules' , '.bin', 'docco')
   exec("#{script} --output #{SITE_DIST}/docco dist/latest/seen.coffee")
-  console.log 'Generated Docco'
+  console.log '  Generated Docco'
 
   # Demo pages
   for demo, i in demos then do (demo, i) ->
     demo.prev = demos[i - 1]
     demo.next = demos[i + 1]
     renderPage(demo.view, demo.view, demo)
-    console.log "Rendered '#{demo.title}' demo"
+    console.log "  Rendered '#{demo.title}' demo"
 
   # Markdowned pages
   renderer = new marked.Renderer()
@@ -131,11 +135,11 @@ task 'site', 'Build seen website', (options) ->
       scripts  : [pageOptions.cdns.highlightjs.script]
       styles   : pageOptions.styles.concat [pageOptions.cdns.highlightjs.style]
     )
-    console.log "Rendered '#{markdown.title}' markdown"
+    console.log "  Rendered '#{markdown.title}' markdown"
 
   # Index page
   renderPage 'index', 'index', {demos}
-  console.log 'Rendered index'
+  console.log '  Rendered index'
 
 
 
