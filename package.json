@@ -19,7 +19,7 @@
   "scripts" : {
     "build"        : "cake build",
     "site"         : "cake build site && nodemon ./site/index.coffee",
-    "publish"      : "./publish.sh",
+    "publish-site" : "./publish-site.sh",
     "test-render"  : "phantomjs ./test/phantom/render-scenes.coffee",
     "test"         : "mocha ./test/mocha/*.coffee"
   },
