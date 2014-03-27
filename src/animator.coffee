@@ -1,8 +1,8 @@
 # ## Animator
 # ------------------
 
-# The animator class is useful for creating a render loop.
-# We supply pre and post render events for apply animation changes between renders.
+# The animator class is useful for creating a render loop. We supply pre and
+# post render events for apply animation changes between renders.
 class seen.Animator
   constructor : () ->
     @dispatch = seen.Events.dispatch('beforeRender', 'afterRender', 'render')

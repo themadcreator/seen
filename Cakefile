@@ -6,6 +6,9 @@ UglifyJS     = require 'uglify-js'
 CoffeeScript = require 'coffee-script'
 packageJson  = require './package.json'
 
+unsafeExec = exec
+exec       = (cmd) -> unsafeExec(cmd, (err) -> throw err if err)
+
 DISTS = {
   'seen.js' : [
     'src/namespace.coffee'
@@ -32,6 +35,8 @@ DISTS = {
     'src/scene.coffee'
   ]
 }
+
+MIN_LICENSE = "/** seen.js v#{packageJson.version} | themadcreator.github.io/seen | @license: Apache 2.0 */\n"
 
 DIST      = path.join(__dirname, 'dist', packageJson.version)
 SITE_DIST = path.join(__dirname, 'site-dist')
@@ -60,12 +65,14 @@ task 'build', 'Build and uglify seen', () ->
 
     # Compile to javascript
     jsCode = CoffeeScript.compile coffeeCode
-    fs.writeFileSync path.join(DIST, javascript), jsCode, {flags: 'w'}
+    fs.writeFileSync path.join(DIST, javascript), MIN_LICENSE + jsCode, {flags: 'w'}
     console.log '  Compiled.'
 
     # Uglify
     ugly = UglifyJS.minify path.join(DIST, javascript),
       outSourceMap : "#{javascript}.map"
+      output       :
+        comments : true
     fs.writeFileSync path.join(DIST, javascript.replace(/\.js$/,'.min.js')), ugly.code, {flags: 'w'}
     fs.writeFileSync path.join(DIST, "#{javascript}.map"), ugly.map, {flags: 'w'}
     console.log '  Minified.'
@@ -90,17 +97,18 @@ task 'site', 'Build seen website', (options) ->
 
   # Prepare output path
   if not fs.existsSync(SITE_DIST) then fs.mkdirSync(SITE_DIST)
-  exec("rm -rf #{SITE_DIST}/*", (err) -> throw err if err)
+  exec("rm -rf #{SITE_DIST}/*")
 
   # Copy static resources
   for resource in ['lib', 'css', 'assets']
-    exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}", (err) -> throw err if err)
-  exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.", (err) -> throw err if err)
+    exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}")
+  exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.")
   console.log 'Copied static resources'
 
   # Generate docco
   script = path.join('node_modules' , '.bin', 'docco')
-  exec("#{script} --output #{SITE_DIST}/docco dist/latest/seen.coffee", (err) -> throw err if err)
+  exec("#{script} --output #{SITE_DIST}/docco dist/latest/seen.coffee")
+  console.log 'Generated Docco'
 
   # Demo pages
   for demo, i in demos then do (demo, i) ->

@@ -2,8 +2,28 @@
 # #### Shape primitives and shape-making methods
 # ------------------
 
+# Map to points in the surfaces of a tetrahedron
+TETRAHEDRON_COORDINATE_MAP = [
+  [0, 2, 1]
+  [0, 1, 3]
+  [3, 2, 0]
+  [1, 2, 3]
+]
+
+# Map to points in the surfaces of a cube
+CUBE_COORDINATE_MAP = [
+  [0, 1, 3, 2] # left
+  [5, 4, 6, 7] # right
+  [1, 0, 4, 5] # bottom
+  [2, 3, 7, 6] # top
+  [3, 1, 5, 7] # front
+  [0, 2, 6, 4] # back
+]
+
+# Altitude of eqiulateral triangle for computing triangular patch size
 EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0
 
+# Points array of an icosahedron
 ICOS_X = 0.525731112119133606
 ICOS_Z = 0.850650808352039932
 ICOSAHEDRON_POINTS = [
@@ -21,6 +41,7 @@ ICOSAHEDRON_POINTS = [
   seen.P(-ICOS_Z, -ICOS_X, 0.0)
 ]
 
+# Map to points in the surfaces of an icosahedron
 ICOSAHEDRON_COORDINATE_MAP = [
   [0, 4, 1]
   [0, 9, 4]
@@ -45,35 +66,7 @@ ICOSAHEDRON_COORDINATE_MAP = [
 ]
 
 seen.Shapes = {
-  _cubeCoordinateMap : [
-    [0, 1, 3, 2] # left
-    [5, 4, 6, 7] # right
-    [1, 0, 4, 5] # bottom
-    [2, 3, 7, 6] # top
-    [3, 1, 5, 7] # front
-    [0, 2, 6, 4] # back
-  ]
-
-  _mapPointsToSurfaces: (points, coordinateMap) ->
-    surfaces = []
-    for coords in coordinateMap
-      spts = (points[c].copy() for c in coords)
-      surfaces.push(new seen.Surface(spts))
-    return surfaces
-
-  _subdivideTriangles : (triangles) ->
-    newTriangles = []
-    for tri in triangles
-      v01 = tri[0].copy().add(tri[1]).normalize()
-      v12 = tri[1].copy().add(tri[2]).normalize()
-      v20 = tri[2].copy().add(tri[0]).normalize()
-      newTriangles.push [tri[0], v01, v20]
-      newTriangles.push [tri[1], v12, v01]
-      newTriangles.push [tri[2], v20, v12]
-      newTriangles.push [v01,    v12, v20]
-    return newTriangles
-
-  # Returns a 2x2x2 cube, centered on the origin
+  # Returns a 2x2x2 cube, centered on the origin.
   cube: =>
     points = [
       seen.P(-1, -1, -1)
@@ -86,9 +79,9 @@ seen.Shapes = {
       seen.P( 1,  1,  1)
     ]
 
-    return new seen.Shape('cube', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
+    return new seen.Shape('cube', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
 
-  # Returns a 1x1x1 cube from the origin to [1, 1, 1]
+  # Returns a 1x1x1 cube from the origin to [1, 1, 1].
   unitcube: =>
     points = [
       seen.P(0, 0, 0)
@@ -101,9 +94,10 @@ seen.Shapes = {
       seen.P(1, 1, 1)
     ]
 
-    return new seen.Shape('unitcube', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
+    return new seen.Shape('unitcube', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
 
-  # Returns an axis-aligned 3D rectangle whose boundaries are defined by the two supplied points
+  # Returns an axis-aligned 3D rectangle whose boundaries are defined by the
+  # two supplied points.
   rectangle : (point1, point2) =>
     compose = (x, y, z) ->
       return seen.P(
@@ -123,7 +117,7 @@ seen.Shapes = {
       compose(Math.max, Math.max, Math.max)
     ]
 
-    return new seen.Shape('rect', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap))
+    return new seen.Shape('rect', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
 
   # Returns a tetrahedron that fits inside a 2x2x2 cube.
   tetrahedron: =>
@@ -133,15 +127,23 @@ seen.Shapes = {
       seen.P(-1,  1, -1)
       seen.P( 1, -1, -1)]
 
-    coordinateMap = [
-      [0,2,1]
-      [0,1,3]
-      [3,2,0]
-      [1,2,3]]
+    return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP))
 
-    return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap))
+  # Returns an icosahedron that fits within a 2x2x2 cube, centered on the
+  # origin.
+  icosahedron : ->
+    return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))
 
-  # Returns a planar triangular patch. The supplied arguments determine the number of triangle in the patch.
+  # Returns a sub-divided icosahedron, which approximates a sphere with
+  # triangles of equal size.
+  sphere : (subdivisions = 2) ->
+    triangles = ICOSAHEDRON_COORDINATE_MAP.map (coords) -> coords.map (c) -> ICOSAHEDRON_POINTS[c]
+    for i in [0...subdivisions]
+      triangles = seen.Shapes._subdivideTriangles(triangles)
+    return new seen.Shape('sphere', triangles.map (triangle) -> new seen.Surface(triangle.map (v) -> v.copy()))
+
+  # Returns a planar triangular patch. The supplied arguments determine the
+  # number of triangle in the patch.
   patch: (nx = 20, ny = 20) ->
     nx = Math.round(nx)
     ny = Math.round(ny)
@@ -174,19 +176,8 @@ seen.Shapes = {
 
     return new seen.Shape('patch', surfaces.map((s) -> new seen.Surface(s)))
 
-  # Returns an icosahedron that fits within a 2x2x2 cube, centered on the origin
-  icosahedron : ->
-    return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))
-
-  # Returns a sub-divided icosahedron, which approximates a sphere with triangles of equal size.
-  sphere : (subdivisions = 2) ->
-    triangles = ICOSAHEDRON_COORDINATE_MAP.map (coords) -> coords.map (c) -> ICOSAHEDRON_POINTS[c]
-    for i in [0...subdivisions]
-      triangles = seen.Shapes._subdivideTriangles(triangles)
-    return new seen.Shape('sphere', triangles.map (triangle) -> new seen.Surface(triangle.map (v) -> v.copy()))
-
-  # Return a text surface that can render 3D text when using an orthographic projection
-  text: (text) ->
+  # Return a text surface that can render 3D text when using an orthographic projection.
+  text : (text) ->
     surface = new seen.Surface([
       seen.P(0,  0, 0)
       seen.P(20, 0, 0)
@@ -240,9 +231,34 @@ seen.Shapes = {
   path : (points) ->
     return new seen.Shape('path', [new seen.Surface(points)])
 
-  custom: (s) ->
+  # Accepts a 2-dimensional array of tuples, returns a shape where the tuples
+  # represent points of a planar surface.
+  custom : (s) ->
     surfaces = []
     for f in s.surfaces
       surfaces.push new seen.Surface((seen.P(p...) for p in f))
     return new seen.Shape('custom', surfaces)
+    
+  # Joins the points into surfaces using the coordinate map, which is an
+  # 2-dimensional array of index integers.
+  _mapPointsToSurfaces: (points, coordinateMap) ->
+    surfaces = []
+    for coords in coordinateMap
+      spts = (points[c].copy() for c in coords)
+      surfaces.push(new seen.Surface(spts))
+    return surfaces
+
+  # Accepts an array of 3-tuples and returns an array of 3-tuples representing
+  # the triangular subdivision of the surface.
+  _subdivideTriangles : (triangles) ->
+    newTriangles = []
+    for tri in triangles
+      v01 = tri[0].copy().add(tri[1]).normalize()
+      v12 = tri[1].copy().add(tri[2]).normalize()
+      v20 = tri[2].copy().add(tri[0]).normalize()
+      newTriangles.push [tri[0], v01, v20]
+      newTriangles.push [tri[1], v12, v01]
+      newTriangles.push [tri[2], v20, v12]
+      newTriangles.push [v01,    v12, v20]
+    return newTriangles
 }

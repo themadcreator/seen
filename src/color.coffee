@@ -1,4 +1,4 @@
-# ## Color
+# ## Colors
 # ------------------
 
 # `Color` objects store RGB and Alpha values from 0 to 255.
@@ -72,11 +72,12 @@ seen.Colors = {
   hex: (hex) ->
     hex = hex.substring(1) if (hex.charAt(0) == '#')
     return new seen.Color(
-        parseInt(hex.substring(0, 2), 16),
-        parseInt(hex.substring(2, 4), 16),
-        parseInt(hex.substring(4, 6), 16))
+      parseInt(hex.substring(0, 2), 16),
+      parseInt(hex.substring(2, 4), 16),
+      parseInt(hex.substring(4, 6), 16))
 
-  # Creates a new `Color` using the supplied hue, saturation, and lightness (HSL) values.
+  # Creates a new `Color` using the supplied hue, saturation, and lightness
+  # (HSL) values.
   #
   # Each value must be in the range [0.0, 1.0].
   hsl: (h, s, l, a = 1) ->
@@ -108,12 +109,13 @@ seen.Colors = {
 
     return new seen.Color(r * 255, g * 255, b * 255, a * 255)
 
-  # Generates a new random color for each surface of the supplied `Shape`
+  # Generates a new random color for each surface of the supplied `Shape`.
   randomSurfaces : (shape, sat = 0.5, lit = 0.4) ->
     for surface in shape.surfaces
       surface.fill = new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
-  # Generates a random hue then randomly drifts the hue for each surface of the supplied `Shape`
+  # Generates a random hue then randomly drifts the hue for each surface of
+  # the supplied `Shape`.
   randomSurfaces2 : (shape, drift = 0.03, sat = 0.5, lit = 0.4) ->
     hue = Math.random()
     for surface in shape.surfaces
@@ -122,7 +124,8 @@ seen.Colors = {
       if hue > 1 then hue = 0
       surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
 
-  # Generates a random color then sets the fill for every surface of the supplied `Shape`
+  # Generates a random color then sets the fill for every surface of the
+  # supplied `Shape`.
   randomShape : (shape, sat = 0.5, lit = 0.4) ->
     shape.fill new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 

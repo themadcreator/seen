@@ -39,6 +39,7 @@ seen.Projections = {
     m[15] = 0.0
     return seen.M(m)
 
+  # Creates a orthographic projection matrix with the supplied frustrum
   ortho : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
     near2 = 2 * near
     dx    = right - left
@@ -69,6 +70,7 @@ seen.Projections = {
 }
 
 seen.Viewports = {
+  # Create a viewport where the scene's origin is centered in the view
   center : (width = 500, height = 500, x = 0, y = 0) ->
     prescale = seen.M()
       .translate(-x, -y, -1)
@@ -78,6 +80,7 @@ seen.Viewports = {
       .translate(x + width/2, y + height/2)
     return {prescale, postscale}
 
+  # Create a view port where the scene's origin is aligned with the origin ([0, 0]) of the view
   origin : (width = 500, height = 500, x = 0, y = 0) ->
     prescale = seen.M()
       .translate(-x, -y, -1)

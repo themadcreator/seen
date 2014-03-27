@@ -1,7 +1,8 @@
 # ## Interaction
+# #### Mouse drag and zoom
 # ------------------
 
-# A global window event dispatcher.
+# A global window event dispatcher. Attaches listeners only if window is defined.
 seen.WindowEvents = do ->
   dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp')
   window?.addEventListener('mouseup', dispatch.mouseUp, true)
@@ -9,8 +10,9 @@ seen.WindowEvents = do ->
   window?.addEventListener('mousemove', dispatch.mouseMove, true)
   return {on : dispatch.on}
 
-# An event dispatcher for mouse and drag events on a single dom element.
-# The available events are 'dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp'
+# An event dispatcher for mouse and drag events on a single dom element. The
+# available events are `'dragStart', 'drag', 'dragEnd', 'mouseMove',
+# 'mouseDown', 'mouseUp', 'mouseWheel'`
 class seen.MouseEvents
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
@@ -23,10 +25,12 @@ class seen.MouseEvents
     @_mouseDown = false
     @attach()
 
+  # Attaches listeners to the element
   attach : () ->
     @el.addEventListener('mousedown', @_onMouseDown)
     @el.addEventListener('mousewheel', @_onMouseWheel)
 
+  # Dettaches listeners to the element
   detach : () ->
     @el.removeEventListener('mousedown', @_onMouseDown)
     @el.removeEventListener('mousewheel', @_onMouseWheel)
@@ -71,11 +75,9 @@ class seen.InertialMouse
 
   update : (xy) ->
     if @lastUpdate?
-      msec = new Date().getTime() - @lastUpdate.getTime()
-      # Compute pixels per milliseconds
-      xy = xy.map (x) -> x / Math.max(msec, 1)
-      # Compute interpolation parameter based on time between measurements
-      t = Math.min(1, msec / seen.InertialMouse.smoothingTimeout)
+      msec = new Date().getTime() - @lastUpdate.getTime() # Time passed
+      xy = xy.map (x) -> x / Math.max(msec, 1) # Pixels per milliseconds
+      t = Math.min(1, msec / seen.InertialMouse.smoothingTimeout) # Interpolation based on time between measurements
       @x = t * xy[0] + (1.0 - t) * @x
       @y = t * xy[1] + (1.0 - t) * @y
     else
@@ -84,13 +86,15 @@ class seen.InertialMouse
     @lastUpdate = new Date()
     return @
 
+  # Apply damping to slow the motion once the user has stopped dragging.
   damp : ->
     @x *= (1.0 - seen.InertialMouse.inertiaExtinction)
     @y *= (1.0 - seen.InertialMouse.inertiaExtinction)
     return @
 
-# A class that adds simple mouse dragging to a dom element.
-# A 'drag' event is emitted as the user is dragging their mouse.
+# Adds simple mouse drag eventing to a DOM element. A 'drag' event is emitted
+# as the user is dragging their mouse. This is the easiest way to add mouse-
+# look or mouse-rotate to a scene.
 class seen.Drag
   defaults:
     inertia : false
@@ -170,6 +174,8 @@ class seen.Drag
     @_dragState.inertia.reset()
     @_inertiaRunning = false
 
+# Adds simple mouse wheel eventing to a DOM element. A 'zoom' event is emitted
+# as the user is scrolls their mouse wheel.
 class seen.Zoom
   defaults :
     speed : 0.25

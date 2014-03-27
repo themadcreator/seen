@@ -13,22 +13,18 @@ class seen.ObjParser
     for line in contents.split(/[\r\n]+/)
       data = line.trim().split(/[ ]+/)
 
-      # Check data
-      if data.length < 2
-        continue
+      continue if data.length < 2 # Check line parsing
 
       command = data.slice(0,1)[0]
       data    = data.slice(1)
-
-      # Check command
-      if command.charAt(0) is '#'
+      
+      if command.charAt(0) is '#' # Check for comments
         continue
-      if not @commands[command]?
+      if not @commands[command]? # Check that we know how the handle this command
         console.log "OBJ Parser: Skipping unknown command '#{command}'"
         continue
 
-      # Execute command
-      @commands[command](data)
+      @commands[command](data) # Execute command
 
   mapFacePoints : (faceMap) ->
     @faces.map (face) =>

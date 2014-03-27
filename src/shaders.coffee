@@ -1,7 +1,8 @@
 # ## Shaders
 # ------------------
 
-# Shader functions are aggregated in this utils object
+# These shading functions compute the shading for a surface. To reduce code
+# duplication, we aggregate them in a utils object.
 seen.ShaderUtils = {
   applyDiffuse : (c, light, lightNormal, surfaceNormal, material) ->
     dot = lightNormal.dot(surfaceNormal)
@@ -36,10 +37,10 @@ class seen.Shader
   # `lights` is an object containing the ambient, point, and directional light sources.
   # `renderModel` is an instance of `RenderModel` and contains the transformed and projected surface data.
   # `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.
-  shade: (lights, renderModel, material) ->
-    # Override this
+  shade: (lights, renderModel, material) -> # Override this
 
-# The `Phong` shader implements the Phong shading model with a diffuse, specular, and ambient term.
+# The `Phong` shader implements the Phong shading model with a diffuse,
+# specular, and ambient term.
 #
 # See https://en.wikipedia.org/wiki/Phong_reflection_model for more information
 class Phong extends seen.Shader
@@ -64,7 +65,8 @@ class Phong extends seen.Shader
     c.clamp(0, 0xFF)
     return c
 
-# The `DiffusePhong` shader implements the Phong shading model with a diffuse and ambient term (no specular).
+# The `DiffusePhong` shader implements the Phong shading model with a diffuse
+# and ambient term (no specular).
 class DiffusePhong extends seen.Shader
   shade: (lights, renderModel, material) ->
     c = new seen.Color()
@@ -95,13 +97,14 @@ class Ambient extends seen.Shader
     c.multiplyChannels(material.color).clamp(0, 0xFF)
     return c
 
-# The `Flat` shader colors surfaces with the material color, disregarding all light sources.
+# The `Flat` shader colors surfaces with the material color, disregarding all
+# light sources.
 class Flat extends seen.Shader
   shade: (lights, renderModel, material) ->
     return material.color
 
-# Since `Shader` objects are stateless, we don't need to construct them more than once.
-# So, we export global instances here.
+# Since `Shader` objects are stateless, we don't need to construct them more
+# than once. So, we export global instances here.
 seen.Shaders = {
   phong   : new Phong()
   diffuse : new DiffusePhong()

@@ -1,6 +1,12 @@
-# The object model class.
-# This class stores `Shapes`, `Lights`, and other `Models`
-# Since it extends `Transformable` it also contains a transformation matrix.
+# ## Models
+# ------------------
+
+# The object model class. It stores `Shapes`, `Lights`, and other `Models` as
+# well as a transformation matrix.
+#
+# Notably, models are hierarchical, like a tree. This means you can isolate
+# the transformation of groups of shapes in the scene, as well as create
+# chains of transformations for creating, for example, articulated skeletons.
 class seen.Model extends seen.Transformable
   constructor: () ->
     super()
@@ -33,7 +39,7 @@ class seen.Model extends seen.Transformable
     @add model
     return model
 
-  # Visit each `Shape` in this `Model` and all recursive child `Model`s
+  # Visit each `Shape` in this `Model` and all recursive child `Model`s.
   eachShape: (f) ->
     for child in @children
       if child instanceof seen.Shape
@@ -41,11 +47,11 @@ class seen.Model extends seen.Transformable
       if child instanceof seen.Model
         child.eachShape(f)
 
-  # Visit each `Light` and `Shape`, accumulating the recursive transformation matrices
-  # along the way. The light callback will be called with each light and its accumulated
-  # transform and it should return a `LightModel`. Each shape callback with be called
-  # with each shape and its accumulated transform as well as the list of light models 
-  # that apply to that shape.
+  # Visit each `Light` and `Shape`, accumulating the recursive transformation
+  # matrices along the way. The light callback will be called with each light
+  # and its accumulated transform and it should return a `LightModel`. Each
+  # shape callback with be called with each shape and its accumulated
+  # transform as well as the list of light models that apply to that shape.
   eachRenderable : (lightFn, shapeFn) ->
     @_eachRenderable(lightFn, shapeFn, [], @m)
 
@@ -60,7 +66,6 @@ class seen.Model extends seen.Transformable
         shapeFn.call(@, child, lightModels, child.m.copy().multiply(transform))
       if child instanceof seen.Model
         child._eachRenderable(lightFn, shapeFn, lightModels, child.m.copy().multiply(transform))
-
 
 seen.Models = {
   # The default model contains standard Hollywood-style 3-part lighting

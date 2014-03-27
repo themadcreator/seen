@@ -1,5 +1,6 @@
+/** seen.js v0.1.1 | themadcreator.github.io/seen | @license: Apache 2.0 */
 (function() {
-  var ARRAY_POOL, Ambient, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TRANSPOSE_INDICES, TextPainter, seen, _svg,
+  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, TextPainter, seen, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -117,7 +118,7 @@
     event.listenerMap = {};
     event.on = function(name, listener) {
       delete event.listenerMap[name];
-      if (listener) {
+      if (listener != null) {
         return event.listenerMap[name] = listener;
       }
     };
@@ -143,12 +144,17 @@
       return new seen.Matrix(this.m.slice());
     };
 
-    Matrix.prototype.transpose = function() {
-      return new seen.Matrix(TRANSPOSE_INDICES.map((function(_this) {
-        return function(i) {
-          return _this.m[i];
-        };
-      })(this)));
+    Matrix.prototype.matrix = function(m) {
+      var c, i, j, _i, _j;
+      c = ARRAY_POOL;
+      for (j = _i = 0; _i < 4; j = ++_i) {
+        for (i = _j = 0; _j < 16; i = _j += 4) {
+          c[i + j] = m[i] * this.m[j] + m[i + 1] * this.m[4 + j] + m[i + 2] * this.m[8 + j] + m[i + 3] * this.m[12 + j];
+        }
+      }
+      ARRAY_POOL = this.m;
+      this.m = c;
+      return this;
     };
 
     Matrix.prototype.reset = function() {
@@ -160,13 +166,12 @@
       return this.matrix(b.m);
     };
 
-    Matrix.prototype.matrix = function(m) {
-      var c, i, j, _i, _j;
+    Matrix.prototype.transpose = function() {
+      var c, i, ti, _i, _len;
       c = ARRAY_POOL;
-      for (j = _i = 0; _i < 4; j = ++_i) {
-        for (i = _j = 0; _j < 16; i = _j += 4) {
-          c[i + j] = m[i] * this.m[j] + m[i + 1] * this.m[4 + j] + m[i + 2] * this.m[8 + j] + m[i + 3] * this.m[12 + j];
-        }
+      for (i = _i = 0, _len = TRANSPOSE_INDICES.length; _i < _len; i = ++_i) {
+        ti = TRANSPOSE_INDICES[i];
+        c[i] = this.m[ti];
       }
       ARRAY_POOL = this.m;
       this.m = c;
@@ -348,7 +353,7 @@
 
     Point.prototype.normalize = function() {
       var n;
-      n = Math.sqrt(this.dot(this));
+      n = this.magnitude();
       if (n === 0) {
         this.set(seen.Points.Z);
       } else {
@@ -366,6 +371,14 @@
       r.w = this.x * matrix.m[12] + this.y * matrix.m[13] + this.z * matrix.m[14] + this.w * matrix.m[15];
       this.set(r);
       return this;
+    };
+
+    Point.prototype.magnitudeSquared = function() {
+      return this.dot(this);
+    };
+
+    Point.prototype.magnitude = function() {
+      return Math.sqrt(this.magnitudeSquared());
     };
 
     Point.prototype.dot = function(q) {
@@ -2074,6 +2087,10 @@
     }
   };
 
+  TETRAHEDRON_COORDINATE_MAP = [[0, 2, 1], [0, 1, 3], [3, 2, 0], [1, 2, 3]];
+
+  CUBE_COORDINATE_MAP = [[0, 1, 3, 2], [5, 4, 6, 7], [1, 0, 4, 5], [2, 3, 7, 6], [3, 1, 5, 7], [0, 2, 6, 4]];
+
   EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0;
 
   ICOS_X = 0.525731112119133606;
@@ -2085,52 +2102,18 @@
   ICOSAHEDRON_COORDINATE_MAP = [[0, 4, 1], [0, 9, 4], [9, 5, 4], [4, 5, 8], [4, 8, 1], [8, 10, 1], [8, 3, 10], [5, 3, 8], [5, 2, 3], [2, 7, 3], [7, 10, 3], [7, 6, 10], [7, 11, 6], [11, 0, 6], [0, 1, 6], [6, 1, 10], [9, 0, 11], [9, 11, 2], [9, 2, 5], [7, 2, 11]];
 
   seen.Shapes = {
-    _cubeCoordinateMap: [[0, 1, 3, 2], [5, 4, 6, 7], [1, 0, 4, 5], [2, 3, 7, 6], [3, 1, 5, 7], [0, 2, 6, 4]],
-    _mapPointsToSurfaces: function(points, coordinateMap) {
-      var c, coords, spts, surfaces, _i, _len;
-      surfaces = [];
-      for (_i = 0, _len = coordinateMap.length; _i < _len; _i++) {
-        coords = coordinateMap[_i];
-        spts = (function() {
-          var _j, _len1, _results;
-          _results = [];
-          for (_j = 0, _len1 = coords.length; _j < _len1; _j++) {
-            c = coords[_j];
-            _results.push(points[c].copy());
-          }
-          return _results;
-        })();
-        surfaces.push(new seen.Surface(spts));
-      }
-      return surfaces;
-    },
-    _subdivideTriangles: function(triangles) {
-      var newTriangles, tri, v01, v12, v20, _i, _len;
-      newTriangles = [];
-      for (_i = 0, _len = triangles.length; _i < _len; _i++) {
-        tri = triangles[_i];
-        v01 = tri[0].copy().add(tri[1]).normalize();
-        v12 = tri[1].copy().add(tri[2]).normalize();
-        v20 = tri[2].copy().add(tri[0]).normalize();
-        newTriangles.push([tri[0], v01, v20]);
-        newTriangles.push([tri[1], v12, v01]);
-        newTriangles.push([tri[2], v20, v12]);
-        newTriangles.push([v01, v12, v20]);
-      }
-      return newTriangles;
-    },
     cube: (function(_this) {
       return function() {
         var points;
         points = [seen.P(-1, -1, -1), seen.P(-1, -1, 1), seen.P(-1, 1, -1), seen.P(-1, 1, 1), seen.P(1, -1, -1), seen.P(1, -1, 1), seen.P(1, 1, -1), seen.P(1, 1, 1)];
-        return new seen.Shape('cube', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap));
+        return new seen.Shape('cube', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
       };
     })(this),
     unitcube: (function(_this) {
       return function() {
         var points;
         points = [seen.P(0, 0, 0), seen.P(0, 0, 1), seen.P(0, 1, 0), seen.P(0, 1, 1), seen.P(1, 0, 0), seen.P(1, 0, 1), seen.P(1, 1, 0), seen.P(1, 1, 1)];
-        return new seen.Shape('unitcube', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap));
+        return new seen.Shape('unitcube', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
       };
     })(this),
     rectangle: (function(_this) {
@@ -2140,17 +2123,38 @@
           return seen.P(x(point1.x, point2.x), y(point1.y, point2.y), z(point1.z, point2.z));
         };
         points = [compose(Math.min, Math.min, Math.min), compose(Math.min, Math.min, Math.max), compose(Math.min, Math.max, Math.min), compose(Math.min, Math.max, Math.max), compose(Math.max, Math.min, Math.min), compose(Math.max, Math.min, Math.max), compose(Math.max, Math.max, Math.min), compose(Math.max, Math.max, Math.max)];
-        return new seen.Shape('rect', seen.Shapes._mapPointsToSurfaces(points, seen.Shapes._cubeCoordinateMap));
+        return new seen.Shape('rect', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
       };
     })(this),
     tetrahedron: (function(_this) {
       return function() {
-        var coordinateMap, points;
+        var points;
         points = [seen.P(1, 1, 1), seen.P(-1, -1, 1), seen.P(-1, 1, -1), seen.P(1, -1, -1)];
-        coordinateMap = [[0, 2, 1], [0, 1, 3], [3, 2, 0], [1, 2, 3]];
-        return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, coordinateMap));
+        return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP));
       };
     })(this),
+    icosahedron: function() {
+      return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
+    },
+    sphere: function(subdivisions) {
+      var i, triangles, _i;
+      if (subdivisions == null) {
+        subdivisions = 2;
+      }
+      triangles = ICOSAHEDRON_COORDINATE_MAP.map(function(coords) {
+        return coords.map(function(c) {
+          return ICOSAHEDRON_POINTS[c];
+        });
+      });
+      for (i = _i = 0; 0 <= subdivisions ? _i < subdivisions : _i > subdivisions; i = 0 <= subdivisions ? ++_i : --_i) {
+        triangles = seen.Shapes._subdivideTriangles(triangles);
+      }
+      return new seen.Shape('sphere', triangles.map(function(triangle) {
+        return new seen.Surface(triangle.map(function(v) {
+          return v.copy();
+        }));
+      }));
+    },
     patch: function(nx, ny) {
       var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1;
       if (nx == null) {
@@ -2190,28 +2194,6 @@
       }
       return new seen.Shape('patch', surfaces.map(function(s) {
         return new seen.Surface(s);
-      }));
-    },
-    icosahedron: function() {
-      return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
-    },
-    sphere: function(subdivisions) {
-      var i, triangles, _i;
-      if (subdivisions == null) {
-        subdivisions = 2;
-      }
-      triangles = ICOSAHEDRON_COORDINATE_MAP.map(function(coords) {
-        return coords.map(function(c) {
-          return ICOSAHEDRON_POINTS[c];
-        });
-      });
-      for (i = _i = 0; 0 <= subdivisions ? _i < subdivisions : _i > subdivisions; i = 0 <= subdivisions ? ++_i : --_i) {
-        triangles = seen.Shapes._subdivideTriangles(triangles);
-      }
-      return new seen.Shape('sphere', triangles.map(function(triangle) {
-        return new seen.Surface(triangle.map(function(v) {
-          return v.copy();
-        }));
       }));
     },
     text: function(text) {
@@ -2295,6 +2277,39 @@
         })()));
       }
       return new seen.Shape('custom', surfaces);
+    },
+    _mapPointsToSurfaces: function(points, coordinateMap) {
+      var c, coords, spts, surfaces, _i, _len;
+      surfaces = [];
+      for (_i = 0, _len = coordinateMap.length; _i < _len; _i++) {
+        coords = coordinateMap[_i];
+        spts = (function() {
+          var _j, _len1, _results;
+          _results = [];
+          for (_j = 0, _len1 = coords.length; _j < _len1; _j++) {
+            c = coords[_j];
+            _results.push(points[c].copy());
+          }
+          return _results;
+        })();
+        surfaces.push(new seen.Surface(spts));
+      }
+      return surfaces;
+    },
+    _subdivideTriangles: function(triangles) {
+      var newTriangles, tri, v01, v12, v20, _i, _len;
+      newTriangles = [];
+      for (_i = 0, _len = triangles.length; _i < _len; _i++) {
+        tri = triangles[_i];
+        v01 = tri[0].copy().add(tri[1]).normalize();
+        v12 = tri[1].copy().add(tri[2]).normalize();
+        v20 = tri[2].copy().add(tri[0]).normalize();
+        newTriangles.push([tri[0], v01, v20]);
+        newTriangles.push([tri[1], v12, v01]);
+        newTriangles.push([tri[2], v20, v12]);
+        newTriangles.push([v01, v12, v20]);
+      }
+      return newTriangles;
     }
   };
 
@@ -2598,11 +2613,12 @@
       camera: new seen.Camera(),
       shader: seen.Shaders.phong,
       cullBackfaces: true,
-      fractionalPoints: false
+      fractionalPoints: false,
+      cache: true
     };
 
     function Scene(options) {
-      this.flush = __bind(this.flush, this);
+      this.flushCache = __bind(this.flushCache, this);
       this.render = __bind(this.render, this);
       seen.Util.defaults(this, options, this.defaults);
       this._renderModelCache = {};
@@ -2648,6 +2664,9 @@
 
     Scene.prototype._renderSurface = function(surface, transform, projection) {
       var renderModel;
+      if (!this.cache) {
+        return new seen.RenderModel(surface, transform, projection);
+      }
       renderModel = this._renderModelCache[surface.id];
       if (renderModel == null) {
         renderModel = this._renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection);
@@ -2657,7 +2676,7 @@
       return renderModel;
     };
 
-    Scene.prototype.flush = function() {
+    Scene.prototype.flushCache = function() {
       return this._renderModelCache = {};
     };
 
