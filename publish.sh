@@ -7,9 +7,12 @@ if [ $BRANCH != master ]; then
   exit 1
 fi
 
+cake site
 
-if [ `cake site` != 0 ]; then
+if [ $? != 0 ]; then
   echo "site building failed. exiting."
   exit 1
 fi
+
+git 
 
