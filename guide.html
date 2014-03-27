@@ -1,0 +1,115 @@
+<html>
+<head>
+  <title>Developers Guide | seen.js</title>
+  
+  <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
+  
+  <link href="css/theme.css" rel="stylesheet" type="text/css"/>
+  
+  <link href="http://yandex.st/highlightjs/8.0/styles/monokai_sublime.min.css" rel="stylesheet" type="text/css"/>
+  
+  
+  <script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+  
+</head>
+<body>
+  <div class="page">
+    <h1>Developers Guide</h1>
+    <div class="content">
+      <h2 id="getting-started">Getting started</h2>
+<p>Step 1. Create a web page including the seen library. Coffeescript is optional, but all the sample code (as well as the library source) is all coffeescript.</p>
+<pre><code class="hljs html">  <span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"seen.min.js"</span>&gt;</span><span class="javascript"></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">src</span>=<span class="hljs-value">"//cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js"</span>&gt;</span><span class="javascript"></span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-title">svg</span> <span class="hljs-attribute">width</span>=<span class="hljs-value">"400"</span> <span class="hljs-attribute">height</span>=<span class="hljs-value">"400"</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">"seen-canvas"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">svg</span>&gt;</span>
+    <span class="hljs-comment">&lt;!-- OR --&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">canvas</span> <span class="hljs-attribute">width</span>=<span class="hljs-value">"400"</span> <span class="hljs-attribute">height</span>=<span class="hljs-value">"400"</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">"seen-canvas"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-title">canvas</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-title">script</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">"text/coffeescript"</span>&gt;</span><span class="javascript">
+      SEE BELOW
+    </span><span class="hljs-tag">&lt;/<span class="hljs-title">script</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span></code></pre><p>Step 2. Create a scene with a single shape and render it using a context.</p>
+<pre><code class="hljs coffeescript">  <span class="hljs-comment"># Create a shape</span>
+  shape = seen.Shapes.tetrahedron()
+
+  <span class="hljs-comment"># Create scene and add shape to model</span>
+  scene = <span class="hljs-keyword">new</span> seen.Scene
+    model  : seen.Models.<span class="hljs-reserved">default</span>().add(shape)
+    camera : <span class="hljs-keyword">new</span> seen.Camera
+      viewport : seen.Viewports.center(<span class="hljs-number">400</span>, <span class="hljs-number">400</span>)
+
+  <span class="hljs-comment"># Create render context from canvas</span>
+  context = seen.Context(<span class="hljs-string">'seen-canvas'</span>, scene)
+
+  <span class="hljs-comment"># Render it!</span>
+  context.render()</code></pre><h2 id="overview">Overview</h2>
+<p>If you&#39;ve ever coded OpenGL, DirectX or used another 3D library, many of these primitives should already be familiar to you. All of the demo projects define primitives in roughly this order.</p>
+<p>We define a <code>shape</code> as a set of planar <code>surface</code>s in 3D space. The shape also includes a <code>material</code>, containing color and surface properties, and a <code>painter</code>, which ultimately determines how to draw the geometry on screen.</p>
+<p>You can instantiate a new shape like so:</p>
+<pre><code class="hljs coffeescript">  <span class="hljs-comment"># A predefined primitive</span>
+  shape = seen.Shapes.tetrahedron()
+
+  <span class="hljs-comment"># A custom shape</span>
+  shape = <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'my shape'</span>, [<span class="hljs-keyword">new</span> seen.Surface([
+    seen.P(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>)
+    seen.P(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>)
+    seen.P(<span class="hljs-number">1</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>)
+  ])])</code></pre><p>Shapes are contained within hieriarchical <code>model</code>s. Each model has its own trasformation matrix and can contain shapes, lights, and other models. The lights in a model apply to shapes in that model and all the child models.</p>
+<pre><code class="hljs coffeescript">  model = seen.Models.defaultModel() <span class="hljs-comment"># Use this. It contains the default lights.</span>
+  model.add(shape)</code></pre><p>Spawn a new child <code>model</code>s easily using <code>.append()</code>:</p>
+<pre><code class="hljs coffeescript">  childModel = model.append()
+  childModel.scale(<span class="hljs-number">5</span>)
+  childModel.add(seen.Shapes.sphere())</code></pre><p>A <code>scene</code> is composed of a model and a camera. The camera contains the projection and viewport transformations to take the shapes from object space to screen space.</p>
+<pre><code class="hljs coffeescript">  scene = <span class="hljs-keyword">new</span> seen.Scene(
+      model  : model
+      camera : <span class="hljs-keyword">new</span> seen.Camera
+        viewport   : seen.Viewports.center(width, height)
+        projection : seen.Projections.perspective()
+  )</code></pre><p>The default projection is perspective with a field-of-fiew of 50 degrees. Defining the viewport width/height like the above will center the scene in the view and object space will map 1:1 with screen space in the z=0 plane.</p>
+<p>Finally, a graphics <code>context</code> is defined to render the scene into SVG or HTML5 Canvas.</p>
+<pre><code class="hljs coffeescript">  <span class="hljs-comment"># Create an empty context then add the scene to it</span>
+  context = seen.Context(<span class="hljs-string">'id-of-svg-or-canvas'</span>)
+  context.sceneLayer(scene)
+  context.render()
+
+  <span class="hljs-comment"># Create a context that contains the scene layer</span>
+  context = seen.Context(<span class="hljs-string">'id-of-svg-or-canvas'</span>, scene)
+  context.render()</code></pre><p>You can add multiple <code>SceneLayers</code> to a single context or re-use a scene in multiple contexts. Or, use one shape, generate many angles with scenes, and render them all in different contexts.</p>
+<h2 id="render-contexts-svg-vs-canvas-">Render Contexts (SVG vs. Canvas)</h2>
+<p>Seen.js contains a simple abstraction on top of the graphics capabilities of SVG and HTML5 Canvas elements. All of the other components of this library are agnostic to the type of context it will be rendered in. However, there are some performance considerations.</p>
+<p>Creating elements within SVG is generally much slower than drawing directly into an HTML5 Canvas. If you can get away with using a canvas, you will generally have much better performance.</p>
+<p>Generating the path data for SVG elements means serializing many point values. Rounding the point values to the nearest pixel drastically increases performance on SVG renderers, but can introduce slight choppiness in the motion of an animated scene. If your scene doesn&#39;t look very smooth, try turning on <code>fractionalPoints</code> in the scene options.</p>
+<h2 id="render-loop-performance">Render Loop Performance</h2>
+<p>Seen.js makes every effort to make rendering as performant as possible. We use a few strategies to accomplish this.</p>
+<p>The transformation computation of hierarchical models are lazilly computed at render time. This allows you to transform hierarchical models without re-computing the transformations for every child model and shape.</p>
+<p>The transformation and projection of surface points as well as the creation of surface normals are delayed until render time. Once computed, we cache the results in a <code>renderModel</code> and prevent re-computation. We use the cached renderModel if the transformations have not changed by the next render loop. The cache is stored on the scene and can be flushed with <code>.flush()</code>. Flushing the cache may be necessary if you are adding and removing many shapes from the model as there is no built-in eviction strategy for the cache.</p>
+<p>Shapes are rendered using a painters algorithm in order to produce realistic occlusion (where one object appears in front of another). We simple sort the objects by their z coordinate in screen space then draw the shapes from back to front. The means that there is no partial occlusion.</p>
+<p>We include backface culling to prevent drawing surfaces that are facing away from the camera. This can be turned off per surface or for the entire scene.</p>
+<p>The default shader computes surface color using a phong shading model including ambient, diffuse, and specular terms. Since these calculations involve a fair bit of math, you can often get a very minor speedup by omitting the specular term. You can change the shader for each surface or you can set the scene&#39;s default shader.</p>
+<h2 id="transformables">Transformables</h2>
+<p><code>Shape</code>s and <code>light</code>s extend the <code>seen.Transformable</code> class. Transformations are applied using the standard affine transformations:</p>
+<ul>
+<li><code>scale</code></li>
+<li><code>translate</code></li>
+<li><code>rotx</code></li>
+<li><code>roty</code></li>
+<li><code>rotz</code></li>
+<li><code>matrix</code></li>
+<li><code>reset</code></li>
+</ul>
+<h2 id="animation">Animation</h2>
+<p>Seen.js contains a looping, event-firing class for animating scenes. The render <code>context</code> contains a method <code>.animate()</code> which will create and return an animator that is set up to invoke the context&#39;s <code>.render()</code> method. To modify the scene on every frame, listen to the &#39;beforeRender&#39; event.</p>
+<p>Construct a new instance of <code>seen.Animator</code> to create more complex animations that might span multiple scenes or contexts.</p>
+<h2 id="interaction">Interaction</h2>
+<p>Seen.js includes adapters for mouse rotation and mousewheel zooming. For best results, use a <code>quaternion</code> to create a rotation matrix from the x,y movement of the mouse. The zoom adapter directly returns a scale factor that can be applied to your scene&#39;s model.</p>
+
+    </div>
+  </div>
+</body>
+</html>

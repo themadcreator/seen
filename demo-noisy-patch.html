@@ -1,0 +1,108 @@
+<html>
+<head>
+  <title>Noisy Wave Patch | seen.js</title>
+  
+  <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
+  
+  <link href="css/theme.css" rel="stylesheet" type="text/css"/>
+  
+  
+  <script src="lib/seen.min.js"></script>
+  
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js"></script>
+  
+</head>
+<body>
+  <div class="page">
+    <h1>Noisy Wave Patch</h1>
+    <div></div>
+
+        <div class="nav-bar">
+      <div class="nav-button-wrapper" style="text-align : left;">
+        
+          <a href="demo-material-gallery.html"><div class="nav-button">
+          <div class="label">prev</div><div class="title">Materials gallery</div>
+          </div></a>
+        
+      </div>
+      <div class="nav-button-wrapper" style="text-align : center;">
+          <a href="index.html"><div class="nav-button">
+          <div class="label">up</div><div class="title">to index</div>
+          </div></a>
+      </div>
+      <div class="nav-button-wrapper" style="text-align : right;">
+        
+          <a href="demo-noisy-sphere.html"><div class="nav-button">
+          <div class="label">next</div><div class="title">Noisy Sphere</div>
+          </div></a>
+        
+      </div>
+    </div>
+
+    
+    <canvas width="900" height="500" id="seen-canvas"></canvas>
+    
+
+    
+    
+
+    
+<script type="text/coffeescript" src="lib/simplex-noise.coffee"></script>
+<script type="text/coffeescript" id="code">
+  width               = 900
+  height              = 500
+  equilateralAltitude = Math.sqrt(3.0) / 2.0
+  triangleScale       = 70
+  patch_width         = width * 1.5
+  patch_height        = height * 1.5
+
+  # Create patch of triangles that spans the view
+  shape = seen.Shapes.patch(
+    patch_width / triangleScale / equilateralAltitude
+    patch_height / triangleScale
+  )
+  .scale(triangleScale)
+  .translate(-patch_width/2, -patch_height/2 + 80)
+  .rotx(-0.3)
+  seen.Colors.randomSurfaces2(shape)
+
+  # Create scene and render context
+  scene = new seen.Scene
+    model  : seen.Models.default().add(shape)
+    camera : new seen.Camera
+      viewport : seen.Viewports.center(width, height)
+
+  context = seen.Context('seen-canvas', scene).render()
+
+  # Apply animated 3D simplex noise to patch vertices
+  t = 0
+  noiser = new Simplex3D(shape)
+  context.animate()
+    .onBefore(->
+      for surf in shape.surfaces
+        for p in surf.points
+          p.z = 4*noiser.noise(p.x/8, p.y/8, t)
+        # Since we're modifying the point directly, we need to mark the surface dirty
+        # to make sure the cache doesn't ignore the change
+        surf.dirty = true
+      t += 0.01
+    )
+    .start()
+
+</script>
+
+
+    
+    <link href="http://yandex.st/highlightjs/8.0/styles/monokai_sublime.min.css" rel="stylesheet" type="text/css"/>
+<script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+<pre id="code-view"></pre>
+<script type="text/javascript">
+  var view = document.getElementById('code-view');
+  var code = document.getElementById('code');
+  view.innerHTML = code.innerHTML;
+  hljs.highlightBlock(view);
+</script>
+    
+  </div>
+</body>
+</html>
