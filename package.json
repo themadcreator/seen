@@ -17,10 +17,11 @@
     "canvas"
   ],
   "scripts" : {
-    "build"       : "cake build",
-    "site"        : "cake build site && nodemon ./site/index.coffee",
-    "test-render" : "phantomjs ./test/phantom/render-scenes.coffee",
-    "test"        : "mocha ./test/mocha/*.coffee"
+    "build"        : "cake build",
+    "site"         : "cake build site && nodemon ./site/index.coffee",
+    "publish"      : "./publish.sh",
+    "test-render"  : "phantomjs ./test/phantom/render-scenes.coffee",
+    "test"         : "mocha ./test/mocha/*.coffee"
   },
   "devDependencies": {
     "chai"          : "^1.9.1",
