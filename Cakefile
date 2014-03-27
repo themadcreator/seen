@@ -104,7 +104,7 @@ task 'site', 'Build seen website', (options) ->
   exec("rm -rf #{SITE_DIST}/*")
 
   # Copy static resources
-  for resource in ['lib', 'css', 'assets']
+  for resource in ['lib', 'css', 'assets', 'CNAME']
     exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}")
   exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.")
   console.log '  Copied static resources'
