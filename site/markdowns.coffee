@@ -1,5 +1,5 @@
 module.exports = [
-  title : 'Developers Guide'
+  title : 'Developer\'s Guide'
   route : 'guide'
   path  : 'markdown/guide.md'
 ,
