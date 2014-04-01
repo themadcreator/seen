@@ -3,7 +3,7 @@ require 'coffee-script/register'
 fs           = require 'fs'
 _            = require 'lodash'
 path         = require 'path'
-{exec}       = require 'child_process'
+exec         = require 'exec-sync'
 UglifyJS     = require 'uglify-js'
 CoffeeScript = require 'coffee-script'
 packageJson  = require './package.json'
@@ -100,8 +100,8 @@ task 'site', 'Build seen website', (options) ->
     fs.writeFileSync(path.join(SITE_DIST, "#{filename}.html"), page)
 
   # Prepare output path
+  exec("rm -rf #{SITE_DIST}")
   if not fs.existsSync(SITE_DIST) then fs.mkdirSync(SITE_DIST)
-  exec("rm -rf #{SITE_DIST}/*")
 
   # Copy static resources
   for resource in ['lib', 'css', 'assets', 'CNAME']

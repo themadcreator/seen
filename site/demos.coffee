@@ -24,6 +24,9 @@ Demos = [
 ,
   title  : 'Same Scene, Multiple Angles'
   view   : 'demo-multi-views'
+,
+  title  : 'Audio Equalizer'
+  view   : 'demo-equalizer'
 ]
 
 module.exports = Demos
