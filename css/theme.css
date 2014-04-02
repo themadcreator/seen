@@ -57,20 +57,21 @@ h1 {
 
 a {
   text-decoration : none;
-  color           : #444;
+  color           : #09C;
+}
+
+a:visited {
+  color : #82C;
+}
+
+a:hover {
+  color : #0AF;
 }
 
 td {
   padding : 0px 0px 0px 0px;
 }
 
-a:visited {
-  color : #888;
-}
-
-a:hover {
-  color : #44F;
-}
 
 .download-button {
   -webkit-box-shadow : inset rgba(255, 255, 255, 0.498039) 0px 1px 0px 0px , rgba(0, 0, 0, 0.14902) 0px 1px 2px 0px;

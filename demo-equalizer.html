@@ -32,6 +32,10 @@
       </div>
       <div class="nav-button-wrapper" style="text-align : right;">
         
+          <a href="demo-gravity.html"><div class="nav-button">
+          <div class="label">next</div><div class="title">N-Body Gravity Simulation</div>
+          </div></a>
+        
       </div>
     </div>
 
@@ -105,7 +109,7 @@
     audioAnalyser = audioContext.createAnalyser()
     audioAnalyser.smoothingTimeConstant = 0.2
     audioAnalyser.fftSize = 32
-    
+
     # Connect audio to speaker output
     audioSource.connect(audioContext.destination)
 
@@ -115,8 +119,9 @@
     audioScript.connect(audioContext.destination)
 
     # Update array with frequency data and update scene
+    # Pin the listener in memory otherwise it will be garbage collected in chrome
     array = new Uint8Array(audioAnalyser.frequencyBinCount)
-    audioScript.addEventListener 'audioprocess', (e) ->
+    audioScript.addEventListener 'audioprocess', window.memoryPin = (e) ->
       audioAnalyser.getByteFrequencyData(array)
       updateScene(array)
 </script>
@@ -125,7 +130,7 @@
     
     <link href="http://yandex.st/highlightjs/8.0/styles/monokai_sublime.min.css" rel="stylesheet" type="text/css"/>
 <script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
-<pre id="code-view"></pre>
+<pre><code id="code-view"></code></pre>
 <script type="text/javascript">
   var view = document.getElementById('code-view');
   var code = document.getElementById('code');
