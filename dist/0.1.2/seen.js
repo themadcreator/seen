@@ -1864,6 +1864,7 @@
 
     Zoom.prototype._onMouseWheel = function(e) {
       var sign, zoom, zoomFactor;
+      e.preventDefault();
       sign = e.wheelDelta / Math.abs(e.wheelDelta);
       zoomFactor = Math.abs(e.wheelDelta) / 120 * this.speed;
       zoom = Math.pow(2, sign * zoomFactor);

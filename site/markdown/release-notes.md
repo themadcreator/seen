@@ -4,6 +4,8 @@
 
 + Add flag to disable renderModel caching (not recommended)
 
++ Prevent default scroll action on canvases when zoomer is attached.
+
 + More documentation for Docco.
 
 ### v0.1.1

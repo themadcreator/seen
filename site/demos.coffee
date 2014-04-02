@@ -27,6 +27,11 @@ Demos = [
 ,
   title  : 'Audio Equalizer'
   view   : 'demo-equalizer'
+,
+  title  : 'N-Body Gravity Simulation'
+  view   : 'demo-gravity'
+  width  : 900
+  height : 500
 ]
 
 module.exports = Demos

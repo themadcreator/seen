@@ -1,4 +1,3 @@
-
 # Adapted from https://github.com/josephg/noisejs/blob/master/perlin.js
 
 # This code was placed in the public domain by its original author,

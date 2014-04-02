@@ -191,6 +191,9 @@ class seen.Zoom
     mouser.on "mouseWheel.#{@_uid}", @_onMouseWheel
 
   _onMouseWheel : (e) =>
+    # This prevents the page from scrolling when we mousewheel the element
+    e.preventDefault()
+    
     sign       = e.wheelDelta / Math.abs(e.wheelDelta)
     zoomFactor = Math.abs(e.wheelDelta) / 120 * @speed
     zoom       = Math.pow(2, sign*zoomFactor)

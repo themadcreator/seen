@@ -1,0 +1,112 @@
+{% extends 'demo-template.html' %}
+
+{% block demo %}
+<p style="text-align:center;width: 100%;">Drag to rotate. Mousewheel to zoom.</p>
+<script src="{{cdns.lodash.script}}"></script>
+<script type="text/coffeescript" src="lib/gravity.coffee"></script>
+<script type="text/coffeescript" id="code">
+  width     = {{width}}
+  height    = {{height}}
+  bodyCount = 200
+
+  # Define a customer painter to draw circle for gravitational bodies
+  class BodyPainter
+    paint : (renderModel, context) ->
+      # Apply surface's transformation to determine scale.
+      unit       = seen.Points.X.copy().transform(renderModel.transform)
+      scale      = Math.sqrt(unit.dot(unit))
+      radius     = scale * renderModel.surface.radius
+      massRadius = scale * renderModel.surface.massRadius
+      p          = renderModel.projected.points[0]
+
+      # Create radial gradient for painting the surface
+      grd = context.ctx.createRadialGradient(p.x, p.y - radius*0.5, 0, p.x, p.y - radius*0.5, radius*2)
+      grd.addColorStop(0.2, seen.Colors.white().hex())
+      grd.addColorStop(0.5, '#AEF')
+      grd.addColorStop(1.0, '#09C')
+
+      # Fill a circle from the body's radius and draw a circle representing its mass
+      painter = context.circle()
+      painter.circle(p, radius).fill(fill : grd)
+      painter.circle(p, massRadius).draw(
+        fill   : 'none'
+        stroke : '#09C'
+      )
+
+  # Since painters are stateless, we only need one instance
+  BODY_PAINTER = new BodyPainter()
+
+  class Simulator
+    constructor : (@model, @seenModel) ->
+      @simulation = new Gravity.Simulation(@model)
+
+    simulate : =>
+      collisions = @simulation.simulate()
+      
+      collided = _(collisions)
+        .map((collision) -> [collision.a, collision.b])
+        .flatten()
+        .uniq()
+        .value()
+
+      for object in collided
+        @seenModel.remove object.shape
+
+      for object in @model.objects
+        # Since we modify the internal points on the surface directly, we need
+        # to mark the surface as dirty so that it will be re-rendered properly.
+        if object.shape?
+          object.shape.eachSurface((s) -> s.dirty = true)
+        else
+          @seenModel.add object.shape = @_toShape(object)
+
+    # Creates a 'body' seen.Shape from a Gravity.Body object
+    _toShape : (object) ->
+      surface            = new seen.Surface([object.position], BODY_PAINTER)
+      surface.fill       = null # dont bother computing this shading
+      surface.radius     = object.radius
+      surface.mass       = object.mass
+      surface.massRadius = Math.sqrt(object.mass)*2 # rescale radius for mass viz
+      return new seen.Shape('body', [surface])
+
+  model = {
+    objects : Gravity.Bodies.random(bodyCount)
+    scale   : 1.0
+    ticks   : 0
+  }
+
+  scene = new seen.Scene
+    cullBackfaces    : false
+    fractionalPoints : true
+    model            : seen.Models.default()
+    camera           : new seen.Camera
+      viewport : seen.Viewports.center({{width}}, {{height}})
+
+  seenModel = scene.model.append()
+
+  # Add mouse-rotate
+  dragger = new seen.Drag('seen-canvas', {inertia : true})
+  dragger.on('drag.rotate', (e) ->
+    xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
+    seenModel.transform(xform)
+  )
+
+  # Add mousewheel-zoom
+  zoomer = new seen.Zoom('seen-canvas', {smooth : false})
+  zoomer.on('zoom.scale', (e) ->
+    xform = seen.M().scale(e.zoom)
+    seenModel.transform(xform)
+  )
+
+  # Create a context with a black fill layer and the scene layer
+  context = new seen.Context('seen-canvas')
+  context.layer(new seen.FillLayer({{width}}, {{height}}, '#000'))
+  context.sceneLayer(scene)
+  context.animate().start()
+
+  # Run simulator
+  simulator = new Simulator(model, seenModel)
+  setInterval(simulator.simulate, 30)
+
+</script>
+{% endblock %}
