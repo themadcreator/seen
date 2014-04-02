@@ -67,7 +67,7 @@
     audioAnalyser = audioContext.createAnalyser()
     audioAnalyser.smoothingTimeConstant = 0.2
     audioAnalyser.fftSize = 32
-    
+
     # Connect audio to speaker output
     audioSource.connect(audioContext.destination)
 
@@ -77,8 +77,9 @@
     audioScript.connect(audioContext.destination)
 
     # Update array with frequency data and update scene
+    # Pin the listener in memory otherwise it will be garbage collected in chrome
     array = new Uint8Array(audioAnalyser.frequencyBinCount)
-    audioScript.addEventListener 'audioprocess', (e) ->
+    audioScript.addEventListener 'audioprocess', window.memoryPin = (e) ->
       audioAnalyser.getByteFrequencyData(array)
       updateScene(array)
 </script>

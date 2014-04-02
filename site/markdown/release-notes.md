@@ -1,14 +1,14 @@
 ### v0.1.2
 
-+ Add flag to disable renderModel caching (not recommended)
+*April 2, 2014*
 
-+ Moving build dependencies to devDependencies in package.json
++ Add flag to disable renderModel caching (not recommended)
 
 + More documentation for Docco.
 
-+ Git repository maintenance.
-
 ### v0.1.1
+
+*March 25, 2014*
 
 + Removed default fill layer and change default create context method for simplicity and clarity.
 
@@ -17,6 +17,8 @@
 + Updated tests to include both SVG and Canvas renderings
 
 ### v0.1.0 - *INITIAL RELEASE*
+
+*March 24, 2014*
 
 #### Features
 
@@ -48,8 +50,3 @@
 + Performance: z-order painter's algorithm, backface culling, point rounding, rendermodel caching, lazy evaluation of tranformations.
 
 + No dependencies
-
-#### Bug Fixes
-
-+ n/a
-

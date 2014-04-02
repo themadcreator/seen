@@ -1,4 +1,4 @@
-/** seen.js v0.1.2 | themadcreator.github.io/seen | @license: Apache 2.0 */
+/** seen.js v0.1.2 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
 (function() {
   var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, TextPainter, seen, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },

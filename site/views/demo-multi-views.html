@@ -29,8 +29,9 @@
   model  = seen.Models.default()
 
   scenes = [0...5].map (i) -> new seen.Scene
-    model  : model
-    camera : new seen.Camera
+    fractionalPoints : true
+    model            : model
+    camera           : new seen.Camera
       viewport : seen.Viewports.center(dims[i]...)
 
   # Alter camera matrix for main viewport

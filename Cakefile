@@ -38,7 +38,7 @@ DISTS = {
   ]
 }
 
-MIN_LICENSE = "/** seen.js v#{packageJson.version} | themadcreator.github.io/seen | @license: Apache 2.0 */\n"
+MIN_LICENSE = "/** seen.js v#{packageJson.version} | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */\n"
 
 DIST      = path.join(__dirname, 'dist', packageJson.version)
 SITE_DIST = path.join(__dirname, 'site-dist')
@@ -106,8 +106,9 @@ task 'site', 'Build seen website', (options) ->
   # Copy static resources
   for resource in ['lib', 'css', 'assets', 'CNAME']
     exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}") # copy site resources
-  exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.") # copy dist for download
   exec("cp site/favicons/* #{SITE_DIST}/.") # copy favicons
+  exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.") # copy dist for demos
+  exec("cp -r dist #{SITE_DIST}/dist") # copy dist for download
   console.log '  Copied static resources'
 
   # Generate docco
