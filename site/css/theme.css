@@ -24,6 +24,10 @@ code {
   user-select           : text;
 }
 
+pre {
+  margin: 0px 0px;
+}
+
 .page {
   position         : absolute;
   top              : 40px;
@@ -34,6 +38,12 @@ code {
   background-color : white;
 }
 
+.caption {
+  text-align : center;
+  width      : 100%;
+  color      : #888;
+}
+
 .footer {
   position    : relative;
   top         : 50px;
@@ -41,15 +51,14 @@ code {
   left        : 50%;
   margin-left : -450px;
   text-align  : center;
-  color : #888;
+  color       : #888;
 }
 
 .content {
   padding : 40px 40px 40px 40px;
 }
 
-
-h1 {
+h1, h4 {
   font-weight : normal;
   margin-left : 20px;
   color       : #444;
@@ -71,7 +80,6 @@ a:hover {
 td {
   padding : 0px 0px 0px 0px;
 }
-
 
 .download-button {
   -webkit-box-shadow : inset rgba(255, 255, 255, 0.498039) 0px 1px 0px 0px , rgba(0, 0, 0, 0.14902) 0px 1px 2px 0px;

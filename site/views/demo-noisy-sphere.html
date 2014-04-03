@@ -1,5 +1,9 @@
 {% extends 'demo-template.html' %}
 
+{% block caption %}
+<p>Drag to rotate.</p>
+{% endblock %}
+
 {% block demo %}
 <script type="text/coffeescript" src="lib/simplex-noise.coffee"></script>
 <script type="text/coffeescript" id="code">

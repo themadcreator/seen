@@ -1,7 +1,10 @@
 {% extends 'demo-template.html' %}
 
+{% block caption %}
+<p>Drag to rotate. Mousewheel to zoom.</p>
+{% endblock %}
+
 {% block demo %}
-<p style="text-align:center;width: 100%;">Drag to rotate. Mousewheel to zoom.</p>
 <script src="{{cdns.lodash.script}}"></script>
 <script type="text/coffeescript" src="lib/gravity.coffee"></script>
 <script type="text/coffeescript" id="code">

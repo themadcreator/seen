@@ -11,7 +11,7 @@
 <body>
   <div class="page">
     <h1>{{title}}</h1>
-    <div>{{description}}</div>
+    <h4>{{description|raw}}</h4>
 
     {% include "snippets/demo-nav.html" %}
 
@@ -19,8 +19,10 @@
     <canvas width="{{width}}" height="{{height}}" id="seen-canvas"></canvas>
     {% endblock %}
 
-    {% block description %}
+    <div class="caption">
+    {% block caption %}
     {% endblock %}
+    </div>
 
     {% block demo %}
     {% endblock %}

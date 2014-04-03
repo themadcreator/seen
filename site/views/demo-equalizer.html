@@ -1,12 +1,15 @@
 {% extends 'demo-template.html' %}
 
 {% block canvases %}
-  <div style="width:100%;text-align:center;color:#888;margin-top:40px;margin-bottom:20px;">Audio : <i>Battar</i> by EOTO (CC Attribution 3.0)</div>
   <audio controls id="seen-audio" src="http://archive.org/download/Eoto2010-09-17BellvueCo.Mishwaka/eoto100917d2_05_Battar.mp3" type="audio/mpeg" style="width:100%;">
     Your browser does not support the audio element.
     <!-- https://archive.org/details/Eoto2010-09-17BellvueCo.Mishwaka -->
   </audio>
   <canvas width="900" height="200" id="seen-canvas"></canvas>
+{% endblock %}
+
+{% block caption %}
+<p>Audio : <i>Battar</i> by EOTO (CC Attribution 3.0)</p>
 {% endblock %}
 
 {% block demo %}
