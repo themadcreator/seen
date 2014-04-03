@@ -55,12 +55,13 @@ pre {
 }
 
 .content {
-  padding : 40px 40px 40px 40px;
+  padding : 20px 40px 20px 40px;
+  color   : #444;
 }
 
 h1, h4 {
   font-weight : normal;
-  margin-left : 20px;
+  margin-left : 40px;
   color       : #444;
 }
 
