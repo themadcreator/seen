@@ -60,7 +60,7 @@
     seen.P(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>)
     seen.P(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>,<span class="hljs-number">0</span>)
     seen.P(<span class="hljs-number">1</span>,<span class="hljs-number">0</span>,<span class="hljs-number">0</span>)
-  ])])</code></pre><p>Shapes are contained within hieriarchical <code>model</code>s. Each model has its own trasformation matrix and can contain shapes, lights, and other models. The lights in a model apply to shapes in that model and all the child models.</p>
+  ])])</code></pre><p>Shapes are contained within hieriarchical <code>model</code>s. Each model has its own transformation matrix and can contain shapes, lights, and other models. The lights in a model apply to shapes in that model and all the child models.</p>
 <pre><code class="hljs coffeescript">  model = seen.Models.defaultModel() <span class="hljs-comment"># Use this. It contains the default lights.</span>
   model.add(shape)</code></pre><p>Spawn a new child <code>model</code>s easily using <code>.append()</code>:</p>
 <pre><code class="hljs coffeescript">  childModel = model.append()
