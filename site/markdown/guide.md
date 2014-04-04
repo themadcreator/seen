@@ -9,7 +9,7 @@ Step 1. Create a web page including the seen library. Coffeescript is optional, 
     <script src="//cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js"></script>
   </head>
   <body>
-    
+
     <svg width="400" height="400" id="seen-canvas"></svg>
     <!-- OR -->
     <canvas width="400" height="400" id="seen-canvas"></canvas>
@@ -61,16 +61,16 @@ You can instantiate a new shape like so:
   ])])
 ```
 
-Shapes are contained within hieriarchical `model`s. Each model has its own trasformation matrix and can contain shapes, lights, and other models. The lights in a model apply to shapes in that model and all the child models.
+Shapes are contained within hieriarchical `model`s. Each model has its own transformation matrix and can contain shapes, lights, and other models. The lights in a model apply to shapes in that model and all the child models.
 
-```coffeescript 
+```coffeescript
   model = seen.Models.defaultModel() # Use this. It contains the default lights.
   model.add(shape)
 ```
 
 Spawn a new child `model`s easily using `.append()`:
 
-```coffeescript 
+```coffeescript
   childModel = model.append()
   childModel.scale(5)
   childModel.add(seen.Shapes.sphere())
@@ -78,7 +78,7 @@ Spawn a new child `model`s easily using `.append()`:
 
 A `scene` is composed of a model and a camera. The camera contains the projection and viewport transformations to take the shapes from object space to screen space.
 
-```coffeescript 
+```coffeescript
   scene = new seen.Scene(
       model  : model
       camera : new seen.Camera
@@ -91,7 +91,7 @@ The default projection is perspective with a field-of-fiew of 50 degrees. Defini
 
 Finally, a graphics `context` is defined to render the scene into SVG or HTML5 Canvas.
 
-```coffeescript 
+```coffeescript
   # Create an empty context then add the scene to it
   context = seen.Context('id-of-svg-or-canvas')
   context.sceneLayer(scene)
