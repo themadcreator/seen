@@ -127,7 +127,7 @@
 
   ARRAY_POOL = new Array(16);
 
-  IDENTITY = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+  IDENTITY = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
   TRANSPOSE_INDICES = [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15];
 
@@ -2066,14 +2066,14 @@
       return function() {
         var points;
         points = [seen.P(-1, -1, -1), seen.P(-1, -1, 1), seen.P(-1, 1, -1), seen.P(-1, 1, 1), seen.P(1, -1, -1), seen.P(1, -1, 1), seen.P(1, 1, -1), seen.P(1, 1, 1)];
-        return new seen.Shape('cube', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
+        return new seen.Shape('cube', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
       };
     })(this),
     unitcube: (function(_this) {
       return function() {
         var points;
         points = [seen.P(0, 0, 0), seen.P(0, 0, 1), seen.P(0, 1, 0), seen.P(0, 1, 1), seen.P(1, 0, 0), seen.P(1, 0, 1), seen.P(1, 1, 0), seen.P(1, 1, 1)];
-        return new seen.Shape('unitcube', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
+        return new seen.Shape('unitcube', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
       };
     })(this),
     rectangle: (function(_this) {
@@ -2083,18 +2083,26 @@
           return seen.P(x(point1.x, point2.x), y(point1.y, point2.y), z(point1.z, point2.z));
         };
         points = [compose(Math.min, Math.min, Math.min), compose(Math.min, Math.min, Math.max), compose(Math.min, Math.max, Math.min), compose(Math.min, Math.max, Math.max), compose(Math.max, Math.min, Math.min), compose(Math.max, Math.min, Math.max), compose(Math.max, Math.max, Math.min), compose(Math.max, Math.max, Math.max)];
-        return new seen.Shape('rect', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
+        return new seen.Shape('rect', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
+      };
+    })(this),
+    pyramid: (function(_this) {
+      return function() {
+        var PYRAMID_COORDINATE_MAP, points;
+        PYRAMID_COORDINATE_MAP = [[1, 0, 2, 3], [0, 1, 4], [2, 0, 4], [3, 2, 4], [1, 3, 4]];
+        points = [seen.P(0, 0, 0), seen.P(0, 0, 1), seen.P(1, 0, 0), seen.P(1, 0, 1), seen.P(0.5, 1, 0.5)];
+        return new seen.Shape('pyramid', seen.Shapes.mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP));
       };
     })(this),
     tetrahedron: (function(_this) {
       return function() {
         var points;
         points = [seen.P(1, 1, 1), seen.P(-1, -1, 1), seen.P(-1, 1, -1), seen.P(1, -1, -1)];
-        return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP));
+        return new seen.Shape('tetrahedron', seen.Shapes.mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP));
       };
     })(this),
     icosahedron: function() {
-      return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
+      return new seen.Shape('icosahedron', seen.Shapes.mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
     },
     sphere: function(subdivisions) {
       var i, triangles, _i;
@@ -2162,11 +2170,8 @@
       surface.text = text;
       return new seen.Shape('text', [surface]);
     },
-    extrude: function(points, distance) {
+    extrude: function(points, offset) {
       var back, front, i, len, p, surfaces, _i, _ref;
-      if (distance == null) {
-        distance = 1;
-      }
       surfaces = [];
       front = new seen.Surface((function() {
         var _i, _len, _results;
@@ -2182,7 +2187,7 @@
         _results = [];
         for (_i = 0, _len = points.length; _i < _len; _i++) {
           p = points[_i];
-          _results.push(p.translate(0, 0, distance));
+          _results.push(p.add(offset));
         }
         return _results;
       })());
@@ -2215,7 +2220,7 @@
       }
       htw = tailWidth / 2;
       points = [seen.P(0, 0, 0), seen.P(headLength + headPointiness, 1, 0), seen.P(headLength, htw, 0), seen.P(headLength + tailLength, htw, 0), seen.P(headLength + tailLength, -htw, 0), seen.P(headLength, -htw, 0), seen.P(headLength + headPointiness, -1, 0)];
-      return seen.Shapes.extrude(points, thickness);
+      return seen.Shapes.extrude(points, seen.P(0, 0, thickness));
     },
     path: function(points) {
       return new seen.Shape('path', [new seen.Surface(points)]);
@@ -2238,7 +2243,7 @@
       }
       return new seen.Shape('custom', surfaces);
     },
-    _mapPointsToSurfaces: function(points, coordinateMap) {
+    mapPointsToSurfaces: function(points, coordinateMap) {
       var c, coords, spts, surfaces, _i, _len;
       surfaces = [];
       for (_i = 0, _len = coordinateMap.length; _i < _len; _i++) {

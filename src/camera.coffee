@@ -86,7 +86,7 @@ seen.Viewports = {
     prescale = seen.M()
       .translate(-x, -y, -1)
       .scale(1/width, 1/height, 1/height)
-      
+
     postscale = seen.M()
       .scale(width, -height, height)
       .translate(x, y)
@@ -117,5 +117,8 @@ class seen.Camera
 
   # Performs the 3-step multiplication of the transformation matrices.
   getMatrix : ->
-    @camera.copy().multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
+    @camera.copy()
+      .multiply(@viewport.prescale)
+      .multiply(@projection)
+      .multiply(@viewport.postscale)
 

@@ -7,10 +7,10 @@
 ARRAY_POOL = new Array(16)
 
 # Definition of identity matrix values
-IDENTITY = [1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0]
+IDENTITY = [1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1]
 
 # Indices with which to transpose the matrix array
 TRANSPOSE_INDICES = [0,  4,  8, 12,
@@ -34,7 +34,9 @@ class seen.Matrix
   copy : ->
     return new seen.Matrix(@m.slice())
 
-  # Multiply by the 16-value `Array` argument. This method uses the `ARRAY_POOL`, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.
+  # Multiply by the 16-value `Array` argument. This method uses the
+  # `ARRAY_POOL`, which prevents us from having to re-initialize a new
+  # temporary matrix every time. This drastically improves performance.
   matrix : (m) ->
     c = ARRAY_POOL
     for j in [0...4]
@@ -92,12 +94,13 @@ class seen.Matrix
     rm = [ 1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1 ]
     return @matrix(rm)
 
-  # Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
+  # Apply a scale. If not all arguments are supplied, each dimension (x,y,z)
+  # is copied from the previous arugment. Therefore, `_scale()` is equivalent
+  # to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
   scale : (sx, sy, sz) ->
-    sx     ?= 1
-    sy     ?= sx
-    sz     ?= sy
-
+    sx ?= 1
+    sy ?= sx
+    sz ?= sy
     rm = [ sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1 ]
     return @matrix(rm)
 

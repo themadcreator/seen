@@ -16,6 +16,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 // Restart the game
 GameManager.prototype.restart = function () {
   this.storageManager.clearGameState();
+  this.actuator.restartGame() // BDWYER - need this to reset the seen models
   this.actuator.continueGame(); // Clear the game won/lost message
   this.setup();
 };

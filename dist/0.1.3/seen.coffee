@@ -132,10 +132,10 @@ seen.Events.Event = ->
 ARRAY_POOL = new Array(16)
 
 # Definition of identity matrix values
-IDENTITY = [1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0]
+IDENTITY = [1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1]
 
 # Indices with which to transpose the matrix array
 TRANSPOSE_INDICES = [0,  4,  8, 12,
@@ -159,7 +159,9 @@ class seen.Matrix
   copy : ->
     return new seen.Matrix(@m.slice())
 
-  # Multiply by the 16-value `Array` argument. This method uses the `ARRAY_POOL`, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.
+  # Multiply by the 16-value `Array` argument. This method uses the
+  # `ARRAY_POOL`, which prevents us from having to re-initialize a new
+  # temporary matrix every time. This drastically improves performance.
   matrix : (m) ->
     c = ARRAY_POOL
     for j in [0...4]
@@ -217,12 +219,13 @@ class seen.Matrix
     rm = [ 1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1 ]
     return @matrix(rm)
 
-  # Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
+  # Apply a scale. If not all arguments are supplied, each dimension (x,y,z)
+  # is copied from the previous arugment. Therefore, `_scale()` is equivalent
+  # to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
   scale : (sx, sy, sz) ->
-    sx     ?= 1
-    sy     ?= sx
-    sz     ?= sy
-
+    sx ?= 1
+    sy ?= sx
+    sz ?= sy
     rm = [ sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1 ]
     return @matrix(rm)
 
@@ -1601,6 +1604,8 @@ CUBE_COORDINATE_MAP = [
   [0, 2, 6, 4] # back
 ]
 
+
+
 # Altitude of eqiulateral triangle for computing triangular patch size
 EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0
 
@@ -1660,7 +1665,7 @@ seen.Shapes = {
       seen.P( 1,  1,  1)
     ]
 
-    return new seen.Shape('cube', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
+    return new seen.Shape('cube', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
 
   # Returns a 1x1x1 cube from the origin to [1, 1, 1].
   unitcube: =>
@@ -1675,7 +1680,7 @@ seen.Shapes = {
       seen.P(1, 1, 1)
     ]
 
-    return new seen.Shape('unitcube', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
+    return new seen.Shape('unitcube', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
 
   # Returns an axis-aligned 3D rectangle whose boundaries are defined by the
   # two supplied points.
@@ -1698,7 +1703,29 @@ seen.Shapes = {
       compose(Math.max, Math.max, Math.max)
     ]
 
-    return new seen.Shape('rect', seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
+    return new seen.Shape('rect', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))
+
+  # Returns a square pyramid inside a unit cube
+  pyramid : =>
+    # Map to points in the surfaces of a rectangular pyramid
+    PYRAMID_COORDINATE_MAP = [
+      [1, 0, 2, 3] # bottom
+
+      [0, 1, 4] # left
+      [2, 0, 4] # right
+      [3, 2, 4] # front
+      [1, 3, 4] # back
+    ]
+
+    points = [
+      seen.P(0, 0, 0)
+      seen.P(0, 0, 1)
+      seen.P(1, 0, 0)
+      seen.P(1, 0, 1)
+      seen.P(0.5, 1, 0.5)
+    ]
+
+    return new seen.Shape('pyramid', seen.Shapes.mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP))
 
   # Returns a tetrahedron that fits inside a 2x2x2 cube.
   tetrahedron: =>
@@ -1708,12 +1735,12 @@ seen.Shapes = {
       seen.P(-1,  1, -1)
       seen.P( 1, -1, -1)]
 
-    return new seen.Shape('tetrahedron', seen.Shapes._mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP))
+    return new seen.Shape('tetrahedron', seen.Shapes.mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP))
 
   # Returns an icosahedron that fits within a 2x2x2 cube, centered on the
   # origin.
   icosahedron : ->
-    return new seen.Shape('icosahedron', seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))
+    return new seen.Shape('icosahedron', seen.Shapes.mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))
 
   # Returns a sub-divided icosahedron, which approximates a sphere with
   # triangles of equal size.
@@ -1768,10 +1795,10 @@ seen.Shapes = {
     return new seen.Shape('text', [surface])
 
   # Returns a shape that is an extrusion of the supplied points into the z axis.
-  extrude : (points, distance = 1) ->
+  extrude : (points, offset) ->
     surfaces = []
     front = new seen.Surface (p.copy() for p in points)
-    back  = new seen.Surface (p.translate(0,0,distance) for p in points)
+    back  = new seen.Surface (p.add(offset) for p in points)
 
     for i in [1...points.length]
       surfaces.push new seen.Surface [
@@ -1806,7 +1833,7 @@ seen.Shapes = {
       seen.P(headLength, -htw, 0)
       seen.P(headLength + headPointiness, -1, 0)
     ]
-    return seen.Shapes.extrude(points, thickness)
+    return seen.Shapes.extrude(points, seen.P(0,0,thickness))
 
   # Returns a shape with a single surface using the supplied points array 
   path : (points) ->
@@ -1822,7 +1849,7 @@ seen.Shapes = {
     
   # Joins the points into surfaces using the coordinate map, which is an
   # 2-dimensional array of index integers.
-  _mapPointsToSurfaces: (points, coordinateMap) ->
+  mapPointsToSurfaces : (points, coordinateMap) ->
     surfaces = []
     for coords in coordinateMap
       spts = (points[c].copy() for c in coords)
@@ -2025,7 +2052,7 @@ seen.Viewports = {
     prescale = seen.M()
       .translate(-x, -y, -1)
       .scale(1/width, 1/height, 1/height)
-      
+
     postscale = seen.M()
       .scale(width, -height, height)
       .translate(x, y)
@@ -2056,7 +2083,10 @@ class seen.Camera
 
   # Performs the 3-step multiplication of the transformation matrices.
   getMatrix : ->
-    @camera.copy().multiply(@viewport.prescale).multiply(@projection).multiply(@viewport.postscale)
+    @camera.copy()
+      .multiply(@viewport.prescale)
+      .multiply(@projection)
+      .multiply(@viewport.postscale)
 
 
 

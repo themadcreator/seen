@@ -4,6 +4,8 @@
 
 + Fixed bug where matrix scaling was not properly computed and viewport prescale and postscale were incorrect.
 
++ Added pyramid shape and updated extrude function to offset in any direction
+
 ### v0.1.2
 
 *April 2, 2014*

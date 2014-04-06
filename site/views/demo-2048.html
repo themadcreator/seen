@@ -2,12 +2,44 @@
 
 
 {% block canvases %}
-  <canvas width="{{width}}" height="{{height}}" id="seen-canvas" class="game-container"></canvas>
-
   <style>
-    .color-samples {
+    .bar-2048 {
       text-align       : center;
-      background-color : #DDD;
+      background-color : #bbada0;
+      font-size        : 14px;
+      color            : #eee4da;
+    }
+
+    .message {
+      display        : inline-block;
+      vertical-align : middle;
+      color          : white;
+      height         : 40px;
+      font-size      : 18px;
+      margin         : 10px 20px 10px 20px;
+    }
+
+    #game-message {
+      line-height: 40px;
+    }
+
+    .message-title {
+      color      : #eee4da;
+      font-size  : 12px;
+    }
+
+    .button {
+      display               : inline-block;
+      cursor                : pointer;
+      width                 : 150px;
+      height                : 40px;
+      line-height           : 40px;
+      background-color      : #8f7a66;
+      color                 : #f9f6f2;
+
+      -webkit-border-radius : 5px;
+      -moz-border-radius    : 5px;
+      border-radius         : 5px;
     }
     .color-sample {
       display : inline-block;
@@ -16,13 +48,25 @@
       margin  : 10px 5px 10px 5px;
     }
   </style>
-  <div class="color-samples">
+
+  <div class="bar-2048">
+    <div id="game-message" class="message"></div>
+    <div class="button keep-playing-button">KEEP PLAYING</div>
+    <div class="button restart-button">RESTART</div>
+    <div class="button retry-button">RETRY</div>
+    <div class="message"><div class="message-title">SCORE</div><div id="score"></div></div>
+  </div>
+
+  <canvas width="{{width}}" height="{{height}}" id="seen-canvas" class="game-container"></canvas>
+
+  <div class="bar-2048">
     <div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div>
   </div>
 
-  <div class="restart-button">RESTART</div>
-  <div class="retry-button">RETRY</div>
-  <div class="keep-playing-button">KEEP PLAYING</div>
+  <div class="bar-2048" style="padding-bottom: 10px;">
+    Implemented using <a href="https://github.com/gabrielecirulli">Gabrielle Cirulli's</a> 2048.
+  </div>
+
 {% endblock %}
 
 {% block demo %}
@@ -44,7 +88,7 @@
 
 <script type="text/coffeescript" id="code">
   # The size of the game. In this case, a 4-by-4 grid
-  SIZE = 5
+  SIZE = 4
 
   # The 11 colors defining the "2^N" values
   COLORS = [
@@ -53,7 +97,7 @@
     '#9acd32'
     '#32CD32'
     '#20B2AA'
-    '#158dfc'
+    '#1088fF'
     '#7b68ee'
     '#9932cc'
     '#800080'
@@ -71,6 +115,32 @@
   # Update the swatch legend
   $('.color-sample').each (i, e) ->
     $(e).css 'background-color', COLORS[i]
+
+  # Returns a new seen.Shape representing a tile
+  SHAPE_FACTORY =  (value) ->
+    adjust = 0.05
+
+    # Update to 2048 (2^11) we use rectangles
+    if value <= (1 << 11)
+      shape = seen.Shapes.rectangle(seen.P(adjust,adjust,adjust), seen.P(1 - adjust, 1 - adjust, 0.25))
+
+    # From 2^11 to 2^22 we use triangular prisms
+    else if value <= (1 << 22)
+      tri = [seen.P(adjust,adjust,adjust), seen.P(0.5,adjust,0.25), seen.P(1-adjust,adjust,adjust)]
+      shape = seen.Shapes.extrude(tri, seen.P(0,1 - adjust*2,0))
+
+    # From 2^22 and beyond we use pyramid
+    else
+      shape = seen.Shapes.pyramid()
+      transform = seen.M().rotx(Math.PI/2).translate(0,1,0).scale(1,1,0.25)
+      shape.eachSurface (s) -> s.points.forEach (p) -> p.transform(transform)
+
+    # Bring down value into color scales range
+    while value > (1 << 11)
+      value >>= 11
+
+    shape.fill MATERIALS[value]
+    return shape
 
   # A transition object to manage to animation of shapes
   class Transition
@@ -96,8 +166,8 @@
       return true
 
     firstFrame : ->
-    frame : ->
-    lastFrame : ->
+    frame      : ->
+    lastFrame  : ->
 
     _place : (shape, position0, position1, t = 0) ->
       t = 1 if t > 1
@@ -186,9 +256,17 @@
       @scene = new seen.Scene
         cullBackfaces    : false
         fractionalPoints : true
-        model            : seen.Models.default().scale(SCALE).rotx(-0.5)
+        model            : new seen.Model().scale(SCALE).rotx(-0.5)
         camera           : new seen.Camera
           viewport : seen.Viewports.center({{width}}, {{height}})
+
+      # Add some lights
+      @scene.model.add seen.Lights.point
+        point     : seen.P(-1, 2, 2).multiply(4)
+        intensity : 0.0025
+
+      @scene.model.add seen.Lights.ambient
+        intensity : 0.0015
 
       # Append a submodel to create a tree of transforms
       @subModel = @scene.model.append()
@@ -197,12 +275,12 @@
       [0...SIZE].map (x) => [0...SIZE].map (y) =>
         # Light inside piece
         shape = seen.Shapes.rectangle(seen.P(0.05, 0.05, -0.01), seen.P(0.95, 0.95, 0.0)).translate(x, y)
-        shape.fill new seen.Material seen.Colors.hsl(0.1, 0.1, 0.6)
+        shape.fill new seen.Material seen.Colors.hex '#c8bbb0'
         @subModel.add(shape)
 
         # Background board
         shape = seen.Shapes.rectangle(seen.P(0, 0, -0.4), seen.P(1, 1, -0.02)).translate(x, y)
-        shape.fill new seen.Material seen.Colors.hsl(0.1, 0.1, 0.5)
+        shape.fill new seen.Material seen.Colors.hex '#bbada0'
         @subModel.add(shape)
 
       # Create a context with a fill layer and the scene layer
@@ -223,16 +301,28 @@
       @transitions = new TransitionAnimator().start()
 
       # Initialize game models
+      @restartGame()
       @continueGame()
 
-    # Invoked on a restart, retry, or page load.
-    continueGame : ->
+    # We had to modify the 2048 game manager to invoke this method on restart.
+    # The original game assumes that we can rebuild the entire board on every
+    # actuate(). However, in our case, we must store the shapes between calls,
+    # so this method allows us to clean up when a game is restarted.
+    restartGame : ->
       if @gridModel? then @subModel.remove(@gridModel)
       @gridModel = @subModel.append()
       @grid = @_emptyGridState()
 
+    # Invoked on a restart, retry, or page load.
+    continueGame : ->
+      $('#game-message').text ''
+      $('.retry-button').hide()
+      $('.keep-playing-button').hide()
+      $('.restart-button').show()
+
     # Invoked on user interaction / game state update
     actuate : (grid, metadata) ->
+
       nextGrid = @_emptyGridState()
 
       for column in grid.cells  
@@ -251,28 +341,32 @@
           else if tile.mergedFrom?
             shape0 = @_getShape(tile.mergedFrom[0].previousPosition)
             shape1 = @_getShape(tile.mergedFrom[1].previousPosition)
-            nextGrid[tile.x][tile.y] = shape = @_newShape(tile.value)
+            nextGrid[tile.x][tile.y] = shape = SHAPE_FACTORY(tile.value)
             @transitions.add new MergeTransition(@gridModel, tile, shape, shape0, shape1)
 
           # Transition a new tile
           else
-            nextGrid[tile.x][tile.y] = shape = @_newShape(tile.value)
+            nextGrid[tile.x][tile.y] = shape = SHAPE_FACTORY(tile.value)
             @transitions.add new NewTransition(@gridModel, tile, shape)
 
       @grid = nextGrid
       @transitions.keyframe()
+
+      # Update score and game end conditions
+      $('#score').text metadata.score
+
+      if metadata.terminated
+        if metadata.over
+          $('#game-message').text 'You lose =('
+        else if metadata.won
+          $('#game-message').text 'You WIN! =D'
+          $('.keep-playing-button').show()
 
     # Returns a 2-dimensional array for storing game tile shapes
     _emptyGridState : -> [0...SIZE].map (x) -> [0...SIZE].map (y) -> null
 
     # Return the seen.Shape at the coordinates in the current grid state
     _getShape : (position) -> @grid[position.x][position.y]
-
-    # Returns a new seen.Shape representing a tile
-    _newShape : (value) ->
-      shape = seen.Shapes.rectangle(seen.P(0.05, 0.05, 0.05), seen.P(0.95, 0.95, 0.25))
-      shape.fill MATERIALS[value]
-      return shape
 
   # Initialize the 2048 game manager
   window.requestAnimationFrame () ->

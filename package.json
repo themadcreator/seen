@@ -4,8 +4,8 @@
   "version"     : "0.1.3",
   "author"      : "Bill Dwyer",
   "license"     : "Apache 2.0",
-  "url"         : "http://themadcreator.github.io/seen",
-  "repository": {
+  "url"         : "http://seenjs.io",
+  "repository"  : {
     "type" : "git",
     "url"  : "https://github.com/themadcreator/seen"
   },
@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "build"        : "cake build",
-    "site"         : "nodemon --ext coffee,html,md,css --watch src --watch site --exec './run-site.sh' .",
+    "site"         : "nodemon --ext coffee,html,md,css --watch src --watch site --exec ./run-site.sh .",
     "publish-site" : "./publish-site.sh",
     "test-render"  : "phantomjs ./test/phantom/render-scenes.coffee",
     "test"         : "mocha ./test/mocha/*.coffee"
