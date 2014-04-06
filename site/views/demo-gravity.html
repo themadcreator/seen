@@ -83,7 +83,7 @@
     fractionalPoints : true
     model            : seen.Models.default()
     camera           : new seen.Camera
-      viewport : seen.Viewports.center({{width}}, {{height}})
+      viewport : seen.Viewports.center(width, height)
 
   seenModel = scene.model.append()
 
@@ -102,8 +102,8 @@
   )
 
   # Create a context with a black fill layer and the scene layer
-  context = new seen.Context('seen-canvas')
-  context.layer(new seen.FillLayer({{width}}, {{height}}, '#000'))
+  context = seen.Context('seen-canvas')
+  context.layer(new seen.FillLayer(width, height, '#000'))
   context.sceneLayer(scene)
   context.animate().start()
 

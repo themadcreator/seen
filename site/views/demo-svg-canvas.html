@@ -16,7 +16,7 @@
 
   # Create one shape to be shared between the SVG and Canvas
   shapes = [0...3].map (i) ->
-    shape = seen.Shapes.sphere(i).scale(height * 0.4)
+    shape = seen.Shapes.sphere(i).translate(0,0,2).scale(height * 0.4)
     seen.Colors.randomSurfaces2(shape)
     return shape
 

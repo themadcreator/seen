@@ -32,6 +32,11 @@ Demos = [
   view   : 'demo-gravity'
   width  : 900
   height : 500
+,
+  title  : '2048'
+  view   : 'demo-2048'
+  width  : 900
+  height : 500
 ]
 
 module.exports = Demos

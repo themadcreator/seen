@@ -1,0 +1,282 @@
+{% extends 'demo-template.html' %}
+
+
+{% block canvases %}
+  <canvas width="{{width}}" height="{{height}}" id="seen-canvas" class="game-container"></canvas>
+
+  <style>
+    .color-samples {
+      text-align       : center;
+      background-color : #DDD;
+    }
+    .color-sample {
+      display : inline-block;
+      width   : 50px;
+      height  : 50px;
+      margin  : 10px 5px 10px 5px;
+    }
+  </style>
+  <div class="color-samples">
+    <div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div><div class="color-sample"></div>
+  </div>
+
+  <div class="restart-button">RESTART</div>
+  <div class="retry-button">RETRY</div>
+  <div class="keep-playing-button">KEEP PLAYING</div>
+{% endblock %}
+
+{% block demo %}
+<script src="{{cdns.jquery.script}}"></script>
+<script src="{{cdns.lodash.script}}"></script>
+
+<!--
+  2048 libs
+  https://github.com/gabrielecirulli/2048
+-->
+<script src="lib/2048/bind_polyfill.js"></script>
+<script src="lib/2048/classlist_polyfill.js"></script>
+<script src="lib/2048/animframe_polyfill.js"></script>
+<script src="lib/2048/keyboard_input_manager.js"></script>
+<script src="lib/2048/grid.js"></script>
+<script src="lib/2048/tile.js"></script>
+<script src="lib/2048/local_storage_manager.js"></script>
+<script src="lib/2048/game_manager.js"></script>
+
+<script type="text/coffeescript" id="code">
+  # The size of the game. In this case, a 4-by-4 grid
+  SIZE = 5
+
+  # The 11 colors defining the "2^N" values
+  COLORS = [
+    '#ffffff'
+    '#ffff00'
+    '#9acd32'
+    '#32CD32'
+    '#20B2AA'
+    '#158dfc'
+    '#7b68ee'
+    '#9932cc'
+    '#800080'
+    '#8b0000'
+    '#333333'
+  ]
+
+  # Define the materials for the tile levels
+  MATERIALS = {}
+  for color, i in COLORS
+    color = seen.Colors.hex color
+    color.a = 0xB8 # add some transparency
+    MATERIALS[1 << (1 + i)] = new seen.Material color
+
+  # Update the swatch legend
+  $('.color-sample').each (i, e) ->
+    $(e).css 'background-color', COLORS[i]
+
+  # A transition object to manage to animation of shapes
+  class Transition
+    @tickIncrement : 0.25 # The tick increment for each frame
+
+    constructor : (@model, @tile, @shape) ->
+      @t = 0
+
+    update : ->
+      # Setup the first frame before the tick increment
+      if (@t is 0)
+        @firstFrame()
+
+      # Execute a tick and draw a frame
+      @t += Transition.tickIncrement
+      @frame()
+
+      # Cleanup or update on last frame after tick
+      if (@t >= 1.0)
+        @lastFrame()
+        return false
+
+      return true
+
+    firstFrame : ->
+    frame : ->
+    lastFrame : ->
+
+    _place : (shape, position0, position1, t = 0) ->
+      t = 1 if t > 1
+      if position1?
+        x = (position1.x * t) + (position0.x * (1.0 - t))
+        y = (position1.y * t) + (position0.y * (1.0 - t))
+        z = ((position1.z ? 0) * t) + ((position0.z ? 0) * (1.0 - t))
+      else
+        x = position0.x
+        y = position0.y
+        z = position0.z ? 0
+      shape.reset().translate(x, SIZE - y - 1, z)
+
+  # The transition for when a new tile is added
+  class NewTransition extends Transition
+    firstFrame : ->
+      @start = {x : @tile.x, y : @tile.y, z : 1}
+      @model.add(@shape)
+
+    frame : ->
+      @_place(@shape, @start, @tile, @t)
+
+    lastFrame : ->
+      @_place(@shape, @tile)
+
+  # The transition for when a tile is simply moved
+  class MoveTransition extends Transition
+    frame : ->
+      @_place(@shape, @tile.previousPosition, @tile, @t)
+
+  # The transition for when two tiles are merged into one
+  class MergeTransition extends Transition
+    constructor : (@model, @tile, @shape, @shape0, @shape1) ->
+      super
+
+    frame : ->
+      @_place(@shape0, @tile.mergedFrom[0].previousPosition, @tile, @t)
+      @_place(@shape1, @tile.mergedFrom[1].previousPosition, @tile, @t)
+      
+    lastFrame : ->
+      @_place(@shape, @tile)
+      @model.remove(@shape0, @shape1)
+      @model.add(@shape)
+
+  # The transition animator is an extension of the seen.Animator. Instead of
+  # rendering the scene, we use it to update the various transitions. We also
+  # include keyframing to make sure we wait for one transition to finish
+  # before starting the next one.
+  class TransitionAnimator extends seen.Animator
+    constructor : ->
+      super
+      @queue = []
+      @transitions = []
+      @onRender(@update)
+
+    # Adds a transition object to the current set of transitions. Note that
+    # transitions will not start until they have been unqueued by invoking
+    # `keyframe()` on this object.
+    add : (txn) ->
+      @transitions.push txn
+
+    # Enqueues the current set of transitions into the keyframe queue and sets
+    # up a new set of transitions.
+    keyframe : ->
+      @queue.push @transitions
+      @transitions = []
+
+    # When this animator updates, it invokes `update()` on all of the
+    # currently animating transitions. If any of the current transitions are
+    # not done, we re-enqueue them at the front. If all transitions are
+    # complete, we will start animating the next set of transitions from the
+    # keyframe queue on the next update.
+    update : =>
+      return unless @queue.length
+      transitions = @queue.shift()
+      transitions = transitions.filter (transition) -> transition.update()
+      if transitions.length then @queue.unshift(transitions)
+
+  SCALE = 400 / SIZE 
+
+  # This is our implementation of the HTMLActuator interface from the original
+  # 2048 library by https://github.com/gabrielecirulli.
+  class SeenActuator
+    constructor : ->
+      # Create a scene
+      @scene = new seen.Scene
+        cullBackfaces    : false
+        fractionalPoints : true
+        model            : seen.Models.default().scale(SCALE).rotx(-0.5)
+        camera           : new seen.Camera
+          viewport : seen.Viewports.center({{width}}, {{height}})
+
+      # Append a submodel to create a tree of transforms
+      @subModel = @scene.model.append()
+
+      # Create the shapes for the board
+      [0...SIZE].map (x) => [0...SIZE].map (y) =>
+        # Light inside piece
+        shape = seen.Shapes.rectangle(seen.P(0.05, 0.05, -0.01), seen.P(0.95, 0.95, 0.0)).translate(x, y)
+        shape.fill new seen.Material seen.Colors.hsl(0.1, 0.1, 0.6)
+        @subModel.add(shape)
+
+        # Background board
+        shape = seen.Shapes.rectangle(seen.P(0, 0, -0.4), seen.P(1, 1, -0.02)).translate(x, y)
+        shape.fill new seen.Material seen.Colors.hsl(0.1, 0.1, 0.5)
+        @subModel.add(shape)
+
+      # Create a context with a fill layer and the scene layer
+      @context = seen.Context('seen-canvas')
+      @context.layer(new seen.FillLayer({{width}}, {{height}}, '#faf8ef'))
+      @context.sceneLayer(@scene)
+
+      # Slowly rock the board back and forth, cuz why not? It is THREEEE-DEEEEE!!!
+      rotateTick = 0
+      animator = @context.animate().start()
+      animator.onBefore =>
+        @subModel.reset()
+          .translate(-SIZE/2,-SIZE/2 + 0.5)
+          .rotz(Math.sin(rotateTick) / 10)
+        rotateTick += 0.01
+
+      # Initialize the transition animator
+      @transitions = new TransitionAnimator().start()
+
+      # Initialize game models
+      @continueGame()
+
+    # Invoked on a restart, retry, or page load.
+    continueGame : ->
+      if @gridModel? then @subModel.remove(@gridModel)
+      @gridModel = @subModel.append()
+      @grid = @_emptyGridState()
+
+    # Invoked on user interaction / game state update
+    actuate : (grid, metadata) ->
+      nextGrid = @_emptyGridState()
+
+      for column in grid.cells  
+        for tile in column
+          continue unless tile?
+
+          # Make a copy of the tile so we can store it inside the transition
+          tile = _.clone tile
+
+          # Transition an exiting tile that has moved
+          if tile.previousPosition?
+            nextGrid[tile.x][tile.y] = shape = @_getShape(tile.previousPosition)
+            @transitions.add new MoveTransition(@gridModel, tile, shape)
+
+          # Transition two existing tiles merged into one
+          else if tile.mergedFrom?
+            shape0 = @_getShape(tile.mergedFrom[0].previousPosition)
+            shape1 = @_getShape(tile.mergedFrom[1].previousPosition)
+            nextGrid[tile.x][tile.y] = shape = @_newShape(tile.value)
+            @transitions.add new MergeTransition(@gridModel, tile, shape, shape0, shape1)
+
+          # Transition a new tile
+          else
+            nextGrid[tile.x][tile.y] = shape = @_newShape(tile.value)
+            @transitions.add new NewTransition(@gridModel, tile, shape)
+
+      @grid = nextGrid
+      @transitions.keyframe()
+
+    # Returns a 2-dimensional array for storing game tile shapes
+    _emptyGridState : -> [0...SIZE].map (x) -> [0...SIZE].map (y) -> null
+
+    # Return the seen.Shape at the coordinates in the current grid state
+    _getShape : (position) -> @grid[position.x][position.y]
+
+    # Returns a new seen.Shape representing a tile
+    _newShape : (value) ->
+      shape = seen.Shapes.rectangle(seen.P(0.05, 0.05, 0.05), seen.P(0.95, 0.95, 0.25))
+      shape.fill MATERIALS[value]
+      return shape
+
+  # Initialize the 2048 game manager
+  window.requestAnimationFrame () ->
+    new GameManager(SIZE, KeyboardInputManager, SeenActuator, LocalStorageManager)
+  
+</script>
+{% endblock %}
