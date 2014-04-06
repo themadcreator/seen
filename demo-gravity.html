@@ -32,6 +32,10 @@
       </div>
       <div class="nav-button-wrapper" style="text-align : right;">
         
+          <a href="demo-2048.html"><div class="nav-button">
+          <div class="label">next</div><div class="title">2048</div>
+          </div></a>
+        
       </div>
     </div>
 
@@ -124,7 +128,7 @@
     fractionalPoints : true
     model            : seen.Models.default()
     camera           : new seen.Camera
-      viewport : seen.Viewports.center(900, 500)
+      viewport : seen.Viewports.center(width, height)
 
   seenModel = scene.model.append()
 
@@ -143,8 +147,8 @@
   )
 
   # Create a context with a black fill layer and the scene layer
-  context = new seen.Context('seen-canvas')
-  context.layer(new seen.FillLayer(900, 500, '#000'))
+  context = seen.Context('seen-canvas')
+  context.layer(new seen.FillLayer(width, height, '#000'))
   context.sceneLayer(scene)
   context.animate().start()
 

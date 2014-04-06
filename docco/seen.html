@@ -427,10 +427,10 @@ same name.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>IDENTITY = [<span class="hljs-number">1.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>,
-            <span class="hljs-number">0.0</span>, <span class="hljs-number">1.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>,
-            <span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-number">1.0</span>, <span class="hljs-number">0.0</span>,
-            <span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-number">1.0</span>]</pre></div></div>
+            <div class="content"><div class='highlight'><pre>IDENTITY = [<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,
+            <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,
+            <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>,
+            <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>]</pre></div></div>
             
         </li>
         
@@ -511,7 +511,9 @@ when you want to preserve an object’s value.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              <p>Multiply by the 16-value <code>Array</code> argument. This method uses the <code>ARRAY_POOL</code>, which prevents us from having to re-initialize a new temporary matrix every time. This drastically improves performance.</p>
+              <p>Multiply by the 16-value <code>Array</code> argument. This method uses the
+<code>ARRAY_POOL</code>, which prevents us from having to re-initialize a new
+temporary matrix every time. This drastically improves performance.</p>
 
             </div>
             
@@ -653,10 +655,8 @@ when you want to preserve an object’s value.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  translate : <span class="hljs-function"><span class="hljs-params">(x = <span class="hljs-number">0</span>, y = <span class="hljs-number">0</span>, z = <span class="hljs-number">0</span>)</span> -&gt;</span>
-    <span class="hljs-property">@m</span>[<span class="hljs-number">3</span>]  += x
-    <span class="hljs-property">@m</span>[<span class="hljs-number">7</span>]  += y
-    <span class="hljs-property">@m</span>[<span class="hljs-number">11</span>] += z
-    <span class="hljs-keyword">return</span> @</pre></div></div>
+    rm = [ <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, x, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, y, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, z, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span> ]
+    <span class="hljs-keyword">return</span> <span class="hljs-property">@matrix</span>(rm)</pre></div></div>
             
         </li>
         
@@ -667,19 +667,18 @@ when you want to preserve an object’s value.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-37">&#182;</a>
               </div>
-              <p>Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, <code>_scale()</code> is equivalent to <code>_scale(1,1,1)</code>, and <code>_scale(1,-1)</code> is equivalent to <code>_scale(1,-1,-1)</code></p>
+              <p>Apply a scale. If not all arguments are supplied, each dimension (x,y,z)
+is copied from the previous arugment. Therefore, <code>_scale()</code> is equivalent
+to <code>_scale(1,1,1)</code>, and <code>_scale(1,-1)</code> is equivalent to <code>_scale(1,-1,-1)</code></p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  scale : <span class="hljs-function"><span class="hljs-params">(sx, sy, sz, sw)</span> -&gt;</span>
-    sx     ?= <span class="hljs-number">1</span>
-    sy     ?= sx
-    sz     ?= sy
-    sw     ?= sz
-    <span class="hljs-property">@m</span>[<span class="hljs-number">0</span>]  *= sx
-    <span class="hljs-property">@m</span>[<span class="hljs-number">5</span>]  *= sy
-    <span class="hljs-property">@m</span>[<span class="hljs-number">10</span>] *= sz
-    <span class="hljs-keyword">return</span> @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  scale : <span class="hljs-function"><span class="hljs-params">(sx, sy, sz)</span> -&gt;</span>
+    sx ?= <span class="hljs-number">1</span>
+    sy ?= sx
+    sz ?= sy
+    rm = [ sx, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, sy, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, sz, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span> ]
+    <span class="hljs-keyword">return</span> <span class="hljs-property">@matrix</span>(rm)</pre></div></div>
             
         </li>
         
@@ -3777,11 +3776,17 @@ seen.Models = {</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-183">&#182;</a>
               </div>
-              <p>Altitude of eqiulateral triangle for computing triangular patch size</p>
+              <p>Map to points in the surfaces of a rectangular pyramid</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(<span class="hljs-number">3.0</span>) / <span class="hljs-number">2.0</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>PYRAMID_COORDINATE_MAP = [
+  [<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>] <span class="hljs-comment"># bottom</span>
+  [<span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">4</span>] 
+  [<span class="hljs-number">2</span>, <span class="hljs-number">0</span>, <span class="hljs-number">4</span>]
+  [<span class="hljs-number">3</span>, <span class="hljs-number">2</span>, <span class="hljs-number">4</span>]
+  [<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>]
+]</pre></div></div>
             
         </li>
         
@@ -3791,6 +3796,21 @@ seen.Models = {</pre></div></div>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-184">&#182;</a>
+              </div>
+              <p>Altitude of eqiulateral triangle for computing triangular patch size</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(<span class="hljs-number">3.0</span>) / <span class="hljs-number">2.0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-185">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-185">&#182;</a>
               </div>
               <p>Points array of an icosahedron</p>
 
@@ -3816,11 +3836,11 @@ ICOSAHEDRON_POINTS = [
         </li>
         
         
-        <li id="section-185">
+        <li id="section-186">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-185">&#182;</a>
+                <a class="pilcrow" href="#section-186">&#182;</a>
               </div>
               <p>Map to points in the surfaces of an icosahedron</p>
 
@@ -3854,11 +3874,11 @@ seen.Shapes = {</pre></div></div>
         </li>
         
         
-        <li id="section-186">
+        <li id="section-187">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-186">&#182;</a>
+                <a class="pilcrow" href="#section-187">&#182;</a>
               </div>
               <p>Returns a 2x2x2 cube, centered on the origin.</p>
 
@@ -3876,16 +3896,16 @@ seen.Shapes = {</pre></div></div>
       seen.P( <span class="hljs-number">1</span>,  <span class="hljs-number">1</span>,  <span class="hljs-number">1</span>)
     ]
 
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'cube'</span>, seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))</pre></div></div>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'cube'</span>, seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))</pre></div></div>
             
         </li>
         
         
-        <li id="section-187">
+        <li id="section-188">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-187">&#182;</a>
+                <a class="pilcrow" href="#section-188">&#182;</a>
               </div>
               <p>Returns a 1x1x1 cube from the origin to [1, 1, 1].</p>
 
@@ -3903,16 +3923,16 @@ seen.Shapes = {</pre></div></div>
       seen.P(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>)
     ]
 
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'unitcube'</span>, seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))</pre></div></div>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'unitcube'</span>, seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))</pre></div></div>
             
         </li>
         
         
-        <li id="section-188">
+        <li id="section-189">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-188">&#182;</a>
+                <a class="pilcrow" href="#section-189">&#182;</a>
               </div>
               <p>Returns an axis-aligned 3D rectangle whose boundaries are defined by the
 two supplied points.</p>
@@ -3938,16 +3958,40 @@ two supplied points.</p>
       compose(Math.max, Math.max, Math.max)
     ]
 
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'rect'</span>, seen.Shapes._mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))</pre></div></div>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'rect'</span>, seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP))</pre></div></div>
             
         </li>
         
         
-        <li id="section-189">
+        <li id="section-190">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-189">&#182;</a>
+                <a class="pilcrow" href="#section-190">&#182;</a>
+              </div>
+              <p>Returns a square pyramid inside a unit cube</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  pyramid :<span class="hljs-function"> =&gt;</span>
+    points = [
+      seen.P(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
+      seen.P(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>)
+      seen.P(<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
+      seen.P(<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>)
+      seen.P(<span class="hljs-number">0.5</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0.5</span>)
+    ]
+
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'pyramid'</span>, seen.Shapes.mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-191">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-191">&#182;</a>
               </div>
               <p>Returns a tetrahedron that fits inside a 2x2x2 cube.</p>
 
@@ -3960,16 +4004,16 @@ two supplied points.</p>
       seen.P(-<span class="hljs-number">1</span>,  <span class="hljs-number">1</span>, -<span class="hljs-number">1</span>)
       seen.P( <span class="hljs-number">1</span>, -<span class="hljs-number">1</span>, -<span class="hljs-number">1</span>)]
 
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'tetrahedron'</span>, seen.Shapes._mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP))</pre></div></div>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'tetrahedron'</span>, seen.Shapes.mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP))</pre></div></div>
             
         </li>
         
         
-        <li id="section-190">
+        <li id="section-192">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-190">&#182;</a>
+                <a class="pilcrow" href="#section-192">&#182;</a>
               </div>
               <p>Returns an icosahedron that fits within a 2x2x2 cube, centered on the
 origin.</p>
@@ -3977,16 +4021,16 @@ origin.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  icosahedron :<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'icosahedron'</span>, seen.Shapes._mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))</pre></div></div>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'icosahedron'</span>, seen.Shapes.mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP))</pre></div></div>
             
         </li>
         
         
-        <li id="section-191">
+        <li id="section-193">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-191">&#182;</a>
+                <a class="pilcrow" href="#section-193">&#182;</a>
               </div>
               <p>Returns a sub-divided icosahedron, which approximates a sphere with
 triangles of equal size.</p>
@@ -4004,11 +4048,11 @@ triangles of equal size.</p>
         </li>
         
         
-        <li id="section-192">
+        <li id="section-194">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-192">&#182;</a>
+                <a class="pilcrow" href="#section-194">&#182;</a>
               </div>
               <p>Returns a planar triangular patch. The supplied arguments determine the
 number of triangle in the patch.</p>
@@ -4052,11 +4096,11 @@ number of triangle in the patch.</p>
         </li>
         
         
-        <li id="section-193">
+        <li id="section-195">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-193">&#182;</a>
+                <a class="pilcrow" href="#section-195">&#182;</a>
               </div>
               <p>Return a text surface that can render 3D text when using an orthographic projection.</p>
 
@@ -4074,20 +4118,20 @@ number of triangle in the patch.</p>
         </li>
         
         
-        <li id="section-194">
+        <li id="section-196">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-194">&#182;</a>
+                <a class="pilcrow" href="#section-196">&#182;</a>
               </div>
               <p>Returns a shape that is an extrusion of the supplied points into the z axis.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  extrude : <span class="hljs-function"><span class="hljs-params">(points, distance = <span class="hljs-number">1</span>)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  extrude : <span class="hljs-function"><span class="hljs-params">(points, offset)</span> -&gt;</span>
     surfaces = []
     front = <span class="hljs-keyword">new</span> seen.Surface (p.copy() <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> points)
-    back  = <span class="hljs-keyword">new</span> seen.Surface (p.translate(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,distance) <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> points)
+    back  = <span class="hljs-keyword">new</span> seen.Surface (p.add(offset) <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> points)
 
     <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">1.</span>..points.length]
       surfaces.push <span class="hljs-keyword">new</span> seen.Surface [
@@ -4113,11 +4157,11 @@ number of triangle in the patch.</p>
         </li>
         
         
-        <li id="section-195">
+        <li id="section-197">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-195">&#182;</a>
+                <a class="pilcrow" href="#section-197">&#182;</a>
               </div>
               <p>Returns an extruded block arrow shape.</p>
 
@@ -4134,16 +4178,16 @@ number of triangle in the patch.</p>
       seen.P(headLength, -htw, <span class="hljs-number">0</span>)
       seen.P(headLength + headPointiness, -<span class="hljs-number">1</span>, <span class="hljs-number">0</span>)
     ]
-    <span class="hljs-keyword">return</span> seen.Shapes.extrude(points, thickness)</pre></div></div>
+    <span class="hljs-keyword">return</span> seen.Shapes.extrude(points, seen.P(<span class="hljs-number">0</span>,<span class="hljs-number">0</span>,thickness))</pre></div></div>
             
         </li>
         
         
-        <li id="section-196">
+        <li id="section-198">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-196">&#182;</a>
+                <a class="pilcrow" href="#section-198">&#182;</a>
               </div>
               <p>Returns a shape with a single surface using the supplied points array </p>
 
@@ -4155,11 +4199,11 @@ number of triangle in the patch.</p>
         </li>
         
         
-        <li id="section-197">
+        <li id="section-199">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-197">&#182;</a>
+                <a class="pilcrow" href="#section-199">&#182;</a>
               </div>
               <p>Accepts a 2-dimensional array of tuples, returns a shape where the tuples
 represent points of a planar surface.</p>
@@ -4175,18 +4219,18 @@ represent points of a planar surface.</p>
         </li>
         
         
-        <li id="section-198">
+        <li id="section-200">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-198">&#182;</a>
+                <a class="pilcrow" href="#section-200">&#182;</a>
               </div>
               <p>Joins the points into surfaces using the coordinate map, which is an
 2-dimensional array of index integers.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">_mapPointsToSurfaces</span>: <span class="hljs-function"><span class="hljs-params">(points, coordinateMap)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  mapPointsToSurfaces : <span class="hljs-function"><span class="hljs-params">(points, coordinateMap)</span> -&gt;</span>
     surfaces = []
     <span class="hljs-keyword">for</span> coords <span class="hljs-keyword">in</span> coordinateMap
       spts = (points[c].copy() <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> coords)
@@ -4196,11 +4240,11 @@ represent points of a planar surface.</p>
         </li>
         
         
-        <li id="section-199">
+        <li id="section-201">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-199">&#182;</a>
+                <a class="pilcrow" href="#section-201">&#182;</a>
               </div>
               <p>Accepts an array of 3-tuples and returns an array of 3-tuples representing
 the triangular subdivision of the surface.</p>
@@ -4223,11 +4267,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-200">
+        <li id="section-202">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-200">&#182;</a>
+                <a class="pilcrow" href="#section-202">&#182;</a>
               </div>
               <p>Parser for Wavefront .obj files</p>
 <p>Note: Wavefront .obj array indicies are 1-based.</p>
@@ -4267,11 +4311,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-201">
+        <li id="section-203">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-201">&#182;</a>
+                <a class="pilcrow" href="#section-203">&#182;</a>
               </div>
               <p>This method accepts Wavefront .obj file content and returns a <code>Shape</code> object.</p>
 
@@ -4292,11 +4336,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-202">
+        <li id="section-204">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-202">&#182;</a>
+                <a class="pilcrow" href="#section-204">&#182;</a>
               </div>
               <h2 id="animator">Animator</h2>
 <hr>
@@ -4306,11 +4350,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-203">
+        <li id="section-205">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-203">&#182;</a>
+                <a class="pilcrow" href="#section-205">&#182;</a>
               </div>
               
             </div>
@@ -4318,11 +4362,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-204">
+        <li id="section-206">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-204">&#182;</a>
+                <a class="pilcrow" href="#section-206">&#182;</a>
               </div>
               <p>The animator class is useful for creating a render loop. We supply pre and
 post render events for apply animation changes between renders.</p>
@@ -4338,11 +4382,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-205">
+        <li id="section-207">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-205">&#182;</a>
+                <a class="pilcrow" href="#section-207">&#182;</a>
               </div>
               <p>Start the render loop. The delay between frames can be supplied as an argument.</p>
 
@@ -4357,11 +4401,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-206">
+        <li id="section-208">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-206">&#182;</a>
+                <a class="pilcrow" href="#section-208">&#182;</a>
               </div>
               <p>Stop the render loop.</p>
 
@@ -4374,11 +4418,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-207">
+        <li id="section-209">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-207">&#182;</a>
+                <a class="pilcrow" href="#section-209">&#182;</a>
               </div>
               <p>The main render loop method</p>
 
@@ -4395,11 +4439,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-208">
+        <li id="section-210">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-208">&#182;</a>
+                <a class="pilcrow" href="#section-210">&#182;</a>
               </div>
               <p>Add a callback that will be invoked before the render</p>
 
@@ -4412,11 +4456,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-209">
+        <li id="section-211">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-209">&#182;</a>
+                <a class="pilcrow" href="#section-211">&#182;</a>
               </div>
               <p>Add a callback that will be invoked after the render</p>
 
@@ -4429,11 +4473,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-210">
+        <li id="section-212">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-210">&#182;</a>
+                <a class="pilcrow" href="#section-212">&#182;</a>
               </div>
               <p>Add a render callback</p>
 
@@ -4446,11 +4490,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-211">
+        <li id="section-213">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-211">&#182;</a>
+                <a class="pilcrow" href="#section-213">&#182;</a>
               </div>
               <h2 id="camera">Camera</h2>
 <h4 id="projections-viewports-and-cameras">Projections, Viewports, and Cameras</h4>
@@ -4461,11 +4505,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-212">
+        <li id="section-214">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-212">&#182;</a>
+                <a class="pilcrow" href="#section-214">&#182;</a>
               </div>
               
             </div>
@@ -4473,11 +4517,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-213">
+        <li id="section-215">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-213">&#182;</a>
+                <a class="pilcrow" href="#section-215">&#182;</a>
               </div>
               <p>These projection methods return a 3D to 2D <code>Matrix</code> transformation.
 Each projection assumes the camera is located at (0,0,0).</p>
@@ -4489,11 +4533,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-214">
+        <li id="section-216">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-214">&#182;</a>
+                <a class="pilcrow" href="#section-216">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix </p>
 
@@ -4506,11 +4550,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-215">
+        <li id="section-217">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-215">&#182;</a>
+                <a class="pilcrow" href="#section-217">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix with the supplied frustrum</p>
 
@@ -4547,11 +4591,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-216">
+        <li id="section-218">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-216">&#182;</a>
+                <a class="pilcrow" href="#section-218">&#182;</a>
               </div>
               <p>Creates a orthographic projection matrix with the supplied frustrum</p>
 
@@ -4591,11 +4635,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-217">
+        <li id="section-219">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-217">&#182;</a>
+                <a class="pilcrow" href="#section-219">&#182;</a>
               </div>
               <p>Create a viewport where the scene’s origin is centered in the view</p>
 
@@ -4603,8 +4647,9 @@ seen.Viewports = {</pre></div></div>
             
             <div class="content"><div class='highlight'><pre>  center : <span class="hljs-function"><span class="hljs-params">(width = <span class="hljs-number">500</span>, height = <span class="hljs-number">500</span>, x = <span class="hljs-number">0</span>, y = <span class="hljs-number">0</span>)</span> -&gt;</span>
     prescale = seen.M()
-      .translate(-x, -y, -<span class="hljs-number">1</span>)
+      .translate(-x, -y, -height)
       .scale(<span class="hljs-number">1</span>/width, <span class="hljs-number">1</span>/height, <span class="hljs-number">1</span>/height)
+
     postscale = seen.M()
       .scale(width, -height, height)
       .translate(x + width/<span class="hljs-number">2</span>, y + height/<span class="hljs-number">2</span>)
@@ -4613,11 +4658,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-218">
+        <li id="section-220">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-218">&#182;</a>
+                <a class="pilcrow" href="#section-220">&#182;</a>
               </div>
               <p>Create a view port where the scene’s origin is aligned with the origin ([0, 0]) of the view</p>
 
@@ -4627,6 +4672,7 @@ seen.Viewports = {</pre></div></div>
     prescale = seen.M()
       .translate(-x, -y, -<span class="hljs-number">1</span>)
       .scale(<span class="hljs-number">1</span>/width, <span class="hljs-number">1</span>/height, <span class="hljs-number">1</span>/height)
+
     postscale = seen.M()
       .scale(width, -height, height)
       .translate(x, y)
@@ -4636,11 +4682,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-219">
+        <li id="section-221">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-219">&#182;</a>
+                <a class="pilcrow" href="#section-221">&#182;</a>
               </div>
               <p>The <code>Camera</code> model contains all three major components of the 3D to 2D tranformation.</p>
 <p>First, we transform object from world-space (the same space that the coordinates of
@@ -4666,44 +4712,21 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-220">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-220">&#182;</a>
-              </div>
-              <p>Performs the 3-step multiplication of the transformation matrices.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  getMatrix :<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-property">@camera</span>.copy().multiply(<span class="hljs-property">@viewport</span>.prescale).multiply(<span class="hljs-property">@projection</span>).multiply(<span class="hljs-property">@viewport</span>.postscale)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-221">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-221">&#182;</a>
-              </div>
-              <h2 id="scene">Scene</h2>
-<hr>
-
-            </div>
-            
-        </li>
-        
-        
         <li id="section-222">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-222">&#182;</a>
               </div>
-              
+              <p>Performs the 3-step multiplication of the transformation matrices.</p>
+
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  getMatrix :<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-property">@camera</span>.copy()
+      .multiply(<span class="hljs-property">@viewport</span>.prescale)
+      .multiply(<span class="hljs-property">@projection</span>)
+      .multiply(<span class="hljs-property">@viewport</span>.postscale)</pre></div></div>
             
         </li>
         
@@ -4713,6 +4736,32 @@ screen coordinates in the z = 0 plane.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-223">&#182;</a>
+              </div>
+              <h2 id="scene">Scene</h2>
+<hr>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-224">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-224">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-225">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-225">&#182;</a>
               </div>
               <p>A <code>Scene</code> is the main object for a view of a scene.</p>
 
@@ -4724,11 +4773,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-224">
+        <li id="section-226">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-224">&#182;</a>
+                <a class="pilcrow" href="#section-226">&#182;</a>
               </div>
               <p>The root model for the scene, which contains <code>Shape</code>s, <code>Light</code>s, and other <code>Model</code>s</p>
 
@@ -4739,11 +4788,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-225">
+        <li id="section-227">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-225">&#182;</a>
+                <a class="pilcrow" href="#section-227">&#182;</a>
               </div>
               <p>The <code>Camera</code>, which defines the projection from shape-space to screen-space.</p>
 
@@ -4754,11 +4803,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-226">
+        <li id="section-228">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-226">&#182;</a>
+                <a class="pilcrow" href="#section-228">&#182;</a>
               </div>
               <p>The scene’s shader determines which lighting model is used.</p>
 
@@ -4769,11 +4818,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-227">
+        <li id="section-229">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-227">&#182;</a>
+                <a class="pilcrow" href="#section-229">&#182;</a>
               </div>
               <p>The <code>cullBackfaces</code> boolean can be used to turn off backface-culling
 for the whole scene. Beware, turning this off can slow down a scene’s
@@ -4787,11 +4836,11 @@ individual surfaces with a boolean on those objects.</p>
         </li>
         
         
-        <li id="section-228">
+        <li id="section-230">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-228">&#182;</a>
+                <a class="pilcrow" href="#section-230">&#182;</a>
               </div>
               <p>The <code>fractionalPoints</code> boolean determines if we round the surface
 coordinates to the nearest integer. Rounding the coordinates before
@@ -4807,11 +4856,11 @@ scene was 10 FPS.</p>
         </li>
         
         
-        <li id="section-229">
+        <li id="section-231">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-229">&#182;</a>
+                <a class="pilcrow" href="#section-231">&#182;</a>
               </div>
               <p>The <code>cache</code> boolean (default : true) enables a simple cache for
 renderModels, which are generated for each surface in the scene. The
@@ -4829,11 +4878,11 @@ no eviction policy. To flush the cache, call <code>.flushCache()</code></p>
         </li>
         
         
-        <li id="section-230">
+        <li id="section-232">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-230">&#182;</a>
+                <a class="pilcrow" href="#section-232">&#182;</a>
               </div>
               <p>The primary method that produces the render models, which are then used
 by the <code>RenderContext</code> to paint the scene.</p>
@@ -4845,11 +4894,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-231">
+        <li id="section-233">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-231">&#182;</a>
+                <a class="pilcrow" href="#section-233">&#182;</a>
               </div>
               <p>Compute the projection matrix.</p>
 
@@ -4864,11 +4913,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-232">
+        <li id="section-234">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-232">&#182;</a>
+                <a class="pilcrow" href="#section-234">&#182;</a>
               </div>
               <p>Compute light model data.</p>
 
@@ -4882,11 +4931,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-233">
+        <li id="section-235">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-233">&#182;</a>
+                <a class="pilcrow" href="#section-235">&#182;</a>
               </div>
               <p>Compute transformed and projected geometry.</p>
 
@@ -4897,11 +4946,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-234">
+        <li id="section-236">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-234">&#182;</a>
+                <a class="pilcrow" href="#section-236">&#182;</a>
               </div>
               <p>Test projected normal’s z-coordinate for culling (if enabled).</p>
 
@@ -4912,11 +4961,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-235">
+        <li id="section-237">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-235">&#182;</a>
+                <a class="pilcrow" href="#section-237">&#182;</a>
               </div>
               <p>Render fill and stroke using material and shader.</p>
 
@@ -4928,11 +4977,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-236">
+        <li id="section-238">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-236">&#182;</a>
+                <a class="pilcrow" href="#section-238">&#182;</a>
               </div>
               <p>Round coordinates (if enabled)</p>
 
@@ -4947,11 +4996,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-237">
+        <li id="section-239">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-237">&#182;</a>
+                <a class="pilcrow" href="#section-239">&#182;</a>
               </div>
               <p>Sort render models by projected z coordinate. This ensures that the surfaces
 farthest from the eye are painted first. (Painter’s Algorithm)</p>
@@ -4966,11 +5015,11 @@ farthest from the eye are painted first. (Painter’s Algorithm)</p>
         </li>
         
         
-        <li id="section-238">
+        <li id="section-240">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-238">&#182;</a>
+                <a class="pilcrow" href="#section-240">&#182;</a>
               </div>
               <p>Get or create the rendermodel for the given surface. If <code>@cache</code> is true, we cache these models
 to reduce object creation and recomputation.</p>
@@ -4991,11 +5040,11 @@ to reduce object creation and recomputation.</p>
         </li>
         
         
-        <li id="section-239">
+        <li id="section-241">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-239">&#182;</a>
+                <a class="pilcrow" href="#section-241">&#182;</a>
               </div>
               <p>Removes all elements from the cache. This may be necessary if you add and
 remove many shapes from the scene’s models since this cache has no
