@@ -93,15 +93,14 @@ class seen.Matrix
     return @matrix(rm)
 
   # Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
-  scale : (sx, sy, sz, sw) ->
+  scale : (sx, sy, sz) ->
     sx     ?= 1
     sy     ?= sx
     sz     ?= sy
-    sw     ?= sz
-    @m[0]  *= sx
-    @m[5]  *= sy
-    @m[10] *= sz
-    return @
+
+    rm = [ sx, 0, 0, 0, 0, sy, 0, 0, 0, 0, sz, 0, 0, 0, 0, 1 ]
+    return @matrix(rm)
+
 
 # A convenience method for constructing Matrix objects.
 seen.M = (m) -> new seen.Matrix(m)

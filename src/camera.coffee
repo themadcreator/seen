@@ -73,8 +73,9 @@ seen.Viewports = {
   # Create a viewport where the scene's origin is centered in the view
   center : (width = 500, height = 500, x = 0, y = 0) ->
     prescale = seen.M()
-      .translate(-x, -y, -1)
+      .translate(-x, -y, -height)
       .scale(1/width, 1/height, 1/height)
+
     postscale = seen.M()
       .scale(width, -height, height)
       .translate(x + width/2, y + height/2)
@@ -85,6 +86,7 @@ seen.Viewports = {
     prescale = seen.M()
       .translate(-x, -y, -1)
       .scale(1/width, 1/height, 1/height)
+      
     postscale = seen.M()
       .scale(width, -height, height)
       .translate(x, y)

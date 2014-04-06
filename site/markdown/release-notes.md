@@ -1,3 +1,9 @@
+### v0.1.3
+
+*April 6, 2014*
+
++ Fixed bug where matrix scaling was not properly computed and viewport prescale and postscale were incorrect.
+
 ### v0.1.2
 
 *April 2, 2014*
