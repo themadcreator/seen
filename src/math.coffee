@@ -89,10 +89,8 @@ class seen.Matrix
 
   # Apply a translation. All arguments default to `0`
   translate : (x = 0, y = 0, z = 0) ->
-    @m[3]  += x
-    @m[7]  += y
-    @m[11] += z
-    return @
+    rm = [ 1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1 ]
+    return @matrix(rm)
 
   # Apply a scale. If not all arguments are supplied, each dimension (x,y,z) is copied from the previous arugment. Therefore, `_scale()` is equivalent to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
   scale : (sx, sy, sz, sw) ->
