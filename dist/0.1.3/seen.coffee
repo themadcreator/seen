@@ -1604,7 +1604,14 @@ CUBE_COORDINATE_MAP = [
   [0, 2, 6, 4] # back
 ]
 
-
+# Map to points in the surfaces of a rectangular pyramid
+PYRAMID_COORDINATE_MAP = [
+  [1, 0, 2, 3] # bottom
+  [0, 1, 4] 
+  [2, 0, 4]
+  [3, 2, 4]
+  [1, 3, 4]
+]
 
 # Altitude of eqiulateral triangle for computing triangular patch size
 EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0
@@ -1707,16 +1714,6 @@ seen.Shapes = {
 
   # Returns a square pyramid inside a unit cube
   pyramid : =>
-    # Map to points in the surfaces of a rectangular pyramid
-    PYRAMID_COORDINATE_MAP = [
-      [1, 0, 2, 3] # bottom
-
-      [0, 1, 4] # left
-      [2, 0, 4] # right
-      [3, 2, 4] # front
-      [1, 3, 4] # back
-    ]
-
     points = [
       seen.P(0, 0, 0)
       seen.P(0, 0, 1)

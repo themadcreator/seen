@@ -1,6 +1,6 @@
 /** seen.js v0.1.3 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
 (function() {
-  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PathPainter, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, TextPainter, seen, _svg,
+  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PYRAMID_COORDINATE_MAP, PathPainter, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, TextPainter, seen, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -2051,6 +2051,8 @@
 
   CUBE_COORDINATE_MAP = [[0, 1, 3, 2], [5, 4, 6, 7], [1, 0, 4, 5], [2, 3, 7, 6], [3, 1, 5, 7], [0, 2, 6, 4]];
 
+  PYRAMID_COORDINATE_MAP = [[1, 0, 2, 3], [0, 1, 4], [2, 0, 4], [3, 2, 4], [1, 3, 4]];
+
   EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0;
 
   ICOS_X = 0.525731112119133606;
@@ -2088,8 +2090,7 @@
     })(this),
     pyramid: (function(_this) {
       return function() {
-        var PYRAMID_COORDINATE_MAP, points;
-        PYRAMID_COORDINATE_MAP = [[1, 0, 2, 3], [0, 1, 4], [2, 0, 4], [3, 2, 4], [1, 3, 4]];
+        var points;
         points = [seen.P(0, 0, 0), seen.P(0, 0, 1), seen.P(1, 0, 0), seen.P(1, 0, 1), seen.P(0.5, 1, 0.5)];
         return new seen.Shape('pyramid', seen.Shapes.mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP));
       };
