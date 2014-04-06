@@ -1,4 +1,9 @@
 #!/bin/sh
 
+# Rebuild library and site
 cake build site
-exec node -- ./node_modules/.bin/coffee ./site/index.coffee
+
+# We must use exec here so that signals can propagate to the web server.
+# Otherwise, the ports will not close and the restart will fail with
+# EADDRINUSE
+exec coffee ./site/index.coffee
