@@ -129,14 +129,17 @@
   SHAPE_FACTORY =  (value) ->
     adjust = 0.05
 
+    value = value * 2048
+
     # Up to 2048 (2^11) we use rectangles
     if value <= (1 << 11)
       shape = seen.Shapes.rectangle(seen.P(adjust,adjust,adjust), seen.P(1 - adjust, 1 - adjust, 0.25))
 
     # From 2^11 to 2^22 we use triangular prisms
     else if value <= (1 << 22)
-      tri = [seen.P(adjust,adjust,adjust), seen.P(0.5,adjust,0.25), seen.P(1-adjust,adjust,adjust)]
-      shape = seen.Shapes.extrude(tri, seen.P(0,1 - adjust*2,0))
+      y = 1 - adjust
+      tri = [seen.P(adjust,y,adjust), seen.P(0.5,y,0.25), seen.P(1-adjust,y,adjust)]
+      shape = seen.Shapes.extrude(tri, seen.P(0, -1 + 2*adjust,0))
 
     # From 2^22 and beyond we use pyramid
     else
