@@ -128,20 +128,21 @@
   # Returns a new seen.Shape representing a tile
   SHAPE_FACTORY =  (value) ->
     adjust = 0.05
+    tileheight = 0.2 + Math.log(value) / Math.log(2) / 11
 
     # Up to 2048 (2^11) we use rectangles
     if value <= (1 << 11)
-      shape = seen.Shapes.rectangle(seen.P(adjust,adjust,adjust), seen.P(1 - adjust, 1 - adjust, 0.25))
+      shape = seen.Shapes.rectangle(seen.P(adjust,adjust,adjust), seen.P(1 - adjust, 1 - adjust, tileheight))
 
     # From 2^11 to 2^22 we use triangular prisms
     else if value <= (1 << 22)
-      tri = [seen.P(adjust,adjust,adjust), seen.P(0.5,adjust,0.25), seen.P(1-adjust,adjust,adjust)]
+      tri = [seen.P(adjust,adjust,adjust), seen.P(0.5,adjust,tileheight), seen.P(1-adjust,adjust,adjust)]
       shape = seen.Shapes.extrude(tri, seen.P(0,1 - adjust*2,0))
 
     # From 2^22 and beyond we use pyramid
     else
       shape = seen.Shapes.pyramid()
-      transform = seen.M().rotx(Math.PI/2).translate(0,1,0).scale(1,1,0.25)
+      transform = seen.M().rotx(Math.PI/2).translate(0,1,0).scale(1,1,tileheight)
       shape.eachSurface (s) -> s.points.forEach (p) -> p.transform(transform)
 
     # Bring down value into color scales range
