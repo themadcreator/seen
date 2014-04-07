@@ -53,10 +53,6 @@
       margin         : 10px 20px 10px 20px;
     }
 
-    #game-message {
-      line-height: 40px;
-    }
-
     .message-title {
       color      : #eee4da;
       font-size  : 12px;
@@ -75,6 +71,18 @@
       -moz-border-radius    : 5px;
       border-radius         : 5px;
     }
+
+    #game-message {
+      line-height: 40px;
+    }
+
+    #toggle-nausea{
+      float            : right;
+      margin-top       : 10px;
+      margin-right     : 10px;
+      background-color : transparent;
+    }
+
     .color-sample {
       display : inline-block;
       width   : 50px;
@@ -89,6 +97,7 @@
     <div class="button restart-button">RESTART</div>
     <div class="button retry-button">RETRY</div>
     <div class="message"><div class="message-title">SCORE</div><div id="score"></div></div>
+    <div class="button" id="toggle-nausea">TOGGLE NAUSEA</div>
   </div>
 
   <canvas width="900" height="500" id="seen-canvas" class="game-container"></canvas>
@@ -329,12 +338,14 @@
 
       # Slowly rock the board back and forth, cuz why not? It is THREEEE-DEEEEE!!!
       rotateTick = 0
+      doRotate = true
       animator = @context.animate().start()
       animator.onBefore =>
-        @subModel.reset()
-          .translate(-SIZE/2,-SIZE/2 + 0.5)
-          .rotz(Math.sin(rotateTick) / 10)
+        @subModel.reset().translate(-SIZE/2,-SIZE/2 + 0.5)
+        if doRotate then @subModel.rotz(Math.sin(rotateTick) / 10)
         rotateTick += 0.005
+
+      $('#toggle-nausea').click => doRotate = not doRotate
 
       # Initialize the transition animator
       @transitions = new TransitionAnimator().start()
