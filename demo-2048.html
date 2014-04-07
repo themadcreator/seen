@@ -168,8 +168,6 @@
   SHAPE_FACTORY =  (value) ->
     adjust = 0.05
 
-    value = value * 2048
-
     # Up to 2048 (2^11) we use rectangles
     if value <= (1 << 11)
       shape = seen.Shapes.rectangle(seen.P(adjust,adjust,adjust), seen.P(1 - adjust, 1 - adjust, 0.25))
