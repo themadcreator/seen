@@ -1,3 +1,9 @@
+### v0.1.4
+
+*April 6, 2014*
+
++ Issue #2. Switch to using requestAnimationFrame instead of setTimeout for animation if available.
+
 ### v0.1.3
 
 *April 6, 2014*
