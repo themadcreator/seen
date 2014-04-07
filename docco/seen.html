@@ -4368,6 +4368,26 @@ the triangular subdivision of the surface.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-206">&#182;</a>
               </div>
+              <p>Polyfill requestAnimationFrame</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>?
+  requestAnimationFrame =
+      <span class="hljs-built_in">window</span>.requestAnimationFrame ?
+      <span class="hljs-built_in">window</span>.mozRequestAnimationFrame ?
+      <span class="hljs-built_in">window</span>.webkitRequestAnimationFrame ?
+      <span class="hljs-built_in">window</span>.msRequestAnimationFrame</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-207">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-207">&#182;</a>
+              </div>
               <p>The animator class is useful for creating a render loop. We supply pre and
 post render events for apply animation changes between renders.</p>
 
@@ -4382,30 +4402,30 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-207">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-207">&#182;</a>
-              </div>
-              <p>Start the render loop. The delay between frames can be supplied as an argument.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">start</span>: <span class="hljs-function"><span class="hljs-params">(msecDelay = <span class="hljs-number">30</span>)</span> -&gt;</span>
-    <span class="hljs-property">@_running</span>   = <span class="hljs-literal">true</span>
-    <span class="hljs-property">@_msecDelay</span> = msecDelay
-    setTimeout(<span class="hljs-property">@render</span>, <span class="hljs-property">@_msecDelay</span>)
-    <span class="hljs-keyword">return</span> @</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-208">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-208">&#182;</a>
+              </div>
+              <p>Start the render loop. The delay between frames can be supplied as an argument.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">start</span>: <span class="hljs-function"><span class="hljs-params">(msecDelay)</span> -&gt;</span>
+    <span class="hljs-property">@_running</span>   = <span class="hljs-literal">true</span>
+    <span class="hljs-property">@_msecDelay</span> = msecDelay
+    <span class="hljs-property">@animateFrame</span>()
+    <span class="hljs-keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-209">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-209">&#182;</a>
               </div>
               <p>Stop the render loop.</p>
 
@@ -4418,11 +4438,31 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-209">
+        <li id="section-210">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-209">&#182;</a>
+                <a class="pilcrow" href="#section-210">&#182;</a>
+              </div>
+              <p>Use requestAnimationFrame if available</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  animateFrame :<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-keyword">if</span> requestAnimationFrame? <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@_msecDelay</span>?
+      requestAnimationFrame(<span class="hljs-property">@render</span>)
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@_msecDelay</span> ?= <span class="hljs-number">30</span>
+      setTimeout(<span class="hljs-property">@render</span>, <span class="hljs-property">@_msecDelay</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-211">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-211">&#182;</a>
               </div>
               <p>The main render loop method</p>
 
@@ -4433,17 +4473,17 @@ post render events for apply animation changes between renders.</p>
     <span class="hljs-property">@dispatch</span>.beforeRender()
     <span class="hljs-property">@dispatch</span>.render()
     <span class="hljs-property">@dispatch</span>.afterRender()
-    setTimeout(<span class="hljs-property">@render</span>, <span class="hljs-property">@_msecDelay</span>)
+    <span class="hljs-property">@animateFrame</span>()
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
         
         
-        <li id="section-210">
+        <li id="section-212">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-210">&#182;</a>
+                <a class="pilcrow" href="#section-212">&#182;</a>
               </div>
               <p>Add a callback that will be invoked before the render</p>
 
@@ -4456,11 +4496,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-211">
+        <li id="section-213">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-211">&#182;</a>
+                <a class="pilcrow" href="#section-213">&#182;</a>
               </div>
               <p>Add a callback that will be invoked after the render</p>
 
@@ -4473,11 +4513,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-212">
+        <li id="section-214">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-212">&#182;</a>
+                <a class="pilcrow" href="#section-214">&#182;</a>
               </div>
               <p>Add a render callback</p>
 
@@ -4490,11 +4530,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-213">
+        <li id="section-215">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-213">&#182;</a>
+                <a class="pilcrow" href="#section-215">&#182;</a>
               </div>
               <h2 id="camera">Camera</h2>
 <h4 id="projections-viewports-and-cameras">Projections, Viewports, and Cameras</h4>
@@ -4505,11 +4545,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-214">
+        <li id="section-216">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-214">&#182;</a>
+                <a class="pilcrow" href="#section-216">&#182;</a>
               </div>
               
             </div>
@@ -4517,11 +4557,11 @@ post render events for apply animation changes between renders.</p>
         </li>
         
         
-        <li id="section-215">
+        <li id="section-217">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-215">&#182;</a>
+                <a class="pilcrow" href="#section-217">&#182;</a>
               </div>
               <p>These projection methods return a 3D to 2D <code>Matrix</code> transformation.
 Each projection assumes the camera is located at (0,0,0).</p>
@@ -4533,11 +4573,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-216">
+        <li id="section-218">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-216">&#182;</a>
+                <a class="pilcrow" href="#section-218">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix </p>
 
@@ -4550,11 +4590,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-217">
+        <li id="section-219">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-217">&#182;</a>
+                <a class="pilcrow" href="#section-219">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix with the supplied frustrum</p>
 
@@ -4591,11 +4631,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-218">
+        <li id="section-220">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-218">&#182;</a>
+                <a class="pilcrow" href="#section-220">&#182;</a>
               </div>
               <p>Creates a orthographic projection matrix with the supplied frustrum</p>
 
@@ -4635,11 +4675,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-219">
+        <li id="section-221">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-219">&#182;</a>
+                <a class="pilcrow" href="#section-221">&#182;</a>
               </div>
               <p>Create a viewport where the scene’s origin is centered in the view</p>
 
@@ -4658,11 +4698,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-220">
+        <li id="section-222">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-220">&#182;</a>
+                <a class="pilcrow" href="#section-222">&#182;</a>
               </div>
               <p>Create a view port where the scene’s origin is aligned with the origin ([0, 0]) of the view</p>
 
@@ -4682,11 +4722,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-221">
+        <li id="section-223">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-221">&#182;</a>
+                <a class="pilcrow" href="#section-223">&#182;</a>
               </div>
               <p>The <code>Camera</code> model contains all three major components of the 3D to 2D tranformation.</p>
 <p>First, we transform object from world-space (the same space that the coordinates of
@@ -4712,11 +4752,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-222">
+        <li id="section-224">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-222">&#182;</a>
+                <a class="pilcrow" href="#section-224">&#182;</a>
               </div>
               <p>Performs the 3-step multiplication of the transformation matrices.</p>
 
@@ -4731,11 +4771,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-223">
+        <li id="section-225">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-223">&#182;</a>
+                <a class="pilcrow" href="#section-225">&#182;</a>
               </div>
               <h2 id="scene">Scene</h2>
 <hr>
@@ -4745,11 +4785,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-224">
+        <li id="section-226">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-224">&#182;</a>
+                <a class="pilcrow" href="#section-226">&#182;</a>
               </div>
               
             </div>
@@ -4757,11 +4797,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-225">
+        <li id="section-227">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-225">&#182;</a>
+                <a class="pilcrow" href="#section-227">&#182;</a>
               </div>
               <p>A <code>Scene</code> is the main object for a view of a scene.</p>
 
@@ -4773,11 +4813,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-226">
+        <li id="section-228">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-226">&#182;</a>
+                <a class="pilcrow" href="#section-228">&#182;</a>
               </div>
               <p>The root model for the scene, which contains <code>Shape</code>s, <code>Light</code>s, and other <code>Model</code>s</p>
 
@@ -4788,11 +4828,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-227">
+        <li id="section-229">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-227">&#182;</a>
+                <a class="pilcrow" href="#section-229">&#182;</a>
               </div>
               <p>The <code>Camera</code>, which defines the projection from shape-space to screen-space.</p>
 
@@ -4803,11 +4843,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-228">
+        <li id="section-230">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-228">&#182;</a>
+                <a class="pilcrow" href="#section-230">&#182;</a>
               </div>
               <p>The scene’s shader determines which lighting model is used.</p>
 
@@ -4818,11 +4858,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-229">
+        <li id="section-231">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-229">&#182;</a>
+                <a class="pilcrow" href="#section-231">&#182;</a>
               </div>
               <p>The <code>cullBackfaces</code> boolean can be used to turn off backface-culling
 for the whole scene. Beware, turning this off can slow down a scene’s
@@ -4836,11 +4876,11 @@ individual surfaces with a boolean on those objects.</p>
         </li>
         
         
-        <li id="section-230">
+        <li id="section-232">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-230">&#182;</a>
+                <a class="pilcrow" href="#section-232">&#182;</a>
               </div>
               <p>The <code>fractionalPoints</code> boolean determines if we round the surface
 coordinates to the nearest integer. Rounding the coordinates before
@@ -4856,11 +4896,11 @@ scene was 10 FPS.</p>
         </li>
         
         
-        <li id="section-231">
+        <li id="section-233">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-231">&#182;</a>
+                <a class="pilcrow" href="#section-233">&#182;</a>
               </div>
               <p>The <code>cache</code> boolean (default : true) enables a simple cache for
 renderModels, which are generated for each surface in the scene. The
@@ -4878,11 +4918,11 @@ no eviction policy. To flush the cache, call <code>.flushCache()</code></p>
         </li>
         
         
-        <li id="section-232">
+        <li id="section-234">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-232">&#182;</a>
+                <a class="pilcrow" href="#section-234">&#182;</a>
               </div>
               <p>The primary method that produces the render models, which are then used
 by the <code>RenderContext</code> to paint the scene.</p>
@@ -4894,11 +4934,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-233">
+        <li id="section-235">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-233">&#182;</a>
+                <a class="pilcrow" href="#section-235">&#182;</a>
               </div>
               <p>Compute the projection matrix.</p>
 
@@ -4913,11 +4953,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-234">
+        <li id="section-236">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-234">&#182;</a>
+                <a class="pilcrow" href="#section-236">&#182;</a>
               </div>
               <p>Compute light model data.</p>
 
@@ -4931,11 +4971,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-235">
+        <li id="section-237">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-235">&#182;</a>
+                <a class="pilcrow" href="#section-237">&#182;</a>
               </div>
               <p>Compute transformed and projected geometry.</p>
 
@@ -4946,11 +4986,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-236">
+        <li id="section-238">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-236">&#182;</a>
+                <a class="pilcrow" href="#section-238">&#182;</a>
               </div>
               <p>Test projected normal’s z-coordinate for culling (if enabled).</p>
 
@@ -4961,11 +5001,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-237">
+        <li id="section-239">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-237">&#182;</a>
+                <a class="pilcrow" href="#section-239">&#182;</a>
               </div>
               <p>Render fill and stroke using material and shader.</p>
 
@@ -4977,11 +5017,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-238">
+        <li id="section-240">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-238">&#182;</a>
+                <a class="pilcrow" href="#section-240">&#182;</a>
               </div>
               <p>Round coordinates (if enabled)</p>
 
@@ -4996,11 +5036,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-239">
+        <li id="section-241">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-239">&#182;</a>
+                <a class="pilcrow" href="#section-241">&#182;</a>
               </div>
               <p>Sort render models by projected z coordinate. This ensures that the surfaces
 farthest from the eye are painted first. (Painter’s Algorithm)</p>
@@ -5015,11 +5055,11 @@ farthest from the eye are painted first. (Painter’s Algorithm)</p>
         </li>
         
         
-        <li id="section-240">
+        <li id="section-242">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-240">&#182;</a>
+                <a class="pilcrow" href="#section-242">&#182;</a>
               </div>
               <p>Get or create the rendermodel for the given surface. If <code>@cache</code> is true, we cache these models
 to reduce object creation and recomputation.</p>
@@ -5040,11 +5080,11 @@ to reduce object creation and recomputation.</p>
         </li>
         
         
-        <li id="section-241">
+        <li id="section-243">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-241">&#182;</a>
+                <a class="pilcrow" href="#section-243">&#182;</a>
               </div>
               <p>Removes all elements from the cache. This may be necessary if you add and
 remove many shapes from the scene’s models since this cache has no
