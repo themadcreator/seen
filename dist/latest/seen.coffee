@@ -1607,10 +1607,10 @@ CUBE_COORDINATE_MAP = [
 # Map to points in the surfaces of a rectangular pyramid
 PYRAMID_COORDINATE_MAP = [
   [1, 0, 2, 3] # bottom
-  [0, 1, 4] 
-  [2, 0, 4]
-  [3, 2, 4]
-  [1, 3, 4]
+  [0, 1, 4] # left
+  [2, 0, 4] # rear
+  [3, 2, 4] # right
+  [1, 3, 4] # front
 ]
 
 # Altitude of eqiulateral triangle for computing triangular patch size
