@@ -120,7 +120,7 @@
   SHAPE_FACTORY =  (value) ->
     adjust = 0.05
 
-    # Update to 2048 (2^11) we use rectangles
+    # Up to 2048 (2^11) we use rectangles
     if value <= (1 << 11)
       shape = seen.Shapes.rectangle(seen.P(adjust,adjust,adjust), seen.P(1 - adjust, 1 - adjust, 0.25))
 
@@ -144,7 +144,7 @@
 
   # A transition object to manage to animation of shapes
   class Transition
-    @tickIncrement : 0.25 # The tick increment for each frame
+    @tickIncrement : 0.2 # The tick increment for each frame
 
     constructor : (@model, @tile, @shape) ->
       @t = 0
@@ -212,7 +212,7 @@
       @model.remove(@shape0, @shape1)
       @model.add(@shape)
 
-  # The transition animator is an extension of the seen.Animator. Instead of
+  # The transition animator is an extension of seen.Animator. Instead of
   # rendering the scene, we use it to update the various transitions. We also
   # include keyframing to make sure we wait for one transition to finish
   # before starting the next one.
@@ -224,7 +224,7 @@
       @onRender(@update)
 
     # Adds a transition object to the current set of transitions. Note that
-    # transitions will not start until they have been unqueued by invoking
+    # transitions will not start until they have been enqueued by invoking
     # `keyframe()` on this object.
     add : (txn) ->
       @transitions.push txn
@@ -262,7 +262,7 @@
 
       # Add some lights
       @scene.model.add seen.Lights.point
-        point     : seen.P(-1, 2, 2).multiply(4)
+        point     : seen.P(-1, 2, 2).multiply(8)
         intensity : 0.0025
 
       @scene.model.add seen.Lights.ambient
@@ -295,7 +295,7 @@
         @subModel.reset()
           .translate(-SIZE/2,-SIZE/2 + 0.5)
           .rotz(Math.sin(rotateTick) / 10)
-        rotateTick += 0.01
+        rotateTick += 0.005
 
       # Initialize the transition animator
       @transitions = new TransitionAnimator().start()
