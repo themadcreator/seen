@@ -18,7 +18,7 @@ class seen.RenderContext
 
   # Returns a new `Animator` with this context's render method pre-registered.
   animate : ->
-    return new seen.Animator().onRender(@render)
+    return new seen.RenderAnimator(@)
 
   # Add a new `RenderLayerContext` to this context. This allows us to easily stack paintable components such as
   # a fill backdrop, or even multiple scenes in one context.
@@ -27,7 +27,7 @@ class seen.RenderContext
       layer   : layer
       context : @
     }
-    return @ 
+    return @
 
   sceneLayer : (scene) ->
     @layer(new seen.SceneLayer(scene))
@@ -42,7 +42,7 @@ class seen.RenderLayerContext
   rect    : -> # Return a rect painter
   circle  : -> # Return a circle painter
   text    : -> # Return a text painter
-  
+
   reset   : ->
   cleanup : ->
 

@@ -152,111 +152,49 @@
     shape.fill MATERIALS[value]
     return shape
 
-  # A transition object to manage to animation of shapes
-  class Transition
-    @tickIncrement : 0.2 # The tick increment for each frame
-
-    constructor : (@model, @tile, @shape) ->
-      @t = 0
-
-    update : ->
-      # Setup the first frame before the tick increment
-      if (@t is 0)
-        @firstFrame()
-
-      # Execute a tick and draw a frame
-      @t += Transition.tickIncrement
-      @frame()
-
-      # Cleanup or update on last frame after tick
-      if (@t >= 1.0)
-        @lastFrame()
-        return false
-
-      return true
-
-    firstFrame : ->
-    frame      : ->
-    lastFrame  : ->
-
-    _place : (shape, position0, position1, t = 0) ->
-      t = 1 if t > 1
-      if position1?
-        x = (position1.x * t) + (position0.x * (1.0 - t))
-        y = (position1.y * t) + (position0.y * (1.0 - t))
-        z = ((position1.z ? 0) * t) + ((position0.z ? 0) * (1.0 - t))
-      else
-        x = position0.x
-        y = position0.y
-        z = position0.z ? 0
-      shape.reset().translate(x, SIZE - y - 1, z)
+  # This method interpolates between position0 and position1 then places
+  # the shape at that position.
+  PLACE = (shape, position0, position1, t = 0) ->
+    t = 1 if t > 1
+    if position1?
+      x = (position1.x * t) + (position0.x * (1.0 - t))
+      y = (position1.y * t) + (position0.y * (1.0 - t))
+      z = ((position1.z ? 0) * t) + ((position0.z ? 0) * (1.0 - t))
+    else
+      x = position0.x
+      y = position0.y
+      z = position0.z ? 0
+    shape.reset().translate(x, SIZE - y - 1, z)
 
   # The transition for when a new tile is added
-  class NewTransition extends Transition
+  class NewTransition extends seen.Transition
     firstFrame : ->
       @start = {x : @tile.x, y : @tile.y, z : 1}
       @model.add(@shape)
 
     frame : ->
-      @_place(@shape, @start, @tile, @t)
+      PLACE(@shape, @start, @tile, @t)
 
     lastFrame : ->
-      @_place(@shape, @tile)
+      PLACE(@shape, @tile)
 
   # The transition for when a tile is simply moved
-  class MoveTransition extends Transition
+  class MoveTransition extends seen.Transition
     frame : ->
-      @_place(@shape, @tile.previousPosition, @tile, @t)
+      PLACE(@shape, @tile.previousPosition, @tile, @t)
 
   # The transition for when two tiles are merged into one
-  class MergeTransition extends Transition
-    constructor : (@model, @tile, @shape, @shape0, @shape1) ->
-      super
-
+  class MergeTransition extends seen.Transition
     frame : ->
-      @_place(@shape0, @tile.mergedFrom[0].previousPosition, @tile, @t)
-      @_place(@shape1, @tile.mergedFrom[1].previousPosition, @tile, @t)
-      
+      PLACE(@shape0, @tile.mergedFrom[0].previousPosition, @tile, @t)
+      PLACE(@shape1, @tile.mergedFrom[1].previousPosition, @tile, @t)
+
     lastFrame : ->
-      @_place(@shape, @tile)
+      PLACE(@shape, @tile)
       @model.remove(@shape0, @shape1)
       @model.add(@shape)
 
-  # The transition animator is an extension of seen.Animator. Instead of
-  # rendering the scene, we use it to update the various transitions. We also
-  # include keyframing to make sure we wait for one transition to finish
-  # before starting the next one.
-  class TransitionAnimator extends seen.Animator
-    constructor : ->
-      super
-      @queue = []
-      @transitions = []
-      @onRender(@update)
-
-    # Adds a transition object to the current set of transitions. Note that
-    # transitions will not start until they have been enqueued by invoking
-    # `keyframe()` on this object.
-    add : (txn) ->
-      @transitions.push txn
-
-    # Enqueues the current set of transitions into the keyframe queue and sets
-    # up a new set of transitions.
-    keyframe : ->
-      @queue.push @transitions
-      @transitions = []
-
-    # When this animator updates, it invokes `update()` on all of the
-    # currently animating transitions. If any of the current transitions are
-    # not done, we re-enqueue them at the front. If all transitions are
-    # complete, we will start animating the next set of transitions from the
-    # keyframe queue on the next update.
-    update : =>
-      return unless @queue.length
-      transitions = @queue.shift()
-      transitions = transitions.filter (transition) -> transition.update()
-      if transitions.length then @queue.unshift(transitions)
-
-  SCALE = 400 / SIZE 
+  SCALE = 400 / SIZE
 
   # This is our implementation of the HTMLActuator interface from the original
   # 2048 library by https://github.com/gabrielecirulli.
@@ -310,7 +248,7 @@
       $('#toggle-nausea').click => doRotate = not doRotate
 
       # Initialize the transition animator
-      @transitions = new TransitionAnimator().start()
+      @transitions = new seen.TransitionAnimator().start()
 
       # Initialize game models
       @restartGame()
@@ -337,7 +275,7 @@
 
       nextGrid = @_emptyGridState()
 
-      for column in grid.cells  
+      for column in grid.cells
         for tile in column
           continue unless tile?
 
@@ -347,19 +285,19 @@
           # Transition an exiting tile that has moved
           if tile.previousPosition?
             nextGrid[tile.x][tile.y] = shape = @_getShape(tile.previousPosition)
-            @transitions.add new MoveTransition(@gridModel, tile, shape)
+            @transitions.add new MoveTransition {model : @gridModel, tile, shape}
 
           # Transition two existing tiles merged into one
           else if tile.mergedFrom?
             shape0 = @_getShape(tile.mergedFrom[0].previousPosition)
             shape1 = @_getShape(tile.mergedFrom[1].previousPosition)
             nextGrid[tile.x][tile.y] = shape = SHAPE_FACTORY(tile.value)
-            @transitions.add new MergeTransition(@gridModel, tile, shape, shape0, shape1)
+            @transitions.add new MergeTransition {model : @gridModel, tile, shape, shape0, shape1}
 
           # Transition a new tile
           else
             nextGrid[tile.x][tile.y] = shape = SHAPE_FACTORY(tile.value)
-            @transitions.add new NewTransition(@gridModel, tile, shape)
+            @transitions.add new NewTransition {model : @gridModel, tile, shape}
 
       @grid = nextGrid
       @transitions.keyframe()
@@ -383,6 +321,6 @@
   # Initialize the 2048 game manager
   window.requestAnimationFrame () ->
     new GameManager(SIZE, KeyboardInputManager, SeenActuator, LocalStorageManager)
-  
+
 </script>
 {% endblock %}

@@ -1,3 +1,13 @@
+### v0.1.5
+
+*April 10, 2014*
+
++ Change animator method to 'frame' instead of 'render' for a more agnostic API.
+
++ Add RenderAnimator.
+
++ Add Transitions and TransitionAnimator.
+
 ### v0.1.4
 
 *April 6, 2014*
