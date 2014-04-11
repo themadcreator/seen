@@ -21,7 +21,7 @@ class seen.Material
     # The `specularExponent` determines how "shiny" the material is. A low
     # exponent will create a low-intesity, diffuse specular shine. A high
     # exponent will create an intense, point-like specular shine.
-    specularExponent : 8
+    specularExponent : 15
 
     # A `Shader` object may be supplied to override the shader used for this
     # material. For example, if you want to apply a flat color to text or

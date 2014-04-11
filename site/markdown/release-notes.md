@@ -3,6 +3,8 @@
 
 *April 11, 2014*
 
++ Fix specular phong shading calculation.
+
 + Move viewport into scene to make scene construction cleaner.
 
 + Cameras are now seen.Transformable objects

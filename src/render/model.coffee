@@ -69,7 +69,7 @@ class seen.RenderModel
 # The `LightRenderModel` stores pre-computed values necessary for shading
 # surfaces with the supplied `Light`.
 class seen.LightRenderModel
-  constructor: (light, transform) ->
+  constructor: (@light, transform) ->
     @colorIntensity = light.color.copy().scale(light.intensity)
     @type           = light.type
     @intensity      = light.intensity

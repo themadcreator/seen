@@ -634,7 +634,7 @@ class seen.Material
     # The `specularExponent` determines how "shiny" the material is. A low
     # exponent will create a low-intesity, diffuse specular shine. A high
     # exponent will create an intense, point-like specular shine.
-    specularExponent : 8
+    specularExponent : 15
 
     # A `Shader` object may be supplied to override the shader used for this
     # material. For example, if you want to apply a flat color to text or
@@ -668,7 +668,7 @@ class seen.Light extends seen.Transformable
   constructor: (@type, options) ->
     super
     seen.Util.defaults(@, options, @defaults)
-    @id = 'l' + seen.Util.uniqueId()
+    @id = seen.Util.uniqueId('l')
 
   render : ->
     @colorIntensity = @color.copy().scale(@intensity)
@@ -714,7 +714,7 @@ seen.ShaderUtils = {
 
       # Compute and apply specular phong shading
       reflectionNormal  = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
-      specularIntensity = Math.pow(1 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
+      specularIntensity = Math.pow(0.5 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
       specularColor     = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
       c.addChannels(specularColor)
 
@@ -977,7 +977,7 @@ class seen.RenderModel
 # The `LightRenderModel` stores pre-computed values necessary for shading
 # surfaces with the supplied `Light`.
 class seen.LightRenderModel
-  constructor: (light, transform) ->
+  constructor: (@light, transform) ->
     @colorIntensity = light.color.copy().scale(light.intensity)
     @type           = light.type
     @intensity      = light.intensity

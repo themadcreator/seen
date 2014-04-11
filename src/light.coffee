@@ -13,7 +13,7 @@ class seen.Light extends seen.Transformable
   constructor: (@type, options) ->
     super
     seen.Util.defaults(@, options, @defaults)
-    @id = 'l' + seen.Util.uniqueId()
+    @id = seen.Util.uniqueId('l')
 
   render : ->
     @colorIntensity = @color.copy().scale(@intensity)

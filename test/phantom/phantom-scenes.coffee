@@ -149,28 +149,28 @@ scenes = [
     window.test.model.add seen.Shapes.sphere(2)
       .scale(window.test.height*0.4)
       .fill(new seen.Material seen.Colors.hex('#FF8800'))
-    window.test.scene.shader = seen.Shaders.phong
+    window.test.scene.shader = seen.Shaders.phong()
 ,
   png    : 'shaders-diffuse.png'
   script : ->
     window.test.model.add seen.Shapes.sphere(2)
       .scale(window.test.height*0.4)
       .fill(new seen.Material seen.Colors.hex('#FF8800'))
-    window.test.scene.shader = seen.Shaders.diffuse
+    window.test.scene.shader = seen.Shaders.diffuse()
 ,
   png    : 'shaders-ambient.png'
   script : ->
     window.test.model.add seen.Shapes.sphere(2)
       .scale(window.test.height*0.4)
       .fill(new seen.Material seen.Colors.hex('#FF8800'))
-    window.test.scene.shader = seen.Shaders.ambient
+    window.test.scene.shader = seen.Shaders.ambient()
 ,
   png    : 'shaders-flat.png'
   script : ->
     window.test.model.add seen.Shapes.sphere(2)
       .scale(window.test.height*0.4)
       .fill(new seen.Material seen.Colors.hex('#FF8800'))
-    window.test.scene.shader = seen.Shaders.flat
+    window.test.scene.shader = seen.Shaders.flat()
 
 
 # SVG vs. Canvas

@@ -682,7 +682,7 @@
       color: seen.Colors.gray(),
       metallic: false,
       specularColor: seen.Colors.white(),
-      specularExponent: 8,
+      specularExponent: 15,
       shader: null
     };
 
@@ -721,7 +721,7 @@
       this.type = type;
       Light.__super__.constructor.apply(this, arguments);
       seen.Util.defaults(this, options, this.defaults);
-      this.id = 'l' + seen.Util.uniqueId();
+      this.id = seen.Util.uniqueId('l');
     }
 
     Light.prototype.render = function() {
@@ -760,7 +760,7 @@
       if (dot > 0) {
         c.addChannels(light.colorIntensity.copy().scale(dot));
         reflectionNormal = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal);
-        specularIntensity = Math.pow(1 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent);
+        specularIntensity = Math.pow(0.5 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent);
         specularColor = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0);
         return c.addChannels(specularColor);
       }
@@ -1137,6 +1137,7 @@
   seen.LightRenderModel = (function() {
     function LightRenderModel(light, transform) {
       var origin;
+      this.light = light;
       this.colorIntensity = light.color.copy().scale(light.intensity);
       this.type = light.type;
       this.intensity = light.intensity;

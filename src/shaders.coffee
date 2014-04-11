@@ -22,7 +22,7 @@ seen.ShaderUtils = {
 
       # Compute and apply specular phong shading
       reflectionNormal  = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
-      specularIntensity = Math.pow(1 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
+      specularIntensity = Math.pow(0.5 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
       specularColor     = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
       c.addChannels(specularColor)
 
