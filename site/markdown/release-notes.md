@@ -5,9 +5,13 @@
 
 + Move viewport into scene to make scene construction cleaner.
 
-+ Added transformation baking so transformables can be reset to a non-identity matrix.
-
 + Cameras are now seen.Transformable objects
+
++ Points and shaders utilities use functions instead of raw objects (e.g. seen.Points.X()) for a more consistent API.
+
++ Animators have timestamps and time-delta and transitions have time-since-start and duration-fraction all in milliseconds for better animation consistency across environments.
+
++ Added transformation baking so transformables can be reset to a non-identity matrix.
 
 ### v0.1.5
 

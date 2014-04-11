@@ -1,6 +1,8 @@
 # ## Shaders
 # ------------------
 
+EYE_NORMAL = seen.Points.Z()
+
 # These shading functions compute the shading for a surface. To reduce code
 # duplication, we aggregate them in a utils object.
 seen.ShaderUtils = {
@@ -19,9 +21,8 @@ seen.ShaderUtils = {
       c.addChannels(light.colorIntensity.copy().scale(dot))
 
       # Compute and apply specular phong shading
-      eyeNormal         = seen.Points.Z
       reflectionNormal  = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
-      specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent)
+      specularIntensity = Math.pow(1 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
       specularColor     = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
       c.addChannels(specularColor)
 
@@ -103,11 +104,9 @@ class Flat extends seen.Shader
   shade: (lights, renderModel, material) ->
     return material.color
 
-# Since `Shader` objects are stateless, we don't need to construct them more
-# than once. So, we export global instances here.
 seen.Shaders = {
-  phong   : new Phong()
-  diffuse : new DiffusePhong()
-  ambient : new Ambient()
-  flat    : new Flat()
+  phong   : -> new Phong()
+  diffuse : -> new DiffusePhong()
+  ambient : -> new Ambient()
+  flat    : -> new Flat()
 }

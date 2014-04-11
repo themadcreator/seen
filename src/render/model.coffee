@@ -1,13 +1,15 @@
 # ## RenderModels
 # ------------------
 
+DEFAULT_NORMAL = seen.Points.Z()
+
 # The `RenderModel` object contains the transformed and projected points as
 # well as various data needed to shade and paint a `Surface`.
 #
 # Once initialized, the object will have a constant memory footprint down to
 # `Number` primitives. Also, we compare each transform and projection to
 # prevent unnecessary re-computation.
-# 
+#
 # If you need to force a re-computation, mark the surface as 'dirty'.
 class seen.RenderModel
   constructor: (@surface, @transform, @projection) ->
@@ -49,16 +51,16 @@ class seen.RenderModel
 
     # Compute barycenter, which is used in aligning shapes in the painters
     # algorithm
-    set.barycenter.set(seen.Points.ZERO)
+    set.barycenter.multiply(0)
     for p in set.points
       set.barycenter.add(p)
     set.barycenter.divide(set.points.length)
 
     # Compute normal, which is used for backface culling (when enabled)
     if set.points.length < 2
-      set.v0.set(seen.Points.Z)
-      set.v1.set(seen.Points.Z)
-      set.normal.set(seen.Points.Z)
+      set.v0.set(DEFAULT_NORMAL)
+      set.v1.set(DEFAULT_NORMAL)
+      set.normal.set(DEFAULT_NORMAL)
     else
       set.v0.set(set.points[1]).subtract(set.points[0])
       set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
@@ -72,5 +74,5 @@ class seen.LightRenderModel
     @type           = light.type
     @intensity      = light.intensity
     @point          = light.point.copy().transform(transform)
-    origin          = seen.Points.ZERO.copy().transform(transform)
+    origin          = seen.Points.ZERO().transform(transform)
     @normal         = light.normal.copy().transform(transform).subtract(origin).normalize()

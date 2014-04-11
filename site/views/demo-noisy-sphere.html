@@ -32,18 +32,17 @@
   t = 0
   noiser = new Simplex3D(Math.random())
   context.animate()
-    .onBefore(->
+    .onBefore((t, dt) ->
       for surf in shape.surfaces
         for p,i in surf.points
-          n = noiser.noise(p.x, p.y, p.z + t)
+          n = noiser.noise(p.x, p.y, p.z + t*1e-4)
           surf.points[i] = surf.originals[i].copy().multiply(1 + n / 3)
 
         # Since we're modifying the points directly, we need to mark the surface dirty
         # to make sure the cache doesn't ignore the change
         surf.dirty = true
 
-      shape.rotx(0.001).rotz(0.003)
-      t += 0.005
+      shape.rotx(dt*1e-4).rotz(-dt*1e-4)
     )
     .start()
 

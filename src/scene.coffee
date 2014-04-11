@@ -19,7 +19,7 @@ class seen.Scene
     viewport         : seen.Viewports.origin(1,1)
 
     # The scene's shader determines which lighting model is used.
-    shader           : seen.Shaders.phong
+    shader           : seen.Shaders.phong()
 
     # The `cullBackfaces` boolean can be used to turn off backface-culling
     # for the whole scene. Beware, turning this off can slow down a scene's

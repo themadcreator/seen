@@ -1,6 +1,6 @@
 /** seen.js v0.2.0 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
 (function() {
-  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PYRAMID_COORDINATE_MAP, PathPainter, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, TextPainter, requestAnimationFrame, seen, _ref, _ref1, _ref2, _svg,
+  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DEFAULT_FRAME_DELAY, DEFAULT_NORMAL, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, EYE_NORMAL, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PYRAMID_COORDINATE_MAP, PathPainter, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, TextPainter, requestAnimationFrame, seen, _ref, _ref1, _ref2, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -356,7 +356,7 @@
       var n;
       n = this.magnitude();
       if (n === 0) {
-        this.set(seen.Points.Z);
+        this.set(seen.Points.Z());
       } else {
         this.divide(n);
       }
@@ -407,10 +407,18 @@
   POINT_POOL = seen.P();
 
   seen.Points = {
-    X: seen.P(1, 0, 0),
-    Y: seen.P(0, 1, 0),
-    Z: seen.P(0, 0, 1),
-    ZERO: seen.P(0, 0, 0)
+    X: function() {
+      return seen.P(1, 0, 0);
+    },
+    Y: function() {
+      return seen.P(0, 1, 0);
+    },
+    Z: function() {
+      return seen.P(0, 0, 1);
+    },
+    ZERO: function() {
+      return seen.P(0, 0, 0);
+    }
   };
 
   seen.Quaternion = (function() {
@@ -418,8 +426,8 @@
 
     Quaternion.xyToTransform = function(x, y) {
       var quatX, quatY;
-      quatX = seen.Quaternion.pointAngle(seen.Points.Y, x / seen.Quaternion.pixelsPerRadian);
-      quatY = seen.Quaternion.pointAngle(seen.Points.X, y / seen.Quaternion.pixelsPerRadian);
+      quatX = seen.Quaternion.pointAngle(seen.Points.Y(), x / seen.Quaternion.pixelsPerRadian);
+      quatY = seen.Quaternion.pointAngle(seen.Points.X(), y / seen.Quaternion.pixelsPerRadian);
       return quatX.multiply(quatY).toMatrix();
     };
 
@@ -635,11 +643,11 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         surface = _ref[_i];
         hue += (Math.random() - 0.5) * drift;
-        if (hue < 0) {
-          hue = 1;
+        while (hue < 0) {
+          hue += 1;
         }
-        if (hue > 1) {
-          hue = 0;
+        while (hue > 1) {
+          hue -= 1;
         }
         _results.push(surface.fill = new seen.Material(seen.Colors.hsl(hue, 0.5, 0.4)));
       }
@@ -736,6 +744,8 @@
     }
   };
 
+  EYE_NORMAL = seen.Points.Z();
+
   seen.ShaderUtils = {
     applyDiffuse: function(c, light, lightNormal, surfaceNormal, material) {
       var dot;
@@ -745,13 +755,12 @@
       }
     },
     applyDiffuseAndSpecular: function(c, light, lightNormal, surfaceNormal, material) {
-      var dot, eyeNormal, reflectionNormal, specularColor, specularIntensity;
+      var dot, reflectionNormal, specularColor, specularIntensity;
       dot = lightNormal.dot(surfaceNormal);
       if (dot > 0) {
         c.addChannels(light.colorIntensity.copy().scale(dot));
-        eyeNormal = seen.Points.Z;
         reflectionNormal = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal);
-        specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent);
+        specularIntensity = Math.pow(1 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent);
         specularColor = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0);
         return c.addChannels(specularColor);
       }
@@ -879,10 +888,18 @@
   })(seen.Shader);
 
   seen.Shaders = {
-    phong: new Phong(),
-    diffuse: new DiffusePhong(),
-    ambient: new Ambient(),
-    flat: new Flat()
+    phong: function() {
+      return new Phong();
+    },
+    diffuse: function() {
+      return new DiffusePhong();
+    },
+    ambient: function() {
+      return new Ambient();
+    },
+    flat: function() {
+      return new Flat();
+    }
   };
 
   seen.RenderContext = (function() {
@@ -1033,6 +1050,8 @@
     text: new TextPainter()
   };
 
+  DEFAULT_NORMAL = seen.Points.Z();
+
   seen.RenderModel = (function() {
     function RenderModel(surface, transform, projection) {
       this.surface = surface;
@@ -1093,7 +1112,7 @@
           sp.divide(sp.w);
         }
       }
-      set.barycenter.set(seen.Points.ZERO);
+      set.barycenter.multiply(0);
       _ref = set.points;
       for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
         p = _ref[_j];
@@ -1101,9 +1120,9 @@
       }
       set.barycenter.divide(set.points.length);
       if (set.points.length < 2) {
-        set.v0.set(seen.Points.Z);
-        set.v1.set(seen.Points.Z);
-        return set.normal.set(seen.Points.Z);
+        set.v0.set(DEFAULT_NORMAL);
+        set.v1.set(DEFAULT_NORMAL);
+        return set.normal.set(DEFAULT_NORMAL);
       } else {
         set.v0.set(set.points[1]).subtract(set.points[0]);
         set.v1.set(set.points[points.length - 1]).subtract(set.points[0]);
@@ -1122,7 +1141,7 @@
       this.type = light.type;
       this.intensity = light.intensity;
       this.point = light.point.copy().transform(transform);
-      origin = seen.Points.ZERO.copy().transform(transform);
+      origin = seen.Points.ZERO().transform(transform);
       this.normal = light.normal.copy().transform(transform).subtract(origin).normalize();
     }
 
@@ -2390,11 +2409,14 @@
     requestAnimationFrame = (_ref = (_ref1 = (_ref2 = window.requestAnimationFrame) != null ? _ref2 : window.mozRequestAnimationFrame) != null ? _ref1 : window.webkitRequestAnimationFrame) != null ? _ref : window.msRequestAnimationFrame;
   }
 
+  DEFAULT_FRAME_DELAY = 30;
+
   seen.Animator = (function() {
     function Animator() {
       this.frame = __bind(this.frame, this);
       this.dispatch = seen.Events.dispatch('beforeFrame', 'afterFrame', 'frame');
       this.on = this.dispatch.on;
+      this.timestamp = 0;
       this._running = false;
     }
 
@@ -2415,19 +2437,23 @@
         return requestAnimationFrame(this.frame);
       } else {
         if (this._msecDelay == null) {
-          this._msecDelay = 30;
+          this._msecDelay = DEFAULT_FRAME_DELAY;
         }
         return setTimeout(this.frame, this._msecDelay);
       }
     };
 
-    Animator.prototype.frame = function() {
+    Animator.prototype.frame = function(t) {
+      var deltaTimestamp, _ref3;
       if (!this._running) {
         return;
       }
-      this.dispatch.beforeFrame();
-      this.dispatch.frame();
-      this.dispatch.afterFrame();
+      this._timestamp = t != null ? t : this._timestamp + ((_ref3 = this._msecDelay) != null ? _ref3 : DEFAULT_FRAME_DELAY);
+      deltaTimestamp = this._lastTimestamp != null ? this._timestamp - this._lastTimestamp : this._timestamp;
+      this.dispatch.beforeFrame(this._timestamp, deltaTimestamp);
+      this.dispatch.frame(this._timestamp, deltaTimestamp);
+      this.dispatch.afterFrame(this._timestamp, deltaTimestamp);
+      this._lastTimestamp = this._timestamp;
       this.animateFrame();
       return this;
     };
@@ -2464,24 +2490,26 @@
   })(seen.Animator);
 
   seen.Transition = (function() {
+    Transition.prototype.defaults = {
+      duration: 100
+    };
+
     function Transition(options) {
       if (options == null) {
         options = {};
       }
-      seen.Util.defaults(this, options, {
-        tickIncrement: 0.2,
-        lastT: 1.0
-      });
-      this.t = 0;
+      seen.Util.defaults(this, options, this.defaults);
     }
 
-    Transition.prototype.update = function() {
-      if (this.t === 0) {
+    Transition.prototype.update = function(t) {
+      if (this.t == null) {
         this.firstFrame();
+        this.startT = t;
       }
-      this.t += this.tickIncrement;
+      this.t = t;
+      this.tFrac = (this.t - this.startT) / this.duration;
       this.frame();
-      if (this.t >= this.lastT) {
+      if (this.tFrac >= 1.0) {
         this.lastFrame();
         return false;
       }
@@ -2518,14 +2546,14 @@
       return this.transitions = [];
     };
 
-    TransitionAnimator.prototype.update = function() {
+    TransitionAnimator.prototype.update = function(t) {
       var transitions;
       if (!this.queue.length) {
         return;
       }
       transitions = this.queue.shift();
       transitions = transitions.filter(function(transition) {
-        return transition.update();
+        return transition.update(t);
       });
       if (transitions.length) {
         return this.queue.unshift(transitions);
@@ -2703,7 +2731,7 @@
         model: new seen.Model(),
         camera: new seen.Camera(),
         viewport: seen.Viewports.origin(1, 1),
-        shader: seen.Shaders.phong,
+        shader: seen.Shaders.phong(),
         cullBackfaces: true,
         fractionalPoints: false,
         cache: true

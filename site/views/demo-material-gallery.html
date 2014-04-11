@@ -137,7 +137,7 @@
 
   updateLightingModel = ->
     shaderType = $('input[name=model-radio]:checked').val()
-    scene.shader = seen.Shaders[shaderType]
+    scene.shader = seen.Shaders[shaderType]()
     context.render()
 
   # UI Events

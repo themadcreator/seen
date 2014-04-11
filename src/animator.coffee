@@ -9,13 +9,16 @@ if window?
       window.webkitRequestAnimationFrame ?
       window.msRequestAnimationFrame
 
+DEFAULT_FRAME_DELAY = 30 # msec
+
 # The animator class is useful for creating an animation loop. We supply pre
 # and post events for apply animation changes between frames.
 class seen.Animator
   constructor : () ->
-    @dispatch = seen.Events.dispatch('beforeFrame', 'afterFrame', 'frame')
-    @on       = @dispatch.on
-    @_running = false
+    @dispatch  = seen.Events.dispatch('beforeFrame', 'afterFrame', 'frame')
+    @on        = @dispatch.on
+    @timestamp = 0
+    @_running  = false
 
   # Start the animation loop. The delay between frames can be supplied as an argument.
   start: (msecDelay) ->
@@ -34,15 +37,22 @@ class seen.Animator
     if requestAnimationFrame? and not @_msecDelay?
       requestAnimationFrame(@frame)
     else
-      @_msecDelay ?= 30
+      @_msecDelay ?= DEFAULT_FRAME_DELAY
       setTimeout(@frame, @_msecDelay)
 
   # The main animation frame method
-  frame: () =>
+  frame: (t) =>
     return unless @_running
-    @dispatch.beforeFrame()
-    @dispatch.frame()
-    @dispatch.afterFrame()
+
+    # create timestamp param even if requestAnimationFrame isn't available
+    @_timestamp    = t ? (@_timestamp + (@_msecDelay ? DEFAULT_FRAME_DELAY))
+    deltaTimestamp = if @_lastTimestamp? then @_timestamp - @_lastTimestamp else @_timestamp
+
+    @dispatch.beforeFrame(@_timestamp, deltaTimestamp)
+    @dispatch.frame(@_timestamp, deltaTimestamp)
+    @dispatch.afterFrame(@_timestamp, deltaTimestamp)
+
+    @_lastTimestamp = @_timestamp
     @animateFrame()
     return @
 
@@ -69,24 +79,25 @@ class seen.RenderAnimator extends seen.Animator
 
  # A transition object to manage to animation of shapes
 class seen.Transition
-  constructor : (options = {}) ->
-    seen.Util.defaults(@, options,
-      tickIncrement : 0.2 # The amount to increase @t for each frame.
-      lastT         : 1.0 # The value of @t that indicates the transition is complete.
-    )
-    @t = 0
+  defaults :
+    duration : 100 # The duration of this transition in msec
 
-  update : ->
+  constructor : (options = {}) ->
+    seen.Util.defaults(@, options, @defaults)
+
+  update : (t) ->
     # Setup the first frame before the tick increment
-    if (@t is 0)
+    if not @t?
       @firstFrame()
+      @startT = t
 
     # Execute a tick and draw a frame
-    @t += @tickIncrement
+    @t = t
+    @tFrac = (@t - @startT) / @duration
     @frame()
 
     # Cleanup or update on last frame after tick
-    if (@t >= @lastT)
+    if (@tFrac >= 1.0)
       @lastFrame()
       return false
 
@@ -122,9 +133,9 @@ class seen.TransitionAnimator extends seen.Animator
   # not done, we re-enqueue them at the front. If all transitions are
   # complete, we will start animating the next set of transitions from the
   # keyframe queue on the next update.
-  update : =>
+  update : (t) =>
     return unless @queue.length
     transitions = @queue.shift()
-    transitions = transitions.filter (transition) -> transition.update()
+    transitions = transitions.filter (transition) -> transition.update(t)
     if transitions.length then @queue.unshift(transitions)
 

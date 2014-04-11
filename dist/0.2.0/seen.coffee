@@ -247,6 +247,11 @@ seen.Matrices = {
   flipZ    : -> seen.M().scale( 1, 1,-1)
 }
 
+
+
+
+
+
 # `Transformable` base class extended by `Shape` and `Model`.
 #
 # The advantages of keeping transforms in `Matrix` form are (1) lazy
@@ -274,6 +279,7 @@ class seen.Transformable
   transform: (m) ->
     @m.multiply(m)
     return @
+
 
 # The `Point` object contains x,y,z, and w coordinates. `Point`s support
 # various arithmetic operations with other `Points`, scalars, or `Matrices`.
@@ -341,7 +347,7 @@ class seen.Point
   normalize : () ->
     n = @magnitude()
     if n == 0 # Strict zero comparison -- may be worth using an epsilon
-      @set(seen.Points.Z)
+      @set(seen.Points.Z())
     else
       @divide(n)
     return @
@@ -389,11 +395,12 @@ POINT_POOL = seen.P()
 # A few useful `Point` objects. Be sure that you don't invoke destructive
 # methods on these objects.
 seen.Points = {
-  X    : seen.P(1, 0, 0)
-  Y    : seen.P(0, 1, 0)
-  Z    : seen.P(0, 0, 1)
-  ZERO : seen.P(0, 0, 0)
+  X    : -> seen.P(1, 0, 0)
+  Y    : -> seen.P(0, 1, 0)
+  Z    : -> seen.P(0, 0, 1)
+  ZERO : -> seen.P(0, 0, 0)
 }
+
 
 # A Quaterionion class for computing quaterion multiplications. This creates
 # more natural mouse rotations.
@@ -404,8 +411,8 @@ class seen.Quaternion
 
   # Convert the x and y pixel offsets into a rotation matrix
   @xyToTransform : (x, y) ->
-    quatX = seen.Quaternion.pointAngle(seen.Points.Y, x / seen.Quaternion.pixelsPerRadian)
-    quatY = seen.Quaternion.pointAngle(seen.Points.X, y / seen.Quaternion.pixelsPerRadian)
+    quatX = seen.Quaternion.pointAngle(seen.Points.Y(), x / seen.Quaternion.pixelsPerRadian)
+    quatY = seen.Quaternion.pointAngle(seen.Points.X(), y / seen.Quaternion.pixelsPerRadian)
     return quatX.multiply(quatY).toMatrix()
 
   # Create a rotation matrix from the axis defined by x, y, and z values, and the supplied angle.
@@ -460,8 +467,6 @@ class seen.Quaternion
     m[14] = 0
     m[15] = 1.0
     return seen.M(m)
-
-
 
 
 # ## Colors
@@ -586,8 +591,8 @@ seen.Colors = {
     hue = Math.random()
     for surface in shape.surfaces
       hue += (Math.random() - 0.5) * drift
-      if hue < 0 then hue = 1
-      if hue > 1 then hue = 0
+      while hue < 0 then hue += 1
+      while hue > 1 then hue -= 1
       surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
 
   # Generates a random color then sets the fill for every surface of the
@@ -688,6 +693,8 @@ seen.Lights = {
 # ## Shaders
 # ------------------
 
+EYE_NORMAL = seen.Points.Z()
+
 # These shading functions compute the shading for a surface. To reduce code
 # duplication, we aggregate them in a utils object.
 seen.ShaderUtils = {
@@ -706,9 +713,8 @@ seen.ShaderUtils = {
       c.addChannels(light.colorIntensity.copy().scale(dot))
 
       # Compute and apply specular phong shading
-      eyeNormal         = seen.Points.Z
       reflectionNormal  = surfaceNormal.copy().multiply(dot * 2).subtract(lightNormal)
-      specularIntensity = Math.pow(1 + reflectionNormal.dot(eyeNormal), material.specularExponent)
+      specularIntensity = Math.pow(1 + reflectionNormal.dot(EYE_NORMAL), material.specularExponent)
       specularColor     = material.specularColor.copy().scale(specularIntensity * light.intensity / 255.0)
       c.addChannels(specularColor)
 
@@ -790,13 +796,11 @@ class Flat extends seen.Shader
   shade: (lights, renderModel, material) ->
     return material.color
 
-# Since `Shader` objects are stateless, we don't need to construct them more
-# than once. So, we export global instances here.
 seen.Shaders = {
-  phong   : new Phong()
-  diffuse : new DiffusePhong()
-  ambient : new Ambient()
-  flat    : new Flat()
+  phong   : -> new Phong()
+  diffuse : -> new DiffusePhong()
+  ambient : -> new Ambient()
+  flat    : -> new Flat()
 }
 
 
@@ -905,13 +909,15 @@ seen.Painters = {
 # ## RenderModels
 # ------------------
 
+DEFAULT_NORMAL = seen.Points.Z()
+
 # The `RenderModel` object contains the transformed and projected points as
 # well as various data needed to shade and paint a `Surface`.
 #
 # Once initialized, the object will have a constant memory footprint down to
 # `Number` primitives. Also, we compare each transform and projection to
 # prevent unnecessary re-computation.
-# 
+#
 # If you need to force a re-computation, mark the surface as 'dirty'.
 class seen.RenderModel
   constructor: (@surface, @transform, @projection) ->
@@ -953,16 +959,16 @@ class seen.RenderModel
 
     # Compute barycenter, which is used in aligning shapes in the painters
     # algorithm
-    set.barycenter.set(seen.Points.ZERO)
+    set.barycenter.multiply(0)
     for p in set.points
       set.barycenter.add(p)
     set.barycenter.divide(set.points.length)
 
     # Compute normal, which is used for backface culling (when enabled)
     if set.points.length < 2
-      set.v0.set(seen.Points.Z)
-      set.v1.set(seen.Points.Z)
-      set.normal.set(seen.Points.Z)
+      set.v0.set(DEFAULT_NORMAL)
+      set.v1.set(DEFAULT_NORMAL)
+      set.normal.set(DEFAULT_NORMAL)
     else
       set.v0.set(set.points[1]).subtract(set.points[0])
       set.v1.set(set.points[points.length - 1]).subtract(set.points[0])
@@ -976,7 +982,7 @@ class seen.LightRenderModel
     @type           = light.type
     @intensity      = light.intensity
     @point          = light.point.copy().transform(transform)
-    origin          = seen.Points.ZERO.copy().transform(transform)
+    origin          = seen.Points.ZERO().transform(transform)
     @normal         = light.normal.copy().transform(transform).subtract(origin).normalize()
 
 
@@ -1975,13 +1981,16 @@ if window?
       window.webkitRequestAnimationFrame ?
       window.msRequestAnimationFrame
 
+DEFAULT_FRAME_DELAY = 30 # msec
+
 # The animator class is useful for creating an animation loop. We supply pre
 # and post events for apply animation changes between frames.
 class seen.Animator
   constructor : () ->
-    @dispatch = seen.Events.dispatch('beforeFrame', 'afterFrame', 'frame')
-    @on       = @dispatch.on
-    @_running = false
+    @dispatch  = seen.Events.dispatch('beforeFrame', 'afterFrame', 'frame')
+    @on        = @dispatch.on
+    @timestamp = 0
+    @_running  = false
 
   # Start the animation loop. The delay between frames can be supplied as an argument.
   start: (msecDelay) ->
@@ -2000,15 +2009,22 @@ class seen.Animator
     if requestAnimationFrame? and not @_msecDelay?
       requestAnimationFrame(@frame)
     else
-      @_msecDelay ?= 30
+      @_msecDelay ?= DEFAULT_FRAME_DELAY
       setTimeout(@frame, @_msecDelay)
 
   # The main animation frame method
-  frame: () =>
+  frame: (t) =>
     return unless @_running
-    @dispatch.beforeFrame()
-    @dispatch.frame()
-    @dispatch.afterFrame()
+
+    # create timestamp param even if requestAnimationFrame isn't available
+    @_timestamp    = t ? (@_timestamp + (@_msecDelay ? DEFAULT_FRAME_DELAY))
+    deltaTimestamp = if @_lastTimestamp? then @_timestamp - @_lastTimestamp else @_timestamp
+
+    @dispatch.beforeFrame(@_timestamp, deltaTimestamp)
+    @dispatch.frame(@_timestamp, deltaTimestamp)
+    @dispatch.afterFrame(@_timestamp, deltaTimestamp)
+
+    @_lastTimestamp = @_timestamp
     @animateFrame()
     return @
 
@@ -2035,24 +2051,25 @@ class seen.RenderAnimator extends seen.Animator
 
  # A transition object to manage to animation of shapes
 class seen.Transition
-  constructor : (options = {}) ->
-    seen.Util.defaults(@, options,
-      tickIncrement : 0.2 # The amount to increase @t for each frame.
-      lastT         : 1.0 # The value of @t that indicates the transition is complete.
-    )
-    @t = 0
+  defaults :
+    duration : 100 # The duration of this transition in msec
 
-  update : ->
+  constructor : (options = {}) ->
+    seen.Util.defaults(@, options, @defaults)
+
+  update : (t) ->
     # Setup the first frame before the tick increment
-    if (@t is 0)
+    if not @t?
       @firstFrame()
+      @startT = t
 
     # Execute a tick and draw a frame
-    @t += @tickIncrement
+    @t = t
+    @tFrac = (@t - @startT) / @duration
     @frame()
 
     # Cleanup or update on last frame after tick
-    if (@t >= @lastT)
+    if (@tFrac >= 1.0)
       @lastFrame()
       return false
 
@@ -2088,10 +2105,10 @@ class seen.TransitionAnimator extends seen.Animator
   # not done, we re-enqueue them at the front. If all transitions are
   # complete, we will start animating the next set of transitions from the
   # keyframe queue on the next update.
-  update : =>
+  update : (t) =>
     return unless @queue.length
     transitions = @queue.shift()
-    transitions = transitions.filter (transition) -> transition.update()
+    transitions = transitions.filter (transition) -> transition.update(t)
     if transitions.length then @queue.unshift(transitions)
 
 
@@ -2235,7 +2252,7 @@ class seen.Scene
     viewport         : seen.Viewports.origin(1,1)
 
     # The scene's shader determines which lighting model is used.
-    shader           : seen.Shaders.phong
+    shader           : seen.Shaders.phong()
 
     # The `cullBackfaces` boolean can be used to turn off backface-culling
     # for the whole scene. Beware, turning this off can slow down a scene's

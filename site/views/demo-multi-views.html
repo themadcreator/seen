@@ -38,20 +38,18 @@
     viewport         : seen.Viewports.center(dims[i]...)
 
   # Alter camera matrix for main viewport
-  scenes[0].camera.scale(2).rotx(Math.PI/4).roty(-Math.PI/4).rotz(-Math.PI/4)
+  scenes[0].camera.scale(2)
 
   # Rotate mini viewports
-  scenes[1].camera.reset()
   scenes[2].camera.rotx(Math.PI/2)
   scenes[3].camera.rotx(-Math.PI/2)
   scenes[4].camera.roty(-Math.PI/2)
 
   # Load the object file using jquery
-  shape = null
   $.get 'assets/bunny-low.obj', {}, (contents) ->
     # Create shape from object file
     shape = seen.Shapes.obj(contents, false)
-    shape.scale(8).translate(0,-30)
+    shape.scale(8).translate(0,-30).rotx(Math.PI/4).roty(-Math.PI/4).rotz(-Math.PI/4)
 
     # Apply random colors to surfaces
     seen.Colors.randomSurfaces2(shape)
@@ -70,7 +68,7 @@
   dragger = new seen.Drag('seen-canvas-0', {inertia : true})
   dragger.on('drag.rotate', (e) ->
     xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
-    shape?.transform(xform)
+    model.transform(xform)
     renderAll()
   )
 </script>

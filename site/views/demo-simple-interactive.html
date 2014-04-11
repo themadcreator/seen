@@ -23,7 +23,7 @@
 
   # Slowly rotate sphere
   context.animate()
-    .onBefore(-> shape.rotx(0.01).roty(0.007))
+    .onBefore((t, dt) -> shape.rotx(dt*1e-4).roty(0.7*dt*1e-4))
     .start()
 
   # Enable drag-to-rotate on the canvas

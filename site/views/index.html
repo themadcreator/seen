@@ -86,17 +86,16 @@
     context = seen.Context('seen-canvas', scene).render()
 
     # Apply animated 3D simplex noise to patch vertices
-    t = 0
     noiser = new Simplex3D(Math.random())
     context.animate()
-      .onBefore(->
+      .onBefore((t)->
+        t *= -
         for surf in shape.surfaces
           for p in surf.points
-            p.z = 2*noiser.noise(p.x/8, p.y/8, t)
+            p.z = 2*noiser.noise(p.x/8, p.y/8, t * 1e-4)
           # Since we're modifying the point directly, we need to mark the surface dirty
           # to make sure the cache doesn't ignore the change
           surf.dirty = true
-        t += 0.005
       )
       .start()
   </script>

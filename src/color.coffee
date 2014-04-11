@@ -120,8 +120,8 @@ seen.Colors = {
     hue = Math.random()
     for surface in shape.surfaces
       hue += (Math.random() - 0.5) * drift
-      if hue < 0 then hue = 1
-      if hue > 1 then hue = 0
+      while hue < 0 then hue += 1
+      while hue > 1 then hue -= 1
       surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
 
   # Generates a random color then sets the fill for every surface of the
