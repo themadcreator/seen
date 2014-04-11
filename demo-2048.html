@@ -212,7 +212,7 @@
       @model.add(@shape)
 
     frame : ->
-      PLACE(@shape, @start, @tile, @t)
+      PLACE(@shape, @start, @tile, @tFrac)
 
     lastFrame : ->
       PLACE(@shape, @tile)
@@ -220,13 +220,13 @@
   # The transition for when a tile is simply moved
   class MoveTransition extends seen.Transition
     frame : ->
-      PLACE(@shape, @tile.previousPosition, @tile, @t)
+      PLACE(@shape, @tile.previousPosition, @tile, @tFrac)
 
   # The transition for when two tiles are merged into one
   class MergeTransition extends seen.Transition
     frame : ->
-      PLACE(@shape0, @tile.mergedFrom[0].previousPosition, @tile, @t)
-      PLACE(@shape1, @tile.mergedFrom[1].previousPosition, @tile, @t)
+      PLACE(@shape0, @tile.mergedFrom[0].previousPosition, @tile, @tFrac)
+      PLACE(@shape1, @tile.mergedFrom[1].previousPosition, @tile, @tFrac)
 
     lastFrame : ->
       PLACE(@shape, @tile)
@@ -244,8 +244,7 @@
         cullBackfaces    : false
         fractionalPoints : true
         model            : new seen.Model().scale(SCALE).rotx(-0.5)
-        camera           : new seen.Camera
-          viewport : seen.Viewports.center(900, 500)
+        viewport         : seen.Viewports.center(900, 500)
 
       # Add some lights
       @scene.model.add seen.Lights.point
@@ -257,6 +256,8 @@
 
       # Append a submodel to create a tree of transforms
       @subModel = @scene.model.append()
+        .translate(-SIZE/2,-SIZE/2 + 0.5)
+        .bake() # bake in transformation so that later .reset() will return to this state
 
       # Create the shapes for the board
       [0...SIZE].map (x) => [0...SIZE].map (y) =>
@@ -276,13 +277,11 @@
       @context.sceneLayer(@scene)
 
       # Slowly rock the board back and forth, cuz why not? It is THREEEE-DEEEEE!!!
-      rotateTick = 0
       doRotate = true
       animator = @context.animate().start()
-      animator.onBefore =>
-        @subModel.reset().translate(-SIZE/2,-SIZE/2 + 0.5)
-        if doRotate then @subModel.rotz(Math.sin(rotateTick) / 10)
-        rotateTick += 0.005
+      animator.onBefore (t, dt) =>
+        @subModel.reset()
+        if doRotate then @subModel.rotz(Math.sin(t*3e-4) / 10)
 
       $('#toggle-nausea').click => doRotate = not doRotate
 

@@ -56,16 +56,15 @@
 
   # Create scene and add shape to model
   scene = new seen.Scene
-    model  : seen.Models.default().add(shape)
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    model    : seen.Models.default().add(shape)
+    viewport : seen.Viewports.center(width, height)
 
   # Create render context from canvas
   context = seen.Context('seen-canvas', scene).render()
 
   # Slowly rotate sphere
   context.animate()
-    .onBefore(-> shape.rotx(0.01).roty(0.007))
+    .onBefore((t, dt) -> shape.rotx(dt*1e-4).roty(0.7*dt*1e-4))
     .start()
 
   # Enable drag-to-rotate on the canvas

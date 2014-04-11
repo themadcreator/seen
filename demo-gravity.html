@@ -61,7 +61,7 @@
   class BodyPainter
     paint : (renderModel, context) ->
       # Apply surface's transformation to determine scale.
-      unit       = seen.Points.X.copy().transform(renderModel.transform)
+      unit       = seen.Points.X().transform(renderModel.transform)
       scale      = Math.sqrt(unit.dot(unit))
       radius     = scale * renderModel.surface.radius
       massRadius = scale * renderModel.surface.massRadius
@@ -90,7 +90,7 @@
 
     simulate : =>
       collisions = @simulation.simulate()
-      
+
       collided = _(collisions)
         .map((collision) -> [collision.a, collision.b])
         .flatten()
@@ -127,8 +127,7 @@
     cullBackfaces    : false
     fractionalPoints : true
     model            : seen.Models.default()
-    camera           : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    viewport         : seen.Viewports.center(width, height)
 
   seenModel = scene.model.append()
 

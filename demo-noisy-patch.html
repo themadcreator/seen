@@ -70,9 +70,8 @@
 
   # Create scene and render context
   scene = new seen.Scene
-    model  : seen.Models.default().add(shape)
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    model    : seen.Models.default().add(shape)
+    viewport : seen.Viewports.center(width, height)
 
   context = seen.Context('seen-canvas', scene).render()
 
@@ -80,14 +79,13 @@
   t = 0
   noiser = new Simplex3D(shape)
   context.animate()
-    .onBefore(->
+    .onBefore((t)->
       for surf in shape.surfaces
         for p in surf.points
-          p.z = 4*noiser.noise(p.x/8, p.y/8, t)
+          p.z = 4*noiser.noise(p.x/8, p.y/8, t*1e-4)
         # Since we're modifying the point directly, we need to mark the surface dirty
         # to make sure the cache doesn't ignore the change
         surf.dirty = true
-      t += 0.01
     )
     .start()
 

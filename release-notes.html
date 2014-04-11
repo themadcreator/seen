@@ -16,7 +16,23 @@
   <div class="page">
     <h1>Release Notes</h1>
     <div class="content">
-      <h3 id="v0-1-5">v0.1.5</h3>
+      <h3 id="v0-2-0">v0.2.0</h3>
+<p><em>April 11, 2014</em></p>
+<ul>
+<li><p>Fix specular phong shading calculation.</p>
+</li>
+<li><p>Move viewport into scene to make scene construction cleaner.</p>
+</li>
+<li><p>Cameras are now seen.Transformable objects</p>
+</li>
+<li><p>Points and shaders utilities use functions instead of raw objects (e.g. seen.Points.X()) for a more consistent API.</p>
+</li>
+<li><p>Animators have timestamps and time-delta and transitions have time-since-start and duration-fraction all in milliseconds for better animation consistency across environments.</p>
+</li>
+<li><p>Added transformation baking so transformables can be reset to a non-identity matrix.</p>
+</li>
+</ul>
+<h3 id="v0-1-5">v0.1.5</h3>
 <p><em>April 10, 2014</em></p>
 <ul>
 <li><p>Change animator method to &#39;frame&#39; instead of &#39;render&#39; for a more agnostic API.</p>

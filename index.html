@@ -24,7 +24,7 @@
 
       <a href="dist/latest/seen.min.js">
         <div class="download-button">
-          <div class="download-title">Download seen.min.js v0.1.5</div>
+          <div class="download-title">Download seen.min.js v0.2.0</div>
         </div>
       </a>
 
@@ -35,6 +35,8 @@
       </p>
 
       <p>seen.js has no dependencies.</p>
+
+      <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a></p>
 
       <p>To see what is new in this version, read the <a href="release-notes.html">release notes</a>.</p>
 
@@ -99,23 +101,21 @@
     scene = new seen.Scene
       fractionalPoints : true
       model            : seen.Models.default().add(shape)
-      camera           : new seen.Camera
-        viewport : seen.Viewports.center(width, height)
+      viewport         : seen.Viewports.center(width, height)
 
     context = seen.Context('seen-canvas', scene).render()
 
     # Apply animated 3D simplex noise to patch vertices
-    t = 0
     noiser = new Simplex3D(Math.random())
     context.animate()
-      .onBefore(->
+      .onBefore((t)->
+        t *= -
         for surf in shape.surfaces
           for p in surf.points
-            p.z = 2*noiser.noise(p.x/8, p.y/8, t)
+            p.z = 2*noiser.noise(p.x/8, p.y/8, t * 1e-4)
           # Since we're modifying the point directly, we need to mark the surface dirty
           # to make sure the cache doesn't ignore the change
           surf.dirty = true
-        t += 0.005
       )
       .start()
   </script>

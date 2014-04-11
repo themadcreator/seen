@@ -117,9 +117,8 @@
 
   # Create empty scene and render context
   scene = new seen.Scene
-    model  : seen.Models.default()
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    model    : seen.Models.default()
+    viewport : seen.Viewports.center(width, height)
 
   context = seen.Context('seen-canvas', scene).render()
 
@@ -186,7 +185,7 @@
 
   updateLightingModel = ->
     shaderType = $('input[name=model-radio]:checked').val()
-    scene.shader = seen.Shaders[shaderType]
+    scene.shader = seen.Shaders[shaderType]()
     context.render()
 
   # UI Events
@@ -195,10 +194,10 @@
     $('#hue-slider').slider(slide : updateHue)
     $('#shinyness-slider').slider().slider(
       slide : updateShinyness
-      value : 8
-      min   : 0
-      max   : 20
-      step  : 0.1
+      value : 15
+      min   : 1
+      max   : 60
+      step  : 1
     )
     $('#metallic-radios').buttonset().click(updateMetallic)
     $('#light-toggles').buttonset().click(updateLights)

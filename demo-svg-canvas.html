@@ -67,9 +67,8 @@
   # Create one scene for each shape
   scenes = shapes.map (shape) -> new seen.Scene
     fractionalPoints : true
-    model  : seen.Models.default().add(shape)
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    model            : seen.Models.default().add(shape)
+    viewport         : seen.Viewports.center(width, height)
 
   # Create a render context for each SVG and Canvas
   contexts = []
@@ -78,8 +77,8 @@
       contexts.push seen.Context("seen-#{type}-#{i}", scene).render()
 
   # Slowly rotate shapes
-  new seen.Animator().onFrame(->
-    for shape in shapes then shape.rotx(0.01).roty(0.007)
+  new seen.Animator().onFrame((t, dt) ->
+    for shape in shapes then shape.rotx(dt*3e-4).roty(dt*2e-4)
     for context in contexts then context.render()
   ).start()
 
