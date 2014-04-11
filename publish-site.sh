@@ -24,4 +24,3 @@ git checkout gh-pages
 cp -r site-dist/* .
 git add --all .
 git commit -m 'updating site'
-git checkout master
