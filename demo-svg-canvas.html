@@ -78,7 +78,7 @@
       contexts.push seen.Context("seen-#{type}-#{i}", scene).render()
 
   # Slowly rotate shapes
-  new seen.Animator().onRender(->
+  new seen.Animator().onFrame(->
     for shape in shapes then shape.rotx(0.01).roty(0.007)
     for context in contexts then context.render()
   ).start()

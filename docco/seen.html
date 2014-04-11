@@ -2245,7 +2245,7 @@ Since we support both SVG and Canvas painters, the <code>RenderContext</code> an
             </div>
             
             <div class="content"><div class='highlight'><pre>  animate :<span class="hljs-function"> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Animator().onRender(<span class="hljs-property">@render</span>)</pre></div></div>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.RenderAnimator(@)</pre></div></div>
             
         </li>
         
@@ -2266,7 +2266,7 @@ a fill backdrop, or even multiple scenes in one context.</p>
       layer   : layer
       context : @
     }
-    <span class="hljs-keyword">return</span> @ 
+    <span class="hljs-keyword">return</span> @
 
   sceneLayer : <span class="hljs-function"><span class="hljs-params">(scene)</span> -&gt;</span>
     <span class="hljs-property">@layer</span>(<span class="hljs-keyword">new</span> seen.SceneLayer(scene))
@@ -2293,7 +2293,7 @@ a fill backdrop, or even multiple scenes in one context.</p>
   rect    :<span class="hljs-function"> -&gt;</span> <span class="hljs-comment"># Return a rect painter</span>
   circle  :<span class="hljs-function"> -&gt;</span> <span class="hljs-comment"># Return a circle painter</span>
   text    :<span class="hljs-function"> -&gt;</span> <span class="hljs-comment"># Return a text painter</span>
-  
+
   reset   :<span class="hljs-function"> -&gt;</span>
   cleanup :<span class="hljs-function"> -&gt;</span></pre></div></div>
             
@@ -2994,10 +2994,24 @@ seen.<span class="hljs-function"><span class="hljs-title">CanvasContext</span> =
             </div>
             
             <div class="content"><div class='highlight'><pre>seen.WindowEvents = <span class="hljs-keyword">do</span><span class="hljs-function"> -&gt;</span>
-  dispatch = seen.Events.dispatch(<span class="hljs-string">'mouseMove'</span>, <span class="hljs-string">'mouseDown'</span>, <span class="hljs-string">'mouseUp'</span>)
-  <span class="hljs-built_in">window</span>?.addEventListener(<span class="hljs-string">'mouseup'</span>, dispatch.mouseUp, <span class="hljs-literal">true</span>)
-  <span class="hljs-built_in">window</span>?.addEventListener(<span class="hljs-string">'mousedown'</span>, dispatch.mouseDown, <span class="hljs-literal">true</span>)
-  <span class="hljs-built_in">window</span>?.addEventListener(<span class="hljs-string">'mousemove'</span>, dispatch.mouseMove, <span class="hljs-literal">true</span>)
+  dispatch = seen.Events.dispatch(
+    <span class="hljs-string">'mouseMove'</span>
+    <span class="hljs-string">'mouseDown'</span>
+    <span class="hljs-string">'mouseUp'</span>
+    <span class="hljs-string">'touchStart'</span>
+    <span class="hljs-string">'touchMove'</span>
+    <span class="hljs-string">'touchEnd'</span>
+    <span class="hljs-string">'touchCancel'</span>
+  )
+
+  <span class="hljs-keyword">if</span> <span class="hljs-built_in">window</span>?
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">'mouseup'</span>, dispatch.mouseUp, <span class="hljs-literal">true</span>)
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">'mousedown'</span>, dispatch.mouseDown, <span class="hljs-literal">true</span>)
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">'mousemove'</span>, dispatch.mouseMove, <span class="hljs-literal">true</span>)
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">'touchstart'</span>, dispatch.touchStart, <span class="hljs-literal">true</span>)
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">'touchmove'</span>, dispatch.touchMove, <span class="hljs-literal">true</span>)
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">'touchend'</span>, dispatch.touchEnd, <span class="hljs-literal">true</span>)
+    <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">'touchcancel'</span>, dispatch.touchCancel, <span class="hljs-literal">true</span>)
   <span class="hljs-keyword">return</span> {<span class="hljs-literal">on</span> : dispatch.<span class="hljs-literal">on</span>}</pre></div></div>
             
         </li>
@@ -3021,8 +3035,16 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
 
     <span class="hljs-property">@_uid</span> = seen.Util.uniqueId(<span class="hljs-string">'mouser-'</span>)
 
-    <span class="hljs-property">@dispatch</span> = seen.Events.dispatch(<span class="hljs-string">'dragStart'</span>, <span class="hljs-string">'drag'</span>, <span class="hljs-string">'dragEnd'</span>, <span class="hljs-string">'mouseMove'</span>, <span class="hljs-string">'mouseDown'</span>, <span class="hljs-string">'mouseUp'</span>, <span class="hljs-string">'mouseWheel'</span>)
-    <span class="hljs-property">@on</span>       = <span class="hljs-property">@dispatch</span>.<span class="hljs-literal">on</span>
+    <span class="hljs-property">@dispatch</span> = seen.Events.dispatch(
+      <span class="hljs-string">'dragStart'</span>
+      <span class="hljs-string">'drag'</span>
+      <span class="hljs-string">'dragEnd'</span>
+      <span class="hljs-string">'mouseMove'</span>
+      <span class="hljs-string">'mouseDown'</span>
+      <span class="hljs-string">'mouseUp'</span>
+      <span class="hljs-string">'mouseWheel'</span>
+    )
+    <span class="hljs-property">@on</span> = <span class="hljs-property">@dispatch</span>.<span class="hljs-literal">on</span>
 
     <span class="hljs-property">@_mouseDown</span> = <span class="hljs-literal">false</span>
     <span class="hljs-property">@attach</span>()</pre></div></div>
@@ -3041,6 +3063,7 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
             </div>
             
             <div class="content"><div class='highlight'><pre>  attach : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    <span class="hljs-property">@el</span>.addEventListener(<span class="hljs-string">'touchstart'</span>, <span class="hljs-property">@_onMouseDown</span>)
     <span class="hljs-property">@el</span>.addEventListener(<span class="hljs-string">'mousedown'</span>, <span class="hljs-property">@_onMouseDown</span>)
     <span class="hljs-property">@el</span>.addEventListener(<span class="hljs-string">'mousewheel'</span>, <span class="hljs-property">@_onMouseWheel</span>)</pre></div></div>
             
@@ -3058,17 +3081,23 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
             </div>
             
             <div class="content"><div class='highlight'><pre>  detach : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    <span class="hljs-property">@el</span>.removeEventListener(<span class="hljs-string">'touchstart'</span>, <span class="hljs-property">@_onMouseDown</span>)
     <span class="hljs-property">@el</span>.removeEventListener(<span class="hljs-string">'mousedown'</span>, <span class="hljs-property">@_onMouseDown</span>)
     <span class="hljs-property">@el</span>.removeEventListener(<span class="hljs-string">'mousewheel'</span>, <span class="hljs-property">@_onMouseWheel</span>)
 
   _onMouseMove : <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span>
     <span class="hljs-property">@dispatch</span>.mouseMove(e)
+    e.preventDefault()
+    e.stopPropagation()
     <span class="hljs-keyword">if</span> <span class="hljs-property">@_mouseDown</span> <span class="hljs-keyword">then</span> <span class="hljs-property">@dispatch</span>.drag(e)
 
   _onMouseDown : <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span>
     <span class="hljs-property">@_mouseDown</span> = <span class="hljs-literal">true</span>
     seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"mouseUp.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-property">@_onMouseUp</span>
     seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"mouseMove.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-property">@_onMouseMove</span>
+    seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"touchEnd.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-property">@_onMouseUp</span>
+    seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"touchCancel.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-property">@_onMouseUp</span>
+    seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"touchMove.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-property">@_onMouseMove</span>
     <span class="hljs-property">@dispatch</span>.mouseDown(e)
     <span class="hljs-property">@dispatch</span>.dragStart(e)
 
@@ -3076,6 +3105,9 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
     <span class="hljs-property">@_mouseDown</span> = <span class="hljs-literal">false</span>
     seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"mouseUp.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-literal">null</span>
     seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"mouseMove.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-literal">null</span>
+    seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"touchEnd.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-literal">null</span>
+    seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"touchCancel.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-literal">null</span>
+    seen.WindowEvents.<span class="hljs-literal">on</span> <span class="hljs-string">"touchMove.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-literal">null</span>
     <span class="hljs-property">@dispatch</span>.mouseUp(e)
     <span class="hljs-property">@dispatch</span>.dragEnd(e)
 
@@ -3181,34 +3213,45 @@ look or mouse-rotate to a scene.</p>
     mouser.<span class="hljs-literal">on</span> <span class="hljs-string">"dragEnd.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-property">@_onDragEnd</span>
     mouser.<span class="hljs-literal">on</span> <span class="hljs-string">"drag.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-property">@_onDrag</span>
 
+  _getPageCoords : <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">if</span> e.touches?.length &gt; <span class="hljs-number">0</span>
+      [e.touches[<span class="hljs-number">0</span>].pageX, e.touches[<span class="hljs-number">0</span>].pageY]
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> e.changedTouches?.length &gt; <span class="hljs-number">0</span>
+      [e.changedTouches[<span class="hljs-number">0</span>].pageX, e.changedTouches[<span class="hljs-number">0</span>].pageY]
+    <span class="hljs-keyword">else</span>
+      [e.pageX, e.pageY]
+
   _onDragStart : <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span>
     <span class="hljs-property">@_stopInertia</span>()
     <span class="hljs-property">@_dragState</span>.dragging = <span class="hljs-literal">true</span>
-    <span class="hljs-property">@_dragState</span>.origin = [e.pageX, e.pageY]
-    <span class="hljs-property">@_dragState</span>.last   = [e.pageX, e.pageY]
+    <span class="hljs-property">@_dragState</span>.origin   = <span class="hljs-property">@_getPageCoords</span>(e)
+    <span class="hljs-property">@_dragState</span>.last     = <span class="hljs-property">@_getPageCoords</span>(e)
 
   _onDragEnd : <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span>
     <span class="hljs-property">@_dragState</span>.dragging = <span class="hljs-literal">false</span>
 
     <span class="hljs-keyword">if</span> <span class="hljs-property">@inertia</span>
+      page = <span class="hljs-property">@_getPageCoords</span>(e)
       dragEvent =
-        offset         : [e.pageX - <span class="hljs-property">@_dragState</span>.origin[<span class="hljs-number">0</span>], e.pageY - <span class="hljs-property">@_dragState</span>.origin[<span class="hljs-number">1</span>]]
-        offsetRelative : [e.pageX - <span class="hljs-property">@_dragState</span>.last[<span class="hljs-number">0</span>], e.pageY - <span class="hljs-property">@_dragState</span>.last[<span class="hljs-number">1</span>]]
+        offset         : [page[<span class="hljs-number">0</span>] - <span class="hljs-property">@_dragState</span>.origin[<span class="hljs-number">0</span>], page[<span class="hljs-number">1</span>] - <span class="hljs-property">@_dragState</span>.origin[<span class="hljs-number">1</span>]]
+        offsetRelative : [page[<span class="hljs-number">0</span>] - <span class="hljs-property">@_dragState</span>.last[<span class="hljs-number">0</span>], page[<span class="hljs-number">1</span>] - <span class="hljs-property">@_dragState</span>.last[<span class="hljs-number">1</span>]]
 
       <span class="hljs-property">@_dragState</span>.inertia.update(dragEvent.offsetRelative)
       <span class="hljs-property">@_startInertia</span>()
 
   _onDrag : <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span>
+    page = <span class="hljs-property">@_getPageCoords</span>(e)
+
     dragEvent =
-      offset         : [e.pageX - <span class="hljs-property">@_dragState</span>.origin[<span class="hljs-number">0</span>], e.pageY - <span class="hljs-property">@_dragState</span>.origin[<span class="hljs-number">1</span>]]
-      offsetRelative : [e.pageX - <span class="hljs-property">@_dragState</span>.last[<span class="hljs-number">0</span>], e.pageY - <span class="hljs-property">@_dragState</span>.last[<span class="hljs-number">1</span>]]
+      offset         : [page[<span class="hljs-number">0</span>] - <span class="hljs-property">@_dragState</span>.origin[<span class="hljs-number">0</span>], page[<span class="hljs-number">1</span>] - <span class="hljs-property">@_dragState</span>.origin[<span class="hljs-number">1</span>]]
+      offsetRelative : [page[<span class="hljs-number">0</span>] - <span class="hljs-property">@_dragState</span>.last[<span class="hljs-number">0</span>], page[<span class="hljs-number">1</span>]- <span class="hljs-property">@_dragState</span>.last[<span class="hljs-number">1</span>]]
 
     <span class="hljs-property">@dispatch</span>.drag(dragEvent)
 
     <span class="hljs-keyword">if</span> <span class="hljs-property">@inertia</span>
       <span class="hljs-property">@_dragState</span>.inertia.update(dragEvent.offsetRelative)
 
-    <span class="hljs-property">@_dragState</span>.last = [e.pageX, e.pageY]
+    <span class="hljs-property">@_dragState</span>.last = page
 
   _onInertia : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> <span class="hljs-property">@_inertiaRunning</span></pre></div></div>
@@ -3272,7 +3315,7 @@ as the user is scrolls their mouse wheel.</p>
     <span class="hljs-property">@_uid</span>     = seen.Util.uniqueId(<span class="hljs-string">'zoomer-'</span>)
     <span class="hljs-property">@dispatch</span> = seen.Events.dispatch(<span class="hljs-string">'zoom'</span>)
     <span class="hljs-property">@on</span>       = <span class="hljs-property">@dispatch</span>.<span class="hljs-literal">on</span>
-    
+
     mouser    = <span class="hljs-keyword">new</span> seen.MouseEvents(<span class="hljs-property">@el</span>)
     mouser.<span class="hljs-literal">on</span> <span class="hljs-string">"mouseWheel.<span class="hljs-subst">#{<span class="hljs-property">@_uid</span>}</span>"</span>, <span class="hljs-property">@_onMouseWheel</span>
 
@@ -3292,7 +3335,7 @@ as the user is scrolls their mouse wheel.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>    e.preventDefault()
-    
+
     sign       = e.wheelDelta / Math.abs(e.wheelDelta)
     zoomFactor = Math.abs(e.wheelDelta) / <span class="hljs-number">120</span> * <span class="hljs-property">@speed</span>
     zoom       = Math.pow(<span class="hljs-number">2</span>, sign*zoomFactor)
@@ -4388,14 +4431,14 @@ the triangular subdivision of the surface.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-207">&#182;</a>
               </div>
-              <p>The animator class is useful for creating a render loop. We supply pre and
-post render events for apply animation changes between renders.</p>
+              <p>The animator class is useful for creating an animation loop. We supply pre
+and post events for apply animation changes between frames.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Animator</span></span>
   constructor : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
-    <span class="hljs-property">@dispatch</span> = seen.Events.dispatch(<span class="hljs-string">'beforeRender'</span>, <span class="hljs-string">'afterRender'</span>, <span class="hljs-string">'render'</span>)
+    <span class="hljs-property">@dispatch</span> = seen.Events.dispatch(<span class="hljs-string">'beforeFrame'</span>, <span class="hljs-string">'afterFrame'</span>, <span class="hljs-string">'frame'</span>)
     <span class="hljs-property">@on</span>       = <span class="hljs-property">@dispatch</span>.<span class="hljs-literal">on</span>
     <span class="hljs-property">@_running</span> = <span class="hljs-literal">false</span></pre></div></div>
             
@@ -4408,7 +4451,7 @@ post render events for apply animation changes between renders.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-208">&#182;</a>
               </div>
-              <p>Start the render loop. The delay between frames can be supplied as an argument.</p>
+              <p>Start the animation loop. The delay between frames can be supplied as an argument.</p>
 
             </div>
             
@@ -4427,7 +4470,7 @@ post render events for apply animation changes between renders.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-209">&#182;</a>
               </div>
-              <p>Stop the render loop.</p>
+              <p>Stop the animation loop.</p>
 
             </div>
             
@@ -4450,10 +4493,10 @@ post render events for apply animation changes between renders.</p>
             
             <div class="content"><div class='highlight'><pre>  animateFrame :<span class="hljs-function"> -&gt;</span>
     <span class="hljs-keyword">if</span> requestAnimationFrame? <span class="hljs-keyword">and</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@_msecDelay</span>?
-      requestAnimationFrame(<span class="hljs-property">@render</span>)
+      requestAnimationFrame(<span class="hljs-property">@frame</span>)
     <span class="hljs-keyword">else</span>
       <span class="hljs-property">@_msecDelay</span> ?= <span class="hljs-number">30</span>
-      setTimeout(<span class="hljs-property">@render</span>, <span class="hljs-property">@_msecDelay</span>)</pre></div></div>
+      setTimeout(<span class="hljs-property">@frame</span>, <span class="hljs-property">@_msecDelay</span>)</pre></div></div>
             
         </li>
         
@@ -4464,15 +4507,15 @@ post render events for apply animation changes between renders.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-211">&#182;</a>
               </div>
-              <p>The main render loop method</p>
+              <p>The main animation frame method</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">render</span>: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span>
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">frame</span>: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> <span class="hljs-property">@_running</span>
-    <span class="hljs-property">@dispatch</span>.beforeRender()
-    <span class="hljs-property">@dispatch</span>.render()
-    <span class="hljs-property">@dispatch</span>.afterRender()
+    <span class="hljs-property">@dispatch</span>.beforeFrame()
+    <span class="hljs-property">@dispatch</span>.frame()
+    <span class="hljs-property">@dispatch</span>.afterFrame()
     <span class="hljs-property">@animateFrame</span>()
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
@@ -4485,12 +4528,12 @@ post render events for apply animation changes between renders.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-212">&#182;</a>
               </div>
-              <p>Add a callback that will be invoked before the render</p>
+              <p>Add a callback that will be invoked before the frame</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  onBefore : <span class="hljs-function"><span class="hljs-params">(handler)</span> -&gt;</span>
-    <span class="hljs-property">@on</span> <span class="hljs-string">"beforeRender.<span class="hljs-subst">#{seen.Util.uniqueId(<span class="hljs-string">'animator-'</span>)}</span>"</span>, handler
+    <span class="hljs-property">@on</span> <span class="hljs-string">"beforeFrame.<span class="hljs-subst">#{seen.Util.uniqueId(<span class="hljs-string">'animator-'</span>)}</span>"</span>, handler
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
@@ -4502,12 +4545,12 @@ post render events for apply animation changes between renders.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-213">&#182;</a>
               </div>
-              <p>Add a callback that will be invoked after the render</p>
+              <p>Add a callback that will be invoked after the frame</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  onAfter : <span class="hljs-function"><span class="hljs-params">(handler)</span> -&gt;</span>
-    <span class="hljs-property">@on</span> <span class="hljs-string">"afterRender.<span class="hljs-subst">#{seen.Util.uniqueId(<span class="hljs-string">'animator-'</span>)}</span>"</span>, handler
+    <span class="hljs-property">@on</span> <span class="hljs-string">"afterFrame.<span class="hljs-subst">#{seen.Util.uniqueId(<span class="hljs-string">'animator-'</span>)}</span>"</span>, handler
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
@@ -4519,12 +4562,12 @@ post render events for apply animation changes between renders.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-214">&#182;</a>
               </div>
-              <p>Add a render callback</p>
+              <p>Add a frame callback</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  onRender : <span class="hljs-function"><span class="hljs-params">(handler)</span> -&gt;</span>
-    <span class="hljs-property">@on</span> <span class="hljs-string">"render.<span class="hljs-subst">#{seen.Util.uniqueId(<span class="hljs-string">'animator-'</span>)}</span>"</span>, handler
+            <div class="content"><div class='highlight'><pre>  onFrame : <span class="hljs-function"><span class="hljs-params">(handler)</span> -&gt;</span>
+    <span class="hljs-property">@on</span> <span class="hljs-string">"frame.<span class="hljs-subst">#{seen.Util.uniqueId(<span class="hljs-string">'animator-'</span>)}</span>"</span>, handler
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
@@ -4536,11 +4579,14 @@ post render events for apply animation changes between renders.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-215">&#182;</a>
               </div>
-              <h2 id="camera">Camera</h2>
-<h4 id="projections-viewports-and-cameras">Projections, Viewports, and Cameras</h4>
-<hr>
+              <p>A seen.Animator for rendering the seen.Context</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">RenderAnimator</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Animator</span></span>
+  constructor : <span class="hljs-function"><span class="hljs-params">(context)</span> -&gt;</span>
+    <span class="hljs-keyword">super</span>
+    <span class="hljs-property">@onFrame</span>(context.render)</pre></div></div>
             
         </li>
         
@@ -4551,8 +4597,19 @@ post render events for apply animation changes between renders.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-216">&#182;</a>
               </div>
-              
+              <p>A transition object to manage to animation of shapes</p>
+
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Transition</span></span>
+  constructor : <span class="hljs-function"><span class="hljs-params">(options = {})</span> -&gt;</span>
+    seen.Util.defaults(@, options,
+      tickIncrement : <span class="hljs-number">0.2</span> <span class="hljs-comment"># The amount to increase @t for each frame.</span>
+      lastT         : <span class="hljs-number">1.0</span> <span class="hljs-comment"># The value of @t that indicates the transition is complete.</span>
+    )
+    <span class="hljs-property">@t</span> = <span class="hljs-number">0</span>
+
+  update :<span class="hljs-function"> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -4562,6 +4619,168 @@ post render events for apply animation changes between renders.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-217">&#182;</a>
+              </div>
+              <p>Setup the first frame before the tick increment</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (<span class="hljs-property">@t</span> <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>)
+      <span class="hljs-property">@firstFrame</span>()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-218">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-218">&#182;</a>
+              </div>
+              <p>Execute a tick and draw a frame</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@t</span> += <span class="hljs-property">@tickIncrement</span>
+    <span class="hljs-property">@frame</span>()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-219">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-219">&#182;</a>
+              </div>
+              <p>Cleanup or update on last frame after tick</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (<span class="hljs-property">@t</span> &gt;= <span class="hljs-property">@lastT</span>)
+      <span class="hljs-property">@lastFrame</span>()
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
+
+  firstFrame :<span class="hljs-function"> -&gt;</span>
+  frame      :<span class="hljs-function"> -&gt;</span>
+  lastFrame  :<span class="hljs-function"> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-220">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-220">&#182;</a>
+              </div>
+              <p>A seen.Animator for updating seen.Transtions. We include keyframing to make
+sure we wait for one transition to finish before starting the next one.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">TransitionAnimator</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Animator</span></span>
+  constructor :<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-keyword">super</span>
+    <span class="hljs-property">@queue</span>       = []
+    <span class="hljs-property">@transitions</span> = []
+    <span class="hljs-property">@onFrame</span>(<span class="hljs-property">@update</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-221">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-221">&#182;</a>
+              </div>
+              <p>Adds a transition object to the current set of transitions. Note that
+transitions will not start until they have been enqueued by invoking
+<code>keyframe()</code> on this object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  add : <span class="hljs-function"><span class="hljs-params">(txn)</span> -&gt;</span>
+    <span class="hljs-property">@transitions</span>.push txn</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-222">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-222">&#182;</a>
+              </div>
+              <p>Enqueues the current set of transitions into the keyframe queue and sets
+up a new set of transitions.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  keyframe :<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-property">@queue</span>.push <span class="hljs-property">@transitions</span>
+    <span class="hljs-property">@transitions</span> = []</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-223">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-223">&#182;</a>
+              </div>
+              <p>When this animator updates, it invokes <code>update()</code> on all of the
+currently animating transitions. If any of the current transitions are
+not done, we re-enqueue them at the front. If all transitions are
+complete, we will start animating the next set of transitions from the
+keyframe queue on the next update.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  update :<span class="hljs-function"> =&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">unless</span> <span class="hljs-property">@queue</span>.length
+    transitions = <span class="hljs-property">@queue</span>.shift()
+    transitions = transitions.filter <span class="hljs-function"><span class="hljs-params">(transition)</span> -&gt;</span> transition.update()
+    <span class="hljs-keyword">if</span> transitions.length <span class="hljs-keyword">then</span> <span class="hljs-property">@queue</span>.unshift(transitions)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-224">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-224">&#182;</a>
+              </div>
+              <h2 id="camera">Camera</h2>
+<h4 id="projections-viewports-and-cameras">Projections, Viewports, and Cameras</h4>
+<hr>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-225">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-225">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-226">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-226">&#182;</a>
               </div>
               <p>These projection methods return a 3D to 2D <code>Matrix</code> transformation.
 Each projection assumes the camera is located at (0,0,0).</p>
@@ -4573,11 +4792,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-218">
+        <li id="section-227">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-218">&#182;</a>
+                <a class="pilcrow" href="#section-227">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix </p>
 
@@ -4590,11 +4809,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-219">
+        <li id="section-228">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-219">&#182;</a>
+                <a class="pilcrow" href="#section-228">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix with the supplied frustrum</p>
 
@@ -4631,11 +4850,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-220">
+        <li id="section-229">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-220">&#182;</a>
+                <a class="pilcrow" href="#section-229">&#182;</a>
               </div>
               <p>Creates a orthographic projection matrix with the supplied frustrum</p>
 
@@ -4675,11 +4894,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-221">
+        <li id="section-230">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-221">&#182;</a>
+                <a class="pilcrow" href="#section-230">&#182;</a>
               </div>
               <p>Create a viewport where the scene’s origin is centered in the view</p>
 
@@ -4698,11 +4917,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-222">
+        <li id="section-231">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-222">&#182;</a>
+                <a class="pilcrow" href="#section-231">&#182;</a>
               </div>
               <p>Create a view port where the scene’s origin is aligned with the origin ([0, 0]) of the view</p>
 
@@ -4722,11 +4941,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-223">
+        <li id="section-232">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-223">&#182;</a>
+                <a class="pilcrow" href="#section-232">&#182;</a>
               </div>
               <p>The <code>Camera</code> model contains all three major components of the 3D to 2D tranformation.</p>
 <p>First, we transform object from world-space (the same space that the coordinates of
@@ -4752,11 +4971,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-224">
+        <li id="section-233">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-224">&#182;</a>
+                <a class="pilcrow" href="#section-233">&#182;</a>
               </div>
               <p>Performs the 3-step multiplication of the transformation matrices.</p>
 
@@ -4771,11 +4990,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-225">
+        <li id="section-234">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-225">&#182;</a>
+                <a class="pilcrow" href="#section-234">&#182;</a>
               </div>
               <h2 id="scene">Scene</h2>
 <hr>
@@ -4785,11 +5004,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-226">
+        <li id="section-235">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-226">&#182;</a>
+                <a class="pilcrow" href="#section-235">&#182;</a>
               </div>
               
             </div>
@@ -4797,11 +5016,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-227">
+        <li id="section-236">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-227">&#182;</a>
+                <a class="pilcrow" href="#section-236">&#182;</a>
               </div>
               <p>A <code>Scene</code> is the main object for a view of a scene.</p>
 
@@ -4813,11 +5032,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-228">
+        <li id="section-237">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-228">&#182;</a>
+                <a class="pilcrow" href="#section-237">&#182;</a>
               </div>
               <p>The root model for the scene, which contains <code>Shape</code>s, <code>Light</code>s, and other <code>Model</code>s</p>
 
@@ -4828,11 +5047,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-229">
+        <li id="section-238">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-229">&#182;</a>
+                <a class="pilcrow" href="#section-238">&#182;</a>
               </div>
               <p>The <code>Camera</code>, which defines the projection from shape-space to screen-space.</p>
 
@@ -4843,11 +5062,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-230">
+        <li id="section-239">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-230">&#182;</a>
+                <a class="pilcrow" href="#section-239">&#182;</a>
               </div>
               <p>The scene’s shader determines which lighting model is used.</p>
 
@@ -4858,11 +5077,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-231">
+        <li id="section-240">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-231">&#182;</a>
+                <a class="pilcrow" href="#section-240">&#182;</a>
               </div>
               <p>The <code>cullBackfaces</code> boolean can be used to turn off backface-culling
 for the whole scene. Beware, turning this off can slow down a scene’s
@@ -4876,11 +5095,11 @@ individual surfaces with a boolean on those objects.</p>
         </li>
         
         
-        <li id="section-232">
+        <li id="section-241">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-232">&#182;</a>
+                <a class="pilcrow" href="#section-241">&#182;</a>
               </div>
               <p>The <code>fractionalPoints</code> boolean determines if we round the surface
 coordinates to the nearest integer. Rounding the coordinates before
@@ -4896,11 +5115,11 @@ scene was 10 FPS.</p>
         </li>
         
         
-        <li id="section-233">
+        <li id="section-242">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-233">&#182;</a>
+                <a class="pilcrow" href="#section-242">&#182;</a>
               </div>
               <p>The <code>cache</code> boolean (default : true) enables a simple cache for
 renderModels, which are generated for each surface in the scene. The
@@ -4918,11 +5137,11 @@ no eviction policy. To flush the cache, call <code>.flushCache()</code></p>
         </li>
         
         
-        <li id="section-234">
+        <li id="section-243">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-234">&#182;</a>
+                <a class="pilcrow" href="#section-243">&#182;</a>
               </div>
               <p>The primary method that produces the render models, which are then used
 by the <code>RenderContext</code> to paint the scene.</p>
@@ -4934,11 +5153,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-235">
+        <li id="section-244">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-235">&#182;</a>
+                <a class="pilcrow" href="#section-244">&#182;</a>
               </div>
               <p>Compute the projection matrix.</p>
 
@@ -4953,11 +5172,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-236">
+        <li id="section-245">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-236">&#182;</a>
+                <a class="pilcrow" href="#section-245">&#182;</a>
               </div>
               <p>Compute light model data.</p>
 
@@ -4971,11 +5190,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-237">
+        <li id="section-246">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-237">&#182;</a>
+                <a class="pilcrow" href="#section-246">&#182;</a>
               </div>
               <p>Compute transformed and projected geometry.</p>
 
@@ -4986,11 +5205,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-238">
+        <li id="section-247">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-238">&#182;</a>
+                <a class="pilcrow" href="#section-247">&#182;</a>
               </div>
               <p>Test projected normal’s z-coordinate for culling (if enabled).</p>
 
@@ -5001,11 +5220,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-239">
+        <li id="section-248">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-239">&#182;</a>
+                <a class="pilcrow" href="#section-248">&#182;</a>
               </div>
               <p>Render fill and stroke using material and shader.</p>
 
@@ -5017,11 +5236,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-240">
+        <li id="section-249">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-240">&#182;</a>
+                <a class="pilcrow" href="#section-249">&#182;</a>
               </div>
               <p>Round coordinates (if enabled)</p>
 
@@ -5036,11 +5255,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-241">
+        <li id="section-250">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-241">&#182;</a>
+                <a class="pilcrow" href="#section-250">&#182;</a>
               </div>
               <p>Sort render models by projected z coordinate. This ensures that the surfaces
 farthest from the eye are painted first. (Painter’s Algorithm)</p>
@@ -5055,11 +5274,11 @@ farthest from the eye are painted first. (Painter’s Algorithm)</p>
         </li>
         
         
-        <li id="section-242">
+        <li id="section-251">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-242">&#182;</a>
+                <a class="pilcrow" href="#section-251">&#182;</a>
               </div>
               <p>Get or create the rendermodel for the given surface. If <code>@cache</code> is true, we cache these models
 to reduce object creation and recomputation.</p>
@@ -5080,11 +5299,11 @@ to reduce object creation and recomputation.</p>
         </li>
         
         
-        <li id="section-243">
+        <li id="section-252">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-243">&#182;</a>
+                <a class="pilcrow" href="#section-252">&#182;</a>
               </div>
               <p>Removes all elements from the cache. This may be necessary if you add and
 remove many shapes from the scene’s models since this cache has no
