@@ -30,9 +30,8 @@ Step 2. Create a scene with a single shape and render it using a context.
 
   # Create scene and add shape to model
   scene = new seen.Scene
-    model  : seen.Models.default().add(shape)
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(400, 400)
+    model    : seen.Models.default().add(shape)
+    viewport : seen.Viewports.center(400, 400)
 
   # Create render context from canvas
   context = seen.Context('seen-canvas', scene)
@@ -76,18 +75,18 @@ Spawn a new child `model`s easily using `.append()`:
   childModel.add(seen.Shapes.sphere())
 ```
 
-A `scene` is composed of a model and a camera. The camera contains the projection and viewport transformations to take the shapes from object space to screen space.
+A `scene` is composed of a model, viewport, and a camera. The viewport and camera contain the projection transformations to take the shapes from object space to screen space.
 
 ```coffeescript
   scene = new seen.Scene(
-      model  : model
-      camera : new seen.Camera
-        viewport   : seen.Viewports.center(width, height)
+      model    : model
+      viewport : seen.Viewports.center(width, height)
+      camera   : new seen.Camera
         projection : seen.Projections.perspective()
   )
 ```
 
-The default projection is perspective with a field-of-fiew of 50 degrees. Defining the viewport width/height like the above will center the scene in the view and object space will map 1:1 with screen space in the z=0 plane.
+The default projection is perspective. Defining the viewport width/height like the above will center the scene in the view and object space will map 1:1 with screen space in the z=0 plane.
 
 Finally, a graphics `context` is defined to render the scene into SVG or HTML5 Canvas.
 
@@ -128,15 +127,16 @@ The default shader computes surface color using a phong shading model including 
 
 ## Transformables
 
-`Shape`s and `light`s extend the `seen.Transformable` class. Transformations are applied using the standard affine transformations:
+`Shape`s, `light`s, `model`s, and `camera`s extend the `seen.Transformable` class. Transformations are applied using the standard affine transformations:
 
 * `scale`
 * `translate`
 * `rotx`
 * `roty`
 * `rotz`
-* `matrix`
-* `reset`
+* `matrix` # Multiply by 4x4 matrix represented by an Array(16).
+* `reset`  # Returns the transformation matrix to the identity matrix (or the baked-in matrix).
+* `bake`   # Sets the matrix that a reset() will return to.
 
 ## Animation
 

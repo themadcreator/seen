@@ -45,7 +45,7 @@
 
     simulate : =>
       collisions = @simulation.simulate()
-      
+
       collided = _(collisions)
         .map((collision) -> [collision.a, collision.b])
         .flatten()
@@ -82,8 +82,7 @@
     cullBackfaces    : false
     fractionalPoints : true
     model            : seen.Models.default()
-    camera           : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    viewport         : seen.Viewports.center(width, height)
 
   seenModel = scene.model.append()
 

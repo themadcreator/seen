@@ -7,6 +7,8 @@
 + Bar Chart
 
 # Features
++ Animation delta t
++ Bake transforms for reset
 + Shape manipulator control
 + Shadow Casting
 + Physics

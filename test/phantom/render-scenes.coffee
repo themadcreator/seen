@@ -22,7 +22,7 @@ initPage = (tagType, page) ->
     top    : 0
     left   : 0
     width  : width
-    height : height 
+    height : height
   }
 
   page.injectJs('dist/latest/seen.min.js')
@@ -34,9 +34,8 @@ evaluateScene = (page, scene) ->
       @height = 100
       @model  = seen.Models.default()
       @scene  = new seen.Scene
-        model  : @model
-        camera : new seen.Camera
-          viewport : seen.Viewports.center(@width, @height)
+        model    : @model
+        viewport : seen.Viewports.center(@width, @height)
       @context = seen.Context('seen-canvas', @scene)
       return @
   )
@@ -52,5 +51,5 @@ for tagType in ['svg', 'canvas']
     initPage(tagType, page)
     evaluateScene(page, scene)
     page.render("test/phantom/renders/#{tagType}-#{scene.png}")
-  
+
 phantom.exit()

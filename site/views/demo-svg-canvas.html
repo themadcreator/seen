@@ -23,9 +23,8 @@
   # Create one scene for each shape
   scenes = shapes.map (shape) -> new seen.Scene
     fractionalPoints : true
-    model  : seen.Models.default().add(shape)
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    model            : seen.Models.default().add(shape)
+    viewport         : seen.Viewports.center(width, height)
 
   # Create a render context for each SVG and Canvas
   contexts = []

@@ -32,6 +32,8 @@
 
       <p>seen.js has no dependencies.</p>
 
+      <p>Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a></p>
+
       <p>To see what is new in this version, read the <a href="release-notes.html">release notes</a>.</p>
 
       <h2>Demos</h2>
@@ -79,8 +81,7 @@
     scene = new seen.Scene
       fractionalPoints : true
       model            : seen.Models.default().add(shape)
-      camera           : new seen.Camera
-        viewport : seen.Viewports.center(width, height)
+      viewport         : seen.Viewports.center(width, height)
 
     context = seen.Context('seen-canvas', scene).render()
 

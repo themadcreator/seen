@@ -22,9 +22,8 @@
 
   # Create scene and render context
   scene = new seen.Scene
-    model  : seen.Models.default().add(shape)
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    model    : seen.Models.default().add(shape)
+    viewport : seen.Viewports.center(width, height)
 
   context = seen.Context('seen-canvas', scene).render()
 

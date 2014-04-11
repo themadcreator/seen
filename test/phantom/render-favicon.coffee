@@ -21,7 +21,7 @@ initPage = (page) ->
     top    : 0
     left   : 0
     width  : width
-    height : height 
+    height : height
   }
 
   page.injectJs('dist/latest/seen.min.js')
@@ -35,9 +35,8 @@ page.evaluate(->
   seen.Colors.randomSurfaces2(shape)
   model  = seen.Models.default().add(shape)
   scene  = new seen.Scene
-    model  : model
-    camera : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    model    : model
+    viewport : seen.Viewports.center(width, height)
   seen.Context('seen-canvas', scene).render()
 )
 

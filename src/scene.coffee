@@ -3,11 +3,21 @@
 
 # A `Scene` is the main object for a view of a scene.
 class seen.Scene
-  defaults:
-    # The root model for the scene, which contains `Shape`s, `Light`s, and other `Model`s
+  defaults: ->
+    # The root model for the scene, which contains `Shape`s, `Light`s, and
+    # other `Model`s
     model            : new seen.Model()
-    # The `Camera`, which defines the projection from shape-space to screen-space.
+
+    # The `Camera`, which defines the projection transformation. The default
+    # projection is perspective.
     camera           : new seen.Camera()
+
+    # The `Viewport`, which defines the projection from shape-space to
+    # projection-space then to screen-space. The default viewport is on a
+    # space from (0,0,0) to (1,1,1). To map more naturally to pixels, create a
+    # viewport with the same width/height as the DOM element.
+    viewport         : seen.Viewports.origin(1,1)
+
     # The scene's shader determines which lighting model is used.
     shader           : seen.Shaders.phong
 
@@ -19,10 +29,10 @@ class seen.Scene
 
     # The `fractionalPoints` boolean determines if we round the surface
     # coordinates to the nearest integer. Rounding the coordinates before
-    # display speeds up path drawing at the cost of a slight jittering effect
-    # when animating especially when using an SVG context since it cuts down
-    # on the length of path data. Anecdotally, my speedup on a complex demo
-    # scene was 10 FPS.
+    # display speeds up path drawing  especially when using an SVG context
+    # since it cuts down on the length of path data. Anecdotally, my speedup
+    # on a complex demo scene was 10 FPS. However, it does introduce a slight
+    # jittering effect when animating.
     fractionalPoints : false
 
     # The `cache` boolean (default : true) enables a simple cache for
@@ -32,14 +42,18 @@ class seen.Scene
     cache            : true
 
   constructor: (options) ->
-    seen.Util.defaults(@, options, @defaults)
+    seen.Util.defaults(@, options, @defaults())
     @_renderModelCache = {}
 
   # The primary method that produces the render models, which are then used
   # by the `RenderContext` to paint the scene.
   render : () =>
-    # Compute the projection matrix.
-    projection = @camera.getMatrix()
+    # Compute the projection matrix including the viewport and camera
+    # transformation matrices.
+    projection = @camera.m.copy()
+      .multiply(@viewport.prescale)
+      .multiply(@camera.projection)
+      .multiply(@viewport.postscale)
 
     renderModels = []
     @model.eachRenderable(

@@ -28,7 +28,7 @@
     .rotx(0.2)
 
   # Create bar colors
-  colors = 
+  colors =
     low  : new seen.Material(seen.Colors.hsl(0.3, 0.8, 0.5, 0.6))
     med  : new seen.Material(seen.Colors.hsl(0.1, 0.8, 0.6, 0.6))
     high : new seen.Material(seen.Colors.hsl(0.0, 0.7, 0.6, 0.6))
@@ -49,8 +49,7 @@
   scene = new seen.Scene
     cullBackfaces : false
     model         : model
-    camera        : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    viewport      : seen.Viewports.center(width, height)
 
   # Create render context from canvas. Render at its own speed.
   seen.Context('seen-canvas', scene).animate().start()

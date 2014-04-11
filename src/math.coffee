@@ -28,7 +28,7 @@ class seen.Matrix
   # Accepts a 16-value `Array`, defaults to the identity matrix.
   constructor : (@m = null) ->
     @m ?= IDENTITY.slice()
-    return @
+    @baked = IDENTITY
 
   # Returns a new matrix instances with a copy of the value array
   copy : ->
@@ -50,9 +50,15 @@ class seen.Matrix
     @m = c
     return @
 
-  # Resets the matrix to the identity matrix.
+  # Resets the matrix to the baked-in (default: identity).
   reset : ->
-    @m = IDENTITY.slice()
+    @m = @baked.slice()
+    return @
+
+  # Sets the array that this matrix will return to when calling `.reset()`.
+  # With no arguments, it uses the current matrix state.
+  bake : (m) ->
+    @baked = (m ? @m).slice()
     return @
 
   # Multiply by the `Matrix` argument.
@@ -130,10 +136,11 @@ seen.Matrices = {
 class seen.Transformable
   constructor: ->
     @m = new seen.Matrix()
+    @baked = IDENTITY
 
     # We create shims for all of the matrix transformation methods so they
     # have the same interface.
-    for method in ['scale', 'translate', 'rotx', 'roty', 'rotz', 'matrix', 'reset'] then do (method) =>
+    for method in ['scale', 'translate', 'rotx', 'roty', 'rotz', 'matrix', 'reset', 'bake'] then do (method) =>
       @[method] = ->
         @m[method].call(@m, arguments...)
         return @

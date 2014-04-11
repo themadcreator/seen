@@ -19,8 +19,7 @@
     fractionalPoints : true  # Smoothes motion
     cullBackfaces    : false # Necessary since we have transparency
     model            : seen.Models.default().add(shape)
-    camera           : new seen.Camera
-      viewport : seen.Viewports.center(width, height)
+    viewport         : seen.Viewports.center(width, height)
 
   context = seen.Context('seen-canvas', scene).render()
 
@@ -28,7 +27,7 @@
   for surf in shape.surfaces
     surf.originals = surf.points.map (p) -> p.copy()
     surf.fill.color.a = 150 # Add a little transparency
-  
+
   # Apply animated 3D simplex noise to sphere vertices
   t = 0
   noiser = new Simplex3D(Math.random())

@@ -1,3 +1,14 @@
+
+### v0.2.0
+
+*April 11, 2014*
+
++ Move viewport into scene to make scene construction cleaner.
+
++ Added transformation baking so transformables can be reset to a non-identity matrix.
+
++ Cameras are now seen.Transformable objects
+
 ### v0.1.5
 
 *April 10, 2014*
