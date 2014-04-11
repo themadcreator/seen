@@ -8,6 +8,8 @@
 
 + Add Transitions and TransitionAnimator.
 
++ Adding touch interactions for swipe-to-rotate on mobile.
+
 ### v0.1.4
 
 *April 6, 2014*

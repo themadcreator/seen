@@ -1622,15 +1622,15 @@
 
   seen.WindowEvents = (function() {
     var dispatch;
-    dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp');
+    dispatch = seen.Events.dispatch('mouseMove', 'mouseDown', 'mouseUp', 'touchStart', 'touchMove', 'touchEnd', 'touchCancel');
     if (typeof window !== "undefined" && window !== null) {
       window.addEventListener('mouseup', dispatch.mouseUp, true);
-    }
-    if (typeof window !== "undefined" && window !== null) {
       window.addEventListener('mousedown', dispatch.mouseDown, true);
-    }
-    if (typeof window !== "undefined" && window !== null) {
       window.addEventListener('mousemove', dispatch.mouseMove, true);
+      window.addEventListener('touchstart', dispatch.touchStart, true);
+      window.addEventListener('touchmove', dispatch.touchMove, true);
+      window.addEventListener('touchend', dispatch.touchEnd, true);
+      window.addEventListener('touchcancel', dispatch.touchCancel, true);
     }
     return {
       on: dispatch.on
@@ -1653,17 +1653,21 @@
     }
 
     MouseEvents.prototype.attach = function() {
+      this.el.addEventListener('touchstart', this._onMouseDown);
       this.el.addEventListener('mousedown', this._onMouseDown);
       return this.el.addEventListener('mousewheel', this._onMouseWheel);
     };
 
     MouseEvents.prototype.detach = function() {
+      this.el.removeEventListener('touchstart', this._onMouseDown);
       this.el.removeEventListener('mousedown', this._onMouseDown);
       return this.el.removeEventListener('mousewheel', this._onMouseWheel);
     };
 
     MouseEvents.prototype._onMouseMove = function(e) {
       this.dispatch.mouseMove(e);
+      e.preventDefault();
+      e.stopPropagation();
       if (this._mouseDown) {
         return this.dispatch.drag(e);
       }
@@ -1673,6 +1677,9 @@
       this._mouseDown = true;
       seen.WindowEvents.on("mouseUp." + this._uid, this._onMouseUp);
       seen.WindowEvents.on("mouseMove." + this._uid, this._onMouseMove);
+      seen.WindowEvents.on("touchEnd." + this._uid, this._onMouseUp);
+      seen.WindowEvents.on("touchCancel." + this._uid, this._onMouseUp);
+      seen.WindowEvents.on("touchMove." + this._uid, this._onMouseMove);
       this.dispatch.mouseDown(e);
       return this.dispatch.dragStart(e);
     };
@@ -1681,6 +1688,9 @@
       this._mouseDown = false;
       seen.WindowEvents.on("mouseUp." + this._uid, null);
       seen.WindowEvents.on("mouseMove." + this._uid, null);
+      seen.WindowEvents.on("touchEnd." + this._uid, null);
+      seen.WindowEvents.on("touchCancel." + this._uid, null);
+      seen.WindowEvents.on("touchMove." + this._uid, null);
       this.dispatch.mouseUp(e);
       return this.dispatch.dragEnd(e);
     };
@@ -1756,6 +1766,7 @@
       this._onDrag = __bind(this._onDrag, this);
       this._onDragEnd = __bind(this._onDragEnd, this);
       this._onDragStart = __bind(this._onDragStart, this);
+      this._getPageCoords = __bind(this._getPageCoords, this);
       seen.Util.defaults(this, options, this.defaults);
       this.el = seen.Util.element(this.el);
       this._uid = seen.Util.uniqueId('dragger-');
@@ -1774,20 +1785,32 @@
       mouser.on("drag." + this._uid, this._onDrag);
     }
 
+    Drag.prototype._getPageCoords = function(e) {
+      var _ref, _ref1;
+      if (((_ref = e.touches) != null ? _ref.length : void 0) > 0) {
+        return [e.touches[0].pageX, e.touches[0].pageY];
+      } else if (((_ref1 = e.changedTouches) != null ? _ref1.length : void 0) > 0) {
+        return [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+      } else {
+        return [e.pageX, e.pageY];
+      }
+    };
+
     Drag.prototype._onDragStart = function(e) {
       this._stopInertia();
       this._dragState.dragging = true;
-      this._dragState.origin = [e.pageX, e.pageY];
-      return this._dragState.last = [e.pageX, e.pageY];
+      this._dragState.origin = this._getPageCoords(e);
+      return this._dragState.last = this._getPageCoords(e);
     };
 
     Drag.prototype._onDragEnd = function(e) {
-      var dragEvent;
+      var dragEvent, page;
       this._dragState.dragging = false;
       if (this.inertia) {
+        page = this._getPageCoords(e);
         dragEvent = {
-          offset: [e.pageX - this._dragState.origin[0], e.pageY - this._dragState.origin[1]],
-          offsetRelative: [e.pageX - this._dragState.last[0], e.pageY - this._dragState.last[1]]
+          offset: [page[0] - this._dragState.origin[0], page[1] - this._dragState.origin[1]],
+          offsetRelative: [page[0] - this._dragState.last[0], page[1] - this._dragState.last[1]]
         };
         this._dragState.inertia.update(dragEvent.offsetRelative);
         return this._startInertia();
@@ -1795,16 +1818,17 @@
     };
 
     Drag.prototype._onDrag = function(e) {
-      var dragEvent;
+      var dragEvent, page;
+      page = this._getPageCoords(e);
       dragEvent = {
-        offset: [e.pageX - this._dragState.origin[0], e.pageY - this._dragState.origin[1]],
-        offsetRelative: [e.pageX - this._dragState.last[0], e.pageY - this._dragState.last[1]]
+        offset: [page[0] - this._dragState.origin[0], page[1] - this._dragState.origin[1]],
+        offsetRelative: [page[0] - this._dragState.last[0], page[1] - this._dragState.last[1]]
       };
       this.dispatch.drag(dragEvent);
       if (this.inertia) {
         this._dragState.inertia.update(dragEvent.offsetRelative);
       }
-      return this._dragState.last = [e.pageX, e.pageY];
+      return this._dragState.last = page;
     };
 
     Drag.prototype._onInertia = function() {
