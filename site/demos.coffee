@@ -25,6 +25,11 @@ Demos = [
   title  : 'Same Scene, Multiple Angles'
   view   : 'demo-multi-views'
 ,
+  title  : 'SVG Masks and Effects'
+  view   : 'demo-masks'
+  width  : 900
+  height : 500
+,
   title  : 'Audio Equalizer'
   view   : 'demo-equalizer'
 ,

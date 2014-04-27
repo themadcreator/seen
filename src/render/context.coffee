@@ -51,8 +51,8 @@ class seen.RenderLayerContext
 seen.Context = (elementId, scene = null) ->
   tag = seen.Util.element(elementId)?.tagName.toUpperCase()
   context = switch tag
-    when 'SVG'    then new seen.SvgRenderContext(elementId)
-    when 'CANVAS' then new seen.CanvasRenderContext(elementId)
+    when 'SVG', 'G' then new seen.SvgRenderContext(elementId)
+    when 'CANVAS'   then new seen.CanvasRenderContext(elementId)
   if context? and scene?
     context.sceneLayer(scene)
   return context

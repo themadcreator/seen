@@ -1,4 +1,10 @@
 
+### v0.2.1
+
+*April 27, 2014*
+
++ Add 'g' tag to context utility method to easily use SVG groups
+
 ### v0.2.0
 
 *April 11, 2014*
