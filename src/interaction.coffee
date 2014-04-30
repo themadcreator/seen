@@ -31,6 +31,8 @@ class seen.MouseEvents
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
 
+    @el = seen.Util.element(@el)
+
     @_uid = seen.Util.uniqueId('mouser-')
 
     @dispatch = seen.Events.dispatch(
@@ -143,7 +145,7 @@ class seen.Drag
       last     : null
       inertia  : new seen.InertialMouse()
 
-    @dispatch = seen.Events.dispatch('drag')
+    @dispatch = seen.Events.dispatch('drag', 'dragStart', 'dragEnd', 'dragEndInertia')
     @on       = @dispatch.on
 
     mouser = new seen.MouseEvents(@el)
@@ -164,6 +166,7 @@ class seen.Drag
     @_dragState.dragging = true
     @_dragState.origin   = @_getPageCoords(e)
     @_dragState.last     = @_getPageCoords(e)
+    @dispatch.dragStart(e)
 
   _onDragEnd : (e) =>
     @_dragState.dragging = false
@@ -176,6 +179,8 @@ class seen.Drag
 
       @_dragState.inertia.update(dragEvent.offsetRelative)
       @_startInertia()
+
+    @dispatch.dragEnd(e)
 
   _onDrag : (e) =>
     page = @_getPageCoords(e)
@@ -199,6 +204,7 @@ class seen.Drag
 
     if Math.abs(intertia[0]) < 1 and Math.abs(intertia[1]) < 1
       @_stopInertia()
+      @dispatch.dragEndInertia()
       return
 
     @dispatch.drag(

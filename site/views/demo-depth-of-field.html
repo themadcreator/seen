@@ -1,0 +1,95 @@
+{% extends 'demo-template.html' %}
+
+{% block caption %}
+<p>Depth of field effect using StackBlur.js.</p>
+{% endblock %}
+
+{% block demo %}
+<script src="lib/StackBlur.js"></script>
+<script type="text/coffeescript" id="code">
+  width        = {{width}}
+  height       = {{height}}
+  shapeCount   = 40
+  dofEnabled   = true
+  dofFactor    = 4e-2
+  bufferBounds = seen.Boxes.xyzwhd(0, 0, -1000, width, height, 2000)
+
+  class DepthOfFieldPainter extends seen.Painter
+    constructor : ->
+      @buffer        = document.createElement('canvas')
+      @buffer.width  = width
+      @buffer.height = height
+      @bufferLayer   = new seen.CanvasLayerRenderContext(@buffer.getContext('2d'))
+      @delegate      = seen.Painters.path
+
+    paint : (renderModel, context) ->
+      # Blur radius using z coordinate to simulate depth of field
+      blurRadius = Math.round(Math.abs(renderModel.transformed.barycenter.z) * dofFactor)
+
+      bounds = renderModel.projected.bounds.copy().pad(blurRadius).intersect(bufferBounds)
+      x = Math.round(bounds.minX())
+      y = Math.round(bounds.minY())
+      w = Math.round(bounds.width())
+      h = Math.round(bounds.height())
+
+      @bufferLayer.ctx.clearRect(x, y, w, h)
+      @delegate.paint(renderModel, @bufferLayer)
+      if dofEnabled and bounds.valid()
+        try
+          stackBlurContextRGBA(@bufferLayer.ctx, x, y, w, h, blurRadius)
+        catch err
+          console.err 'StackBlur failed', err
+
+      context.ctx.drawImage(@buffer, x, y, w, h, x, y, w, h)
+
+  dofPainter = new DepthOfFieldPainter()
+
+  # Generate shapes for the scene
+  generateShape = ->
+    shape = seen.Shapes.unitcube()
+      .scale(1, 1 + 5*Math.random(), 1)
+      .translate(
+        Math.round((2*Math.random()-1)*width*0.5/40)
+        Math.round(-height*0.3/40)
+        Math.round(Math.random()*-width/40 + 4)
+      )
+      .scale(40)
+      .bake()
+    shape.fill new seen.Material seen.Colors.hsl(0, 0, 0.4*Math.random())
+    shape.eachSurface (s) -> s.painter = dofPainter
+    return shape
+
+  model = seen.Models.default().rotx(Math.PI*0.1)
+  group = model.append()
+  for i in [0...shapeCount]
+    group.add(generateShape())
+
+  # Create scene and add shape to model
+  scene = new seen.Scene
+    cullBackfaces : false
+    model         : model
+    viewport      : seen.Viewports.center(width, height)
+
+  # Create render context from canvas
+  context = seen.Context('seen-canvas')
+    .layer(new seen.FillLayer(width, height, '#444444'))
+    .sceneLayer(scene)
+    .render()
+
+  # Drag to rotate. Disable DoF while rotating
+  dragger = new seen.Drag('seen-canvas', {inertia : true})
+  .on('drag.rotate', (e) ->
+    group.roty(e.offsetRelative[0]*1e-2)
+    context.render()
+  )
+  .on('dragStart.enabler', ->
+    dofEnabled = false
+  )
+  .on('dragEndInertia.enabler', ->
+    dofEnabled = true
+    context.render()
+  )
+
+
+</script>
+{% endblock %}

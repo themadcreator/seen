@@ -20,6 +20,7 @@ DISTS = {
     'src/transformable.coffee'
     'src/point.coffee'
     'src/quaternion.coffee'
+    'src/box.coffee'
     'src/color.coffee'
     'src/materials.coffee'
     'src/light.coffee'

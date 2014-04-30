@@ -1,9 +1,19 @@
 
+### v0.2.2
+
+*April 29, 2014*
+
++ Add bounding box calculation to render model.
+
++ Expose painters on seen namespace so they may be extended.
+
++ Expose more mouse events on the dragger interaction.
+
 ### v0.2.1
 
 *April 27, 2014*
 
-+ Add 'g' tag to context utility method to easily use SVG groups
++ Add 'g' tag to context utility method to easily use SVG groups.
 
 ### v0.2.0
 

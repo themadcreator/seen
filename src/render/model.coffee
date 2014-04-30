@@ -34,6 +34,7 @@ class seen.RenderModel
   _initRenderData: ->
     return {
       points     : (p.copy() for p in @points)
+      bounds     : new seen.Box()
       barycenter : seen.P()
       normal     : seen.P()
       v0         : seen.P()
@@ -55,6 +56,11 @@ class seen.RenderModel
     for p in set.points
       set.barycenter.add(p)
     set.barycenter.divide(set.points.length)
+
+    # Compute the bounding box of the points
+    set.bounds.reset()
+    for p in set.points
+      set.bounds.add(p)
 
     # Compute normal, which is used for backface culling (when enabled)
     if set.points.length < 2

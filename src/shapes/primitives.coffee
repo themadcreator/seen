@@ -180,7 +180,7 @@ seen.Shapes = {
         pts1 = [
           seen.P(x, y)
           seen.P(x + 1, y + 0.5)
-          seen.P(x, y + 1) 
+          seen.P(x, y + 1)
         ]
 
         for pts in [pts0, pts1]
@@ -248,7 +248,7 @@ seen.Shapes = {
     ]
     return seen.Shapes.extrude(points, seen.P(0,0,thickness))
 
-  # Returns a shape with a single surface using the supplied points array 
+  # Returns a shape with a single surface using the supplied points array
   path : (points) ->
     return new seen.Shape('path', [new seen.Surface(points)])
 
@@ -259,7 +259,7 @@ seen.Shapes = {
     for f in s.surfaces
       surfaces.push new seen.Surface((seen.P(p...) for p in f))
     return new seen.Shape('custom', surfaces)
-    
+
   # Joins the points into surfaces using the coordinate map, which is an
   # 2-dimensional array of index integers.
   mapPointsToSurfaces : (points, coordinateMap) ->

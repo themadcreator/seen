@@ -8,7 +8,7 @@
 class seen.Painter
   paint : (renderModel, context) ->
 
-class PathPainter extends seen.Painter
+class seen.PathPainter extends seen.Painter
   paint : (renderModel, context) ->
     painter = context.path().path(renderModel.projected.points)
 
@@ -25,7 +25,7 @@ class PathPainter extends seen.Painter
         'stroke-width' : renderModel.surface['stroke-width'] ? 1
       )
 
-class TextPainter extends seen.Painter
+class seen.TextPainter extends seen.Painter
   paint : (renderModel, context) ->
     xform = renderModel.transform.copy().multiply renderModel.projection
     style = {
@@ -35,6 +35,6 @@ class TextPainter extends seen.Painter
     context.text().fillText(xform, renderModel.surface.text, style)
 
 seen.Painters = {
-  path  : new PathPainter()
-  text  : new TextPainter()
+  path : new seen.PathPainter()
+  text : new seen.TextPainter()
 }

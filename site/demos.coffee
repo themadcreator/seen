@@ -30,6 +30,11 @@ Demos = [
   width  : 900
   height : 500
 ,
+  title  : 'Depth of Field'
+  view   : 'demo-depth-of-field'
+  width  : 900
+  height : 500
+,
   title  : 'Audio Equalizer'
   view   : 'demo-equalizer'
 ,
