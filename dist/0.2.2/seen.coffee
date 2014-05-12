@@ -469,15 +469,30 @@ class seen.Quaternion
     return seen.M(m)
 
 
-# The `Box` object contains an axis-aligned bounding box.
-class seen.Box
+# The `Bounds` object contains an axis-aligned bounding box.
+class seen.Bounds
+
+  @points : (points) ->
+    box = new seen.Bounds()
+    box.add(p) for p in points
+    return box
+
+  @xywh : (x, y, w, h) ->
+    return seen.Boundses.xyzwhd(x, y, 0, w, h, 0)
+
+  @xyzwhd : (x, y, z, w, h, d) ->
+    box = new seen.Bounds()
+    box.add(seen.P(x, y, z))
+    box.add(seen.P(x+w, y+h, z+d))
+    return box
+
   constructor : () ->
     @min = null
     @max = null
 
   # Creates a copy of this box object with the same bounds
   copy : () ->
-    box = new seen.Box()
+    box = new seen.Bounds()
     box.min = @min?.copy()
     box.max = @max?.copy()
     return box
@@ -578,20 +593,6 @@ class seen.Box
   maxX : () => return @max?.x ? 0
   maxY : () => return @max?.y ? 0
   maxZ : () => return @max?.z ? 0
-
-seen.Boxes = {
-  points : (points) ->
-    box = new seen.Box()
-    box.add(p) for p in points
-    return box
-  xywh : (x, y, w, h) ->
-    return seen.Boxes.xyzwhd(x, y, 0, w, h, 0)
-  xyzwhd : (x, y, z, w, h, d) ->
-    box = new seen.Box()
-    box.add(seen.P(x, y, z))
-    box.add(seen.P(x+w, y+h, z+d))
-    return box
-}
 
 
 # ## Colors
@@ -1045,29 +1046,40 @@ DEFAULT_NORMAL = seen.Points.Z()
 #
 # If you need to force a re-computation, mark the surface as 'dirty'.
 class seen.RenderModel
-  constructor: (@surface, @transform, @projection) ->
+  constructor: (@surface, @transform, @projection, @viewport) ->
     @points      = @surface.points
     @transformed = @_initRenderData()
     @projected   = @_initRenderData()
     @_update()
 
-  update: (transform, projection) ->
-    if not @surface.dirty and seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m)
+  update: (transform, projection, viewport) ->
+    if not @surface.dirty and seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m) and seen.Util.arraysEqual(viewport.m, @viewport.m)
       return
     else
       @transform  = transform
       @projection = projection
+      @viewport   = viewport
       @_update()
 
   _update: () ->
+    # Apply model transforms to surface points
     @_math(@transformed, @points, @transform, false)
-    @_math(@projected, @transformed.points, @projection, true)
+    # Project into camera space
+    cameraSpace = @transformed.points.map (p) => p.copy().transform(@projection)
+    @inFrustrum = @_checkFrustrum(cameraSpace)
+    # Project into screen space
+    @_math(@projected, cameraSpace, @viewport, true)
     @surface.dirty = false
+
+  _checkFrustrum : (points) ->
+    for p in points
+      return false if (p.z <= -2)
+    return true
 
   _initRenderData: ->
     return {
       points     : (p.copy() for p in @points)
-      bounds     : new seen.Box()
+      bounds     : new seen.Bounds()
       barycenter : seen.P()
       normal     : seen.P()
       v0         : seen.P()
@@ -2330,7 +2342,7 @@ seen.Viewports = {
 
     postscale = seen.M()
       .scale(width, -height, height)
-      .translate(x + width/2, y + height/2)
+      .translate(x + width/2, y + height/2, height)
     return {prescale, postscale}
 
   # Create a view port where the scene's origin is aligned with the origin ([0, 0]) of the view
@@ -2423,7 +2435,7 @@ class seen.Scene
     projection = @camera.m.copy()
       .multiply(@viewport.prescale)
       .multiply(@camera.projection)
-      .multiply(@viewport.postscale)
+    viewport   = @viewport.postscale
 
     renderModels = []
     @model.eachRenderable(
@@ -2434,10 +2446,10 @@ class seen.Scene
       (shape, lights, transform) =>
         for surface in shape.surfaces
           # Compute transformed and projected geometry.
-          renderModel = @_renderSurface(surface, transform, projection)
+          renderModel = @_renderSurface(surface, transform, projection, viewport)
 
           # Test projected normal's z-coordinate for culling (if enabled).
-          if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
+          if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0) and renderModel.inFrustrum
             # Render fill and stroke using material and shader.
             renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
             renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
@@ -2458,15 +2470,15 @@ class seen.Scene
 
   # Get or create the rendermodel for the given surface. If `@cache` is true, we cache these models
   # to reduce object creation and recomputation.
-  _renderSurface : (surface, transform, projection) ->
+  _renderSurface : (surface, transform, projection, viewport) ->
     if not @cache
-      return new seen.RenderModel(surface, transform, projection)
+      return new seen.RenderModel(surface, transform, projection, viewport)
 
     renderModel = @_renderModelCache[surface.id]
     if not renderModel?
-      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection)
+      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection, viewport)
     else
-      renderModel.update(transform, projection)
+      renderModel.update(transform, projection, viewport)
     return renderModel
 
   # Removes all elements from the cache. This may be necessary if you add and

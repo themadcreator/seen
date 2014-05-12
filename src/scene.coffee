@@ -53,7 +53,7 @@ class seen.Scene
     projection = @camera.m.copy()
       .multiply(@viewport.prescale)
       .multiply(@camera.projection)
-      .multiply(@viewport.postscale)
+    viewport   = @viewport.postscale
 
     renderModels = []
     @model.eachRenderable(
@@ -64,10 +64,10 @@ class seen.Scene
       (shape, lights, transform) =>
         for surface in shape.surfaces
           # Compute transformed and projected geometry.
-          renderModel = @_renderSurface(surface, transform, projection)
+          renderModel = @_renderSurface(surface, transform, projection, viewport)
 
           # Test projected normal's z-coordinate for culling (if enabled).
-          if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
+          if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0) and renderModel.inFrustrum
             # Render fill and stroke using material and shader.
             renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
             renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
@@ -88,15 +88,15 @@ class seen.Scene
 
   # Get or create the rendermodel for the given surface. If `@cache` is true, we cache these models
   # to reduce object creation and recomputation.
-  _renderSurface : (surface, transform, projection) ->
+  _renderSurface : (surface, transform, projection, viewport) ->
     if not @cache
-      return new seen.RenderModel(surface, transform, projection)
+      return new seen.RenderModel(surface, transform, projection, viewport)
 
     renderModel = @_renderModelCache[surface.id]
     if not renderModel?
-      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection)
+      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection, viewport)
     else
-      renderModel.update(transform, projection)
+      renderModel.update(transform, projection, viewport)
     return renderModel
 
   # Removes all elements from the cache. This may be necessary if you add and

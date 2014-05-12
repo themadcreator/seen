@@ -487,8 +487,30 @@
 
   })();
 
-  seen.Box = (function() {
-    function Box() {
+  seen.Bounds = (function() {
+    Bounds.points = function(points) {
+      var box, p, _i, _len;
+      box = new seen.Bounds();
+      for (_i = 0, _len = points.length; _i < _len; _i++) {
+        p = points[_i];
+        box.add(p);
+      }
+      return box;
+    };
+
+    Bounds.xywh = function(x, y, w, h) {
+      return seen.Boundses.xyzwhd(x, y, 0, w, h, 0);
+    };
+
+    Bounds.xyzwhd = function(x, y, z, w, h, d) {
+      var box;
+      box = new seen.Bounds();
+      box.add(seen.P(x, y, z));
+      box.add(seen.P(x + w, y + h, z + d));
+      return box;
+    };
+
+    function Bounds() {
       this.maxZ = __bind(this.maxZ, this);
       this.maxY = __bind(this.maxY, this);
       this.maxX = __bind(this.maxX, this);
@@ -502,15 +524,15 @@
       this.max = null;
     }
 
-    Box.prototype.copy = function() {
+    Bounds.prototype.copy = function() {
       var box, _ref, _ref1;
-      box = new seen.Box();
+      box = new seen.Bounds();
       box.min = (_ref = this.min) != null ? _ref.copy() : void 0;
       box.max = (_ref1 = this.max) != null ? _ref1.copy() : void 0;
       return box;
     };
 
-    Box.prototype.add = function(p) {
+    Bounds.prototype.add = function(p) {
       if (!((this.min != null) && (this.max != null))) {
         this.min = p.copy();
         this.max = p.copy();
@@ -525,11 +547,11 @@
       return this;
     };
 
-    Box.prototype.valid = function() {
+    Bounds.prototype.valid = function() {
       return (this.min != null) && (this.max != null);
     };
 
-    Box.prototype.intersect = function(box) {
+    Bounds.prototype.intersect = function(box) {
       if (!this.valid() || !box.valid()) {
         this.min = null;
         this.max = null;
@@ -544,7 +566,7 @@
       return this;
     };
 
-    Box.prototype.pad = function(x, y, z) {
+    Bounds.prototype.pad = function(x, y, z) {
       var p;
       if (this.valid()) {
         if (y == null) {
@@ -560,13 +582,13 @@
       return this;
     };
 
-    Box.prototype.reset = function() {
+    Bounds.prototype.reset = function() {
       this.min = null;
       this.max = null;
       return this;
     };
 
-    Box.prototype.contains = function(p) {
+    Bounds.prototype.contains = function(p) {
       if (!this.valid()) {
         return false;
       } else if (this.min.x > p.x || this.max.x < p.x) {
@@ -580,77 +602,55 @@
       }
     };
 
-    Box.prototype.center = function() {
+    Bounds.prototype.center = function() {
       return seen.P(this.minX() + this.width() / 2, this.minY() + this.height() / 2, this.minZ() + this.depth() / 2);
     };
 
-    Box.prototype.width = function() {
+    Bounds.prototype.width = function() {
       return this.maxX() - this.minX();
     };
 
-    Box.prototype.height = function() {
+    Bounds.prototype.height = function() {
       return this.maxY() - this.minY();
     };
 
-    Box.prototype.depth = function() {
+    Bounds.prototype.depth = function() {
       return this.maxZ() - this.minZ();
     };
 
-    Box.prototype.minX = function() {
+    Bounds.prototype.minX = function() {
       var _ref, _ref1;
       return (_ref = (_ref1 = this.min) != null ? _ref1.x : void 0) != null ? _ref : 0;
     };
 
-    Box.prototype.minY = function() {
+    Bounds.prototype.minY = function() {
       var _ref, _ref1;
       return (_ref = (_ref1 = this.min) != null ? _ref1.y : void 0) != null ? _ref : 0;
     };
 
-    Box.prototype.minZ = function() {
+    Bounds.prototype.minZ = function() {
       var _ref, _ref1;
       return (_ref = (_ref1 = this.min) != null ? _ref1.z : void 0) != null ? _ref : 0;
     };
 
-    Box.prototype.maxX = function() {
+    Bounds.prototype.maxX = function() {
       var _ref, _ref1;
       return (_ref = (_ref1 = this.max) != null ? _ref1.x : void 0) != null ? _ref : 0;
     };
 
-    Box.prototype.maxY = function() {
+    Bounds.prototype.maxY = function() {
       var _ref, _ref1;
       return (_ref = (_ref1 = this.max) != null ? _ref1.y : void 0) != null ? _ref : 0;
     };
 
-    Box.prototype.maxZ = function() {
+    Bounds.prototype.maxZ = function() {
       var _ref, _ref1;
       return (_ref = (_ref1 = this.max) != null ? _ref1.z : void 0) != null ? _ref : 0;
     };
 
-    return Box;
+    return Bounds;
 
   })();
-
-  seen.Boxes = {
-    points: function(points) {
-      var box, p, _i, _len;
-      box = new seen.Box();
-      for (_i = 0, _len = points.length; _i < _len; _i++) {
-        p = points[_i];
-        box.add(p);
-      }
-      return box;
-    },
-    xywh: function(x, y, w, h) {
-      return seen.Boxes.xyzwhd(x, y, 0, w, h, 0);
-    },
-    xyzwhd: function(x, y, z, w, h, d) {
-      var box;
-      box = new seen.Box();
-      box.add(seen.P(x, y, z));
-      box.add(seen.P(x + w, y + h, z + d));
-      return box;
-    }
-  };
 
   seen.Color = (function() {
     function Color(r, g, b, a) {
@@ -1219,30 +1219,50 @@
   DEFAULT_NORMAL = seen.Points.Z();
 
   seen.RenderModel = (function() {
-    function RenderModel(surface, transform, projection) {
+    function RenderModel(surface, transform, projection, viewport) {
       this.surface = surface;
       this.transform = transform;
       this.projection = projection;
+      this.viewport = viewport;
       this.points = this.surface.points;
       this.transformed = this._initRenderData();
       this.projected = this._initRenderData();
       this._update();
     }
 
-    RenderModel.prototype.update = function(transform, projection) {
-      if (!this.surface.dirty && seen.Util.arraysEqual(transform.m, this.transform.m) && seen.Util.arraysEqual(projection.m, this.projection.m)) {
+    RenderModel.prototype.update = function(transform, projection, viewport) {
+      if (!this.surface.dirty && seen.Util.arraysEqual(transform.m, this.transform.m) && seen.Util.arraysEqual(projection.m, this.projection.m) && seen.Util.arraysEqual(viewport.m, this.viewport.m)) {
 
       } else {
         this.transform = transform;
         this.projection = projection;
+        this.viewport = viewport;
         return this._update();
       }
     };
 
     RenderModel.prototype._update = function() {
+      var cameraSpace;
       this._math(this.transformed, this.points, this.transform, false);
-      this._math(this.projected, this.transformed.points, this.projection, true);
+      cameraSpace = this.transformed.points.map((function(_this) {
+        return function(p) {
+          return p.copy().transform(_this.projection);
+        };
+      })(this));
+      this.inFrustrum = this._checkFrustrum(cameraSpace);
+      this._math(this.projected, cameraSpace, this.viewport, true);
       return this.surface.dirty = false;
+    };
+
+    RenderModel.prototype._checkFrustrum = function(points) {
+      var p, _i, _len;
+      for (_i = 0, _len = points.length; _i < _len; _i++) {
+        p = points[_i];
+        if (p.z <= -2) {
+          return false;
+        }
+      }
+      return true;
     };
 
     RenderModel.prototype._initRenderData = function() {
@@ -1258,7 +1278,7 @@
           }
           return _results;
         }).call(this),
-        bounds: new seen.Box(),
+        bounds: new seen.Bounds(),
         barycenter: seen.P(),
         normal: seen.P(),
         v0: seen.P(),
@@ -2858,7 +2878,7 @@
         y = 0;
       }
       prescale = seen.M().translate(-x, -y, -height).scale(1 / width, 1 / height, 1 / height);
-      postscale = seen.M().scale(width, -height, height).translate(x + width / 2, y + height / 2);
+      postscale = seen.M().scale(width, -height, height).translate(x + width / 2, y + height / 2, height);
       return {
         prescale: prescale,
         postscale: postscale
@@ -2924,8 +2944,9 @@
     }
 
     Scene.prototype.render = function() {
-      var projection, renderModels;
-      projection = this.camera.m.copy().multiply(this.viewport.prescale).multiply(this.camera.projection).multiply(this.viewport.postscale);
+      var projection, renderModels, viewport;
+      projection = this.camera.m.copy().multiply(this.viewport.prescale).multiply(this.camera.projection);
+      viewport = this.viewport.postscale;
       renderModels = [];
       this.model.eachRenderable(function(light, transform) {
         return new seen.LightRenderModel(light, transform);
@@ -2936,8 +2957,8 @@
           _results = [];
           for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
             surface = _ref3[_i];
-            renderModel = _this._renderSurface(surface, transform, projection);
-            if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
+            renderModel = _this._renderSurface(surface, transform, projection, viewport);
+            if ((!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) && renderModel.inFrustrum) {
               renderModel.fill = (_ref4 = surface.fill) != null ? _ref4.render(lights, _this.shader, renderModel.transformed) : void 0;
               renderModel.stroke = (_ref5 = surface.stroke) != null ? _ref5.render(lights, _this.shader, renderModel.transformed) : void 0;
               if (_this.fractionalPoints !== true) {
@@ -2961,16 +2982,16 @@
       return renderModels;
     };
 
-    Scene.prototype._renderSurface = function(surface, transform, projection) {
+    Scene.prototype._renderSurface = function(surface, transform, projection, viewport) {
       var renderModel;
       if (!this.cache) {
-        return new seen.RenderModel(surface, transform, projection);
+        return new seen.RenderModel(surface, transform, projection, viewport);
       }
       renderModel = this._renderModelCache[surface.id];
       if (renderModel == null) {
-        renderModel = this._renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection);
+        renderModel = this._renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection, viewport);
       } else {
-        renderModel.update(transform, projection);
+        renderModel.update(transform, projection, viewport);
       }
       return renderModel;
     };

@@ -78,7 +78,7 @@ seen.Viewports = {
 
     postscale = seen.M()
       .scale(width, -height, height)
-      .translate(x + width/2, y + height/2)
+      .translate(x + width/2, y + height/2, height)
     return {prescale, postscale}
 
   # Create a view port where the scene's origin is aligned with the origin ([0, 0]) of the view

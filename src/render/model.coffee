@@ -12,29 +12,40 @@ DEFAULT_NORMAL = seen.Points.Z()
 #
 # If you need to force a re-computation, mark the surface as 'dirty'.
 class seen.RenderModel
-  constructor: (@surface, @transform, @projection) ->
+  constructor: (@surface, @transform, @projection, @viewport) ->
     @points      = @surface.points
     @transformed = @_initRenderData()
     @projected   = @_initRenderData()
     @_update()
 
-  update: (transform, projection) ->
-    if not @surface.dirty and seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m)
+  update: (transform, projection, viewport) ->
+    if not @surface.dirty and seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m) and seen.Util.arraysEqual(viewport.m, @viewport.m)
       return
     else
       @transform  = transform
       @projection = projection
+      @viewport   = viewport
       @_update()
 
   _update: () ->
+    # Apply model transforms to surface points
     @_math(@transformed, @points, @transform, false)
-    @_math(@projected, @transformed.points, @projection, true)
+    # Project into camera space
+    cameraSpace = @transformed.points.map (p) => p.copy().transform(@projection)
+    @inFrustrum = @_checkFrustrum(cameraSpace)
+    # Project into screen space
+    @_math(@projected, cameraSpace, @viewport, true)
     @surface.dirty = false
+
+  _checkFrustrum : (points) ->
+    for p in points
+      return false if (p.z <= -2)
+    return true
 
   _initRenderData: ->
     return {
       points     : (p.copy() for p in @points)
-      bounds     : new seen.Box()
+      bounds     : new seen.Bounds()
       barycenter : seen.P()
       normal     : seen.P()
       v0         : seen.P()

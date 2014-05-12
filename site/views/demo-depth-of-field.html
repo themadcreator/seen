@@ -12,9 +12,11 @@
   shapeCount   = 40
   dofEnabled   = true
   dofFactor    = 4e-2
-  bufferBounds = seen.Boxes.xyzwhd(0, 0, -1000, width, height, 2000)
+  bufferBounds = seen.Bounds.xyzwhd(0, 0, -1000, width, height, 2000)
 
   class DepthOfFieldPainter extends seen.Painter
+    @opaque : seen.Colors.white()
+
     constructor : ->
       @buffer        = document.createElement('canvas')
       @buffer.width  = width
@@ -32,15 +34,36 @@
       w = Math.round(bounds.width())
       h = Math.round(bounds.height())
 
-      @bufferLayer.ctx.clearRect(x, y, w, h)
-      @delegate.paint(renderModel, @bufferLayer)
       if dofEnabled and bounds.valid()
+        # StackBlur produces incorrect results when blurring the alpha channel,
+        # so instead we blur a black and white image then composite the fill
+        # color using the value as its alpha channel.
+        fill             = renderModel.fill
+        renderModel.fill = DepthOfFieldPainter.opaque
+        @bufferLayer.ctx.fillStyle = '#000000'
+        @bufferLayer.ctx.fillRect(x, y, w, h)
+        @delegate.paint(renderModel, @bufferLayer)
         try
-          stackBlurContextRGBA(@bufferLayer.ctx, x, y, w, h, blurRadius)
+          stackBlurContextRGB(@bufferLayer.ctx, x, y, w, h, blurRadius)
+          @_compositeAlpha(@bufferLayer.ctx, x, y, w, h, fill)
+          context.ctx.drawImage(@buffer, x, y, w, h, x, y, w, h)
         catch err
-          console.err 'StackBlur failed', err
+          console.error 'StackBlur failed', err
+      else if bounds.valid()
+        @delegate.paint(renderModel, context)
 
-      context.ctx.drawImage(@buffer, x, y, w, h, x, y, w, h)
+    _compositeAlpha : (ctx, x, y, w, h, fill) ->
+      imageData    = ctx.getImageData(x, y, w, h)
+      pixels       = imageData.data
+      channelCount = w*h*4
+      i           = 0
+      while i < channelCount
+        pixels[i + 3] = pixels[i]
+        pixels[i]     = fill.r
+        pixels[i + 1] = fill.g
+        pixels[i + 2] = fill.b
+        i += 4
+      ctx.putImageData(imageData, x, y)
 
   dofPainter = new DepthOfFieldPainter()
 
@@ -50,19 +73,29 @@
       .scale(1, 1 + 5*Math.random(), 1)
       .translate(
         Math.round((2*Math.random()-1)*width*0.5/40)
-        Math.round(-height*0.3/40)
+        0
         Math.round(Math.random()*-width/40 + 4)
       )
       .scale(40)
       .bake()
-    shape.fill new seen.Material seen.Colors.hsl(0, 0, 0.4*Math.random())
+    shape.fill new seen.Material seen.Colors.hsl(0, 0, Math.random())
     shape.eachSurface (s) -> s.painter = dofPainter
     return shape
 
-  model = seen.Models.default().rotx(Math.PI*0.1)
+  generateFocalShape = ->
+    shape = seen.Shapes.unitcube()
+      .scale(1, 4, 1)
+      .scale(40)
+      .bake()
+    shape.fill new seen.Material seen.Colors.hsl(0, 1, 0.5)
+    shape.eachSurface (s) -> s.painter = dofPainter
+    return shape
+
+  model = seen.Models.default().rotx(Math.PI*0.1).translate(0,-100,0)
   group = model.append()
   for i in [0...shapeCount]
     group.add(generateShape())
+  group.add(generateFocalShape())
 
   # Create scene and add shape to model
   scene = new seen.Scene
@@ -72,7 +105,7 @@
 
   # Create render context from canvas
   context = seen.Context('seen-canvas')
-    .layer(new seen.FillLayer(width, height, '#444444'))
+    .layer(new seen.FillLayer(width, height, '#DDDDDD'))
     .sceneLayer(scene)
     .render()
 

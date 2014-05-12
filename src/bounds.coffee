@@ -1,12 +1,27 @@
-# The `Box` object contains an axis-aligned bounding box.
-class seen.Box
+# The `Bounds` object contains an axis-aligned bounding box.
+class seen.Bounds
+
+  @points : (points) ->
+    box = new seen.Bounds()
+    box.add(p) for p in points
+    return box
+
+  @xywh : (x, y, w, h) ->
+    return seen.Boundses.xyzwhd(x, y, 0, w, h, 0)
+
+  @xyzwhd : (x, y, z, w, h, d) ->
+    box = new seen.Bounds()
+    box.add(seen.P(x, y, z))
+    box.add(seen.P(x+w, y+h, z+d))
+    return box
+
   constructor : () ->
     @min = null
     @max = null
 
   # Creates a copy of this box object with the same bounds
   copy : () ->
-    box = new seen.Box()
+    box = new seen.Bounds()
     box.min = @min?.copy()
     box.max = @max?.copy()
     return box
@@ -107,17 +122,3 @@ class seen.Box
   maxX : () => return @max?.x ? 0
   maxY : () => return @max?.y ? 0
   maxZ : () => return @max?.z ? 0
-
-seen.Boxes = {
-  points : (points) ->
-    box = new seen.Box()
-    box.add(p) for p in points
-    return box
-  xywh : (x, y, w, h) ->
-    return seen.Boxes.xyzwhd(x, y, 0, w, h, 0)
-  xyzwhd : (x, y, z, w, h, d) ->
-    box = new seen.Box()
-    box.add(seen.P(x, y, z))
-    box.add(seen.P(x+w, y+h, z+d))
-    return box
-}
