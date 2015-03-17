@@ -4515,7 +4515,7 @@ surfaces with the supplied <code>Light</code>.</p>
 
     str = <span class="hljs-string">''</span>
     <span class="hljs-keyword">for</span> key, value <span class="hljs-keyword">of</span> style
-      str += <span class="hljs-string">"<span class="hljs-subst">#{key}</span>:<span class="hljs-subst">#{value}</span>;"</span>
+      <span class="hljs-keyword">if</span> value? <span class="hljs-keyword">then</span> str += <span class="hljs-string">"<span class="hljs-subst">#{key}</span>:<span class="hljs-subst">#{value}</span>;"</span>
     el.setAttribute(<span class="hljs-string">'style'</span>, str)
 
     el.textContent = text
