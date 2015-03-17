@@ -1540,7 +1540,9 @@
       str = '';
       for (key in style) {
         value = style[key];
-        str += "" + key + ":" + value + ";";
+        if (value != null) {
+          str += "" + key + ":" + value + ";";
+        }
       }
       el.setAttribute('style', str);
       return el.textContent = text;
