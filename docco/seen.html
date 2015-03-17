@@ -1276,10 +1276,29 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-68">&#182;</a>
               </div>
-              <h2 id="colors">Colors</h2>
-<hr>
+              <p>The <code>Bounds</code> object contains an axis-aligned bounding box.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Bounds</span></span>
+
+  <span class="hljs-property">@points</span> : <span class="hljs-function"><span class="hljs-params">(points)</span> -&gt;</span>
+    box = <span class="hljs-keyword">new</span> seen.Bounds()
+    box.add(p) <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> points
+    <span class="hljs-keyword">return</span> box
+
+  <span class="hljs-property">@xywh</span> : <span class="hljs-function"><span class="hljs-params">(x, y, w, h)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> seen.Boundses.xyzwhd(x, y, <span class="hljs-number">0</span>, w, h, <span class="hljs-number">0</span>)
+
+  <span class="hljs-property">@xyzwhd</span> : <span class="hljs-function"><span class="hljs-params">(x, y, z, w, h, d)</span> -&gt;</span>
+    box = <span class="hljs-keyword">new</span> seen.Bounds()
+    box.add(seen.P(x, y, z))
+    box.add(seen.P(x+w, y+h, z+d))
+    <span class="hljs-keyword">return</span> box
+
+  constructor : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    <span class="hljs-property">@min</span> = <span class="hljs-literal">null</span>
+    <span class="hljs-property">@max</span> = <span class="hljs-literal">null</span></pre></div></div>
             
         </li>
         
@@ -1290,8 +1309,15 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-69">&#182;</a>
               </div>
-              
+              <p>Creates a copy of this box object with the same bounds</p>
+
             </div>
+            
+            <div class="content"><div class='highlight'><pre>  copy : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    box = <span class="hljs-keyword">new</span> seen.Bounds()
+    box.min = <span class="hljs-property">@min</span>?.copy()
+    box.max = <span class="hljs-property">@max</span>?.copy()
+    <span class="hljs-keyword">return</span> box</pre></div></div>
             
         </li>
         
@@ -1302,12 +1328,23 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-70">&#182;</a>
               </div>
-              <p><code>Color</code> objects store RGB and Alpha values from 0 to 255.</p>
+              <p>Adds this point to the bounding box, extending it if necessary</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Color</span></span>
-  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@r</span> = <span class="hljs-number">0</span>, <span class="hljs-property">@g</span> = <span class="hljs-number">0</span>, <span class="hljs-property">@b</span> = <span class="hljs-number">0</span>, <span class="hljs-property">@a</span> = <span class="hljs-number">0xFF</span>)</span> -&gt;</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  add : <span class="hljs-function"><span class="hljs-params">(p)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> (<span class="hljs-property">@min</span>? <span class="hljs-keyword">and</span> <span class="hljs-property">@max</span>?)
+      <span class="hljs-property">@min</span> = p.copy()
+      <span class="hljs-property">@max</span> = p.copy()
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@min</span>.x = Math.min(<span class="hljs-property">@min</span>.x, p.x)
+      <span class="hljs-property">@min</span>.y = Math.min(<span class="hljs-property">@min</span>.y, p.y)
+      <span class="hljs-property">@min</span>.z = Math.min(<span class="hljs-property">@min</span>.z, p.z)
+
+      <span class="hljs-property">@max</span>.x = Math.max(<span class="hljs-property">@max</span>.x, p.x)
+      <span class="hljs-property">@max</span>.y = Math.max(<span class="hljs-property">@max</span>.y, p.y)
+      <span class="hljs-property">@max</span>.z = Math.max(<span class="hljs-property">@max</span>.z, p.z)
+    <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
         
@@ -1318,12 +1355,12 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-71">&#182;</a>
               </div>
-              <p>Returns a new <code>Color</code> object with the same rgb and alpha values as the current object</p>
+              <p>Returns true of this box contains at least one point</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">copy</span>: <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Color(<span class="hljs-property">@r</span>, <span class="hljs-property">@g</span>, <span class="hljs-property">@b</span>, <span class="hljs-property">@a</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  valid :<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-keyword">return</span> (<span class="hljs-property">@min</span>? <span class="hljs-keyword">and</span> <span class="hljs-property">@max</span>?)</pre></div></div>
             
         </li>
         
@@ -1334,14 +1371,29 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-72">&#182;</a>
               </div>
-              <p>Scales the rgb channels by the supplied scalar value.</p>
+              <p>Trims this box so that it results in the intersection of this box and the
+supplied box.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">scale</span>: <span class="hljs-function"><span class="hljs-params">(n)</span> -&gt;</span>
-    <span class="hljs-property">@r</span> *= n
-    <span class="hljs-property">@g</span> *= n
-    <span class="hljs-property">@b</span> *= n
+            <div class="content"><div class='highlight'><pre>  intersect : <span class="hljs-function"><span class="hljs-params">(box)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@valid</span>() <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> box.valid()
+      <span class="hljs-property">@min</span> = <span class="hljs-literal">null</span>
+      <span class="hljs-property">@max</span> = <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-property">@min</span> = seen.P(
+        Math.max(<span class="hljs-property">@min</span>.x, box.min.x)
+        Math.max(<span class="hljs-property">@min</span>.y, box.min.y)
+        Math.max(<span class="hljs-property">@min</span>.z, box.min.z)
+      )
+      <span class="hljs-property">@max</span> = seen.P(
+        Math.min(<span class="hljs-property">@max</span>.x, box.max.x)
+        Math.min(<span class="hljs-property">@max</span>.y, box.max.y)
+        Math.min(<span class="hljs-property">@max</span>.z, box.max.z)
+      )
+      <span class="hljs-keyword">if</span> <span class="hljs-property">@min</span>.x &gt; <span class="hljs-property">@max</span>.x <span class="hljs-keyword">or</span> <span class="hljs-property">@min</span>.y &gt; <span class="hljs-property">@max</span>.y <span class="hljs-keyword">or</span> <span class="hljs-property">@min</span>.z &gt; <span class="hljs-property">@max</span>.z
+        <span class="hljs-property">@min</span> = <span class="hljs-literal">null</span>
+        <span class="hljs-property">@max</span> = <span class="hljs-literal">null</span>
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
@@ -1353,14 +1405,17 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-73">&#182;</a>
               </div>
-              <p>Offsets each rgb channel by the supplied scalar value.</p>
+              <p>Pads the min and max of this box using the supplied x, y, and z</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">offset</span>: <span class="hljs-function"><span class="hljs-params">(n)</span> -&gt;</span>
-    <span class="hljs-property">@r</span> += n
-    <span class="hljs-property">@g</span> += n
-    <span class="hljs-property">@b</span> += n
+            <div class="content"><div class='highlight'><pre>  pad : <span class="hljs-function"><span class="hljs-params">(x, y, z)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-property">@valid</span>()
+      y ?= x
+      z ?= y
+      p  = seen.P(x,y,z)
+      <span class="hljs-property">@min</span>.subtract(p)
+      <span class="hljs-property">@max</span>.add(p)
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
@@ -1372,14 +1427,13 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-74">&#182;</a>
               </div>
-              <p>Clamps each rgb channel to the supplied minimum and maximum scalar values.</p>
+              <p>Returns this bounding box to an empty state</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">clamp</span>: <span class="hljs-function"><span class="hljs-params">(min = <span class="hljs-number">0</span>, max = <span class="hljs-number">0xFF</span>)</span> -&gt;</span>
-    <span class="hljs-property">@r</span> = Math.min(max, Math.max(min, <span class="hljs-property">@r</span>))
-    <span class="hljs-property">@g</span> = Math.min(max, Math.max(min, <span class="hljs-property">@g</span>))
-    <span class="hljs-property">@b</span> = Math.min(max, Math.max(min, <span class="hljs-property">@b</span>))
+            <div class="content"><div class='highlight'><pre>  reset : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    <span class="hljs-property">@min</span> = <span class="hljs-literal">null</span>
+    <span class="hljs-property">@max</span> = <span class="hljs-literal">null</span>
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
@@ -1391,15 +1445,22 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-75">&#182;</a>
               </div>
-              <p>Takes the minimum between each channel of this <code>Color</code> and the supplied <code>Color</code> object.</p>
+              <p>Return true iff the point p lies within this bounding box. Points on the
+edge of the box are included.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">minChannels</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span>
-    <span class="hljs-property">@r</span> = Math.min(c.r, <span class="hljs-property">@r</span>)
-    <span class="hljs-property">@g</span> = Math.min(c.g, <span class="hljs-property">@g</span>)
-    <span class="hljs-property">@b</span> = Math.min(c.b, <span class="hljs-property">@b</span>)
-    <span class="hljs-keyword">return</span> @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  contains : <span class="hljs-function"><span class="hljs-params">(p)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@valid</span>()
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@min</span>.x &gt; p.x <span class="hljs-keyword">or</span> <span class="hljs-property">@max</span>.x &lt; p.x
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@min</span>.y &gt; p.y <span class="hljs-keyword">or</span> <span class="hljs-property">@max</span>.y &lt; p.y
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-property">@min</span>.z &gt; p.z <span class="hljs-keyword">or</span> <span class="hljs-property">@max</span>.z &lt; p.z
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span></pre></div></div>
             
         </li>
         
@@ -1410,15 +1471,16 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-76">&#182;</a>
               </div>
-              <p>Adds the channels of the current <code>Color</code> with each respective channel from the supplied <code>Color</code> object.</p>
+              <p>Returns the center of the box or zero if no points are in the box</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">addChannels</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span>
-    <span class="hljs-property">@r</span> += c.r
-    <span class="hljs-property">@g</span> += c.g
-    <span class="hljs-property">@b</span> += c.b
-    <span class="hljs-keyword">return</span> @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  center : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> seen.P(
+      <span class="hljs-property">@minX</span>() + <span class="hljs-property">@width</span>()/<span class="hljs-number">2</span>
+      <span class="hljs-property">@minY</span>() + <span class="hljs-property">@height</span>()/<span class="hljs-number">2</span>
+      <span class="hljs-property">@minZ</span>() + <span class="hljs-property">@depth</span>()/<span class="hljs-number">2</span>
+    )</pre></div></div>
             
         </li>
         
@@ -1429,15 +1491,11 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-77">&#182;</a>
               </div>
-              <p>Multiplies the channels of the current <code>Color</code> with each respective channel from the supplied <code>Color</code> object.</p>
+              <p>Returns the width (x extent) of the box</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">multiplyChannels</span>: <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span>
-    <span class="hljs-property">@r</span> *= c.r
-    <span class="hljs-property">@g</span> *= c.g
-    <span class="hljs-property">@b</span> *= c.b
-    <span class="hljs-keyword">return</span> @</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  width  : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-property">@maxX</span>() - <span class="hljs-property">@minX</span>()</pre></div></div>
             
         </li>
         
@@ -1448,14 +1506,11 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-78">&#182;</a>
               </div>
-              <p>Converts the <code>Color</code> into a hex string of the form “#RRGGBB”.</p>
+              <p>Returns the height (y extent) of the box</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">hex</span>: <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
-    c = (<span class="hljs-property">@r</span> &lt;&lt; <span class="hljs-number">16</span> | <span class="hljs-property">@g</span> &lt;&lt; <span class="hljs-number">8</span> | <span class="hljs-property">@b</span>).toString(<span class="hljs-number">16</span>)
-    <span class="hljs-keyword">while</span> (c.length &lt; <span class="hljs-number">6</span>) <span class="hljs-keyword">then</span> c = <span class="hljs-string">'0'</span> + c
-    <span class="hljs-keyword">return</span> <span class="hljs-string">'#'</span> + c</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  height : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-property">@maxY</span>() - <span class="hljs-property">@minY</span>()</pre></div></div>
             
         </li>
         
@@ -1466,14 +1521,19 @@ more natural mouse rotations.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-79">&#182;</a>
               </div>
-              <p>Converts the <code>Color</code> into a CSS-style string of the form “rgba(RR, GG, BB, AA)”</p>
+              <p>Returns the depth (z extent) of the box</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">style</span>: <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-string">"rgba(<span class="hljs-subst">#{<span class="hljs-property">@r</span>}</span>,<span class="hljs-subst">#{<span class="hljs-property">@g</span>}</span>,<span class="hljs-subst">#{<span class="hljs-property">@b</span>}</span>,<span class="hljs-subst">#{<span class="hljs-property">@a</span>}</span>)"</span>
+            <div class="content"><div class='highlight'><pre>  depth  : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-property">@maxZ</span>() - <span class="hljs-property">@minZ</span>()
 
-seen.Colors = {</pre></div></div>
+  minX : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-keyword">return</span> <span class="hljs-property">@min</span>?.x ? <span class="hljs-number">0</span>
+  minY : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-keyword">return</span> <span class="hljs-property">@min</span>?.y ? <span class="hljs-number">0</span>
+  minZ : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-keyword">return</span> <span class="hljs-property">@min</span>?.z ? <span class="hljs-number">0</span>
+
+  maxX : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-keyword">return</span> <span class="hljs-property">@max</span>?.x ? <span class="hljs-number">0</span>
+  maxY : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-keyword">return</span> <span class="hljs-property">@max</span>?.y ? <span class="hljs-number">0</span>
+  maxZ : <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-keyword">return</span> <span class="hljs-property">@max</span>?.z ? <span class="hljs-number">0</span></pre></div></div>
             
         </li>
         
@@ -1484,13 +1544,10 @@ seen.Colors = {</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-80">&#182;</a>
               </div>
-              <p>Creates a new <code>Color</code> using the supplied rgb and alpha values.</p>
-<p>Each value must be in the range [0, 255] or, equivalently, [0x00, 0xFF].</p>
+              <h2 id="colors">Colors</h2>
+<hr>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">rgb</span>: <span class="hljs-function"><span class="hljs-params">(r, g, b, a = <span class="hljs-number">255</span>)</span> -&gt;</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Color(r, g, b, a)</pre></div></div>
             
         </li>
         
@@ -1501,16 +1558,8 @@ seen.Colors = {</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-81">&#182;</a>
               </div>
-              <p>Creates a new <code>Color</code> using the supplied hex string of the form “#RRGGBB”.</p>
-
+              
             </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">hex</span>: <span class="hljs-function"><span class="hljs-params">(hex)</span> -&gt;</span>
-    hex = hex.substring(<span class="hljs-number">1</span>) <span class="hljs-keyword">if</span> (hex.charAt(<span class="hljs-number">0</span>) == <span class="hljs-string">'#'</span>)
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Color(
-      parseInt(hex.substring(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>), <span class="hljs-number">16</span>),
-      parseInt(hex.substring(<span class="hljs-number">2</span>, <span class="hljs-number">4</span>), <span class="hljs-number">16</span>),
-      parseInt(hex.substring(<span class="hljs-number">4</span>, <span class="hljs-number">6</span>), <span class="hljs-number">16</span>))</pre></div></div>
             
         </li>
         
@@ -1521,15 +1570,12 @@ seen.Colors = {</pre></div></div>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-82">&#182;</a>
               </div>
-              <p>Creates a new <code>Color</code> using the supplied hue, saturation, and lightness
-(HSL) values.</p>
-<p>Each value must be in the range [0.0, 1.0].</p>
+              <p><code>Color</code> objects store RGB and Alpha values from 0 to 255.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">hsl</span>: <span class="hljs-function"><span class="hljs-params">(h, s, l, a = <span class="hljs-number">1</span>)</span> -&gt;</span>
-    r = g = b = <span class="hljs-number">0</span>
-    <span class="hljs-keyword">if</span> (s == <span class="hljs-number">0</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Color</span></span>
+  constructor : <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@r</span> = <span class="hljs-number">0</span>, <span class="hljs-property">@g</span> = <span class="hljs-number">0</span>, <span class="hljs-property">@b</span> = <span class="hljs-number">0</span>, <span class="hljs-property">@a</span> = <span class="hljs-number">0xFF</span>)</span> -&gt;</span></pre></div></div>
             
         </li>
         
@@ -1539,6 +1585,255 @@ seen.Colors = {</pre></div></div>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-83">&#182;</a>
+              </div>
+              <p>Returns a new <code>Color</code> object with the same rgb and alpha values as the current object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  copy : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Color(<span class="hljs-property">@r</span>, <span class="hljs-property">@g</span>, <span class="hljs-property">@b</span>, <span class="hljs-property">@a</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-84">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-84">&#182;</a>
+              </div>
+              <p>Scales the rgb channels by the supplied scalar value.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  scale : <span class="hljs-function"><span class="hljs-params">(n)</span> -&gt;</span>
+    <span class="hljs-property">@r</span> *= n
+    <span class="hljs-property">@g</span> *= n
+    <span class="hljs-property">@b</span> *= n
+    <span class="hljs-keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-85">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-85">&#182;</a>
+              </div>
+              <p>Offsets each rgb channel by the supplied scalar value.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  offset : <span class="hljs-function"><span class="hljs-params">(n)</span> -&gt;</span>
+    <span class="hljs-property">@r</span> += n
+    <span class="hljs-property">@g</span> += n
+    <span class="hljs-property">@b</span> += n
+    <span class="hljs-keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-86">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-86">&#182;</a>
+              </div>
+              <p>Clamps each rgb channel to the supplied minimum and maximum scalar values.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  clamp : <span class="hljs-function"><span class="hljs-params">(min = <span class="hljs-number">0</span>, max = <span class="hljs-number">0xFF</span>)</span> -&gt;</span>
+    <span class="hljs-property">@r</span> = Math.min(max, Math.max(min, <span class="hljs-property">@r</span>))
+    <span class="hljs-property">@g</span> = Math.min(max, Math.max(min, <span class="hljs-property">@g</span>))
+    <span class="hljs-property">@b</span> = Math.min(max, Math.max(min, <span class="hljs-property">@b</span>))
+    <span class="hljs-keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-87">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-87">&#182;</a>
+              </div>
+              <p>Takes the minimum between each channel of this <code>Color</code> and the supplied <code>Color</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  minChannels : <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span>
+    <span class="hljs-property">@r</span> = Math.min(c.r, <span class="hljs-property">@r</span>)
+    <span class="hljs-property">@g</span> = Math.min(c.g, <span class="hljs-property">@g</span>)
+    <span class="hljs-property">@b</span> = Math.min(c.b, <span class="hljs-property">@b</span>)
+    <span class="hljs-keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-88">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-88">&#182;</a>
+              </div>
+              <p>Adds the channels of the current <code>Color</code> with each respective channel from the supplied <code>Color</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  addChannels : <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span>
+    <span class="hljs-property">@r</span> += c.r
+    <span class="hljs-property">@g</span> += c.g
+    <span class="hljs-property">@b</span> += c.b
+    <span class="hljs-keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-89">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-89">&#182;</a>
+              </div>
+              <p>Multiplies the channels of the current <code>Color</code> with each respective channel from the supplied <code>Color</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  multiplyChannels : <span class="hljs-function"><span class="hljs-params">(c)</span> -&gt;</span>
+    <span class="hljs-property">@r</span> *= c.r
+    <span class="hljs-property">@g</span> *= c.g
+    <span class="hljs-property">@b</span> *= c.b
+    <span class="hljs-keyword">return</span> @</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-90">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-90">&#182;</a>
+              </div>
+              <p>Converts the <code>Color</code> into a hex string of the form “#RRGGBB”.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  hex : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    c = (<span class="hljs-property">@r</span> &lt;&lt; <span class="hljs-number">16</span> | <span class="hljs-property">@g</span> &lt;&lt; <span class="hljs-number">8</span> | <span class="hljs-property">@b</span>).toString(<span class="hljs-number">16</span>)
+    <span class="hljs-keyword">while</span> (c.length &lt; <span class="hljs-number">6</span>) <span class="hljs-keyword">then</span> c = <span class="hljs-string">'0'</span> + c
+    <span class="hljs-keyword">return</span> <span class="hljs-string">'#'</span> + c</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-91">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-91">&#182;</a>
+              </div>
+              <p>Converts the <code>Color</code> into a CSS-style string of the form “rgba(RR, GG, BB, AA)”</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  style : <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"rgba(<span class="hljs-subst">#{<span class="hljs-property">@r</span>}</span>,<span class="hljs-subst">#{<span class="hljs-property">@g</span>}</span>,<span class="hljs-subst">#{<span class="hljs-property">@b</span>}</span>,<span class="hljs-subst">#{<span class="hljs-property">@a</span>}</span>)"</span>
+
+seen.Colors = {
+  CSS_RGBA_STRING_REGEX : <span class="hljs-regexp">/rgb(a)?\(([0-9.]+),([0-9.]+),*([0-9.]+)(,([0-9.]+))?\)/</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-92">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-92">&#182;</a>
+              </div>
+              <p>Parses a hex string starting with an octothorpe (#) or an rgb/rgba CSS
+string. Note that the CSS rgba format uses a float value of 0-1.0 for
+alpha, but seen uses an in from 0-255.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  parse : <span class="hljs-function"><span class="hljs-params">(str)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> str.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'#'</span> <span class="hljs-keyword">and</span> str.length <span class="hljs-keyword">is</span> <span class="hljs-number">7</span>
+      <span class="hljs-keyword">return</span> seen.Colors.hex(str)
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> str.indexOf(<span class="hljs-string">'rgb'</span>) <span class="hljs-keyword">is</span> <span class="hljs-number">0</span>
+      m = seen.Colors.CSS_RGBA_STRING_REGEX.exec(str)
+      <span class="hljs-keyword">return</span> seen.Colors.black() <span class="hljs-keyword">unless</span> m?
+      a = <span class="hljs-keyword">if</span> m[<span class="hljs-number">6</span>]? <span class="hljs-keyword">then</span> Math.round(parseFloat(m[<span class="hljs-number">6</span>]) * <span class="hljs-number">0xFF</span>) <span class="hljs-keyword">else</span> <span class="hljs-literal">undefined</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Color(parseFloat(m[<span class="hljs-number">2</span>]), parseFloat(m[<span class="hljs-number">3</span>]), parseFloat(m[<span class="hljs-number">4</span>]), a)
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-keyword">return</span> seen.Colors.black()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-93">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-93">&#182;</a>
+              </div>
+              <p>Creates a new <code>Color</code> using the supplied rgb and alpha values.</p>
+<p>Each value must be in the range [0, 255] or, equivalently, [0x00, 0xFF].</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  rgb : <span class="hljs-function"><span class="hljs-params">(r, g, b, a = <span class="hljs-number">255</span>)</span> -&gt;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Color(r, g, b, a)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-94">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-94">&#182;</a>
+              </div>
+              <p>Creates a new <code>Color</code> using the supplied hex string of the form “#RRGGBB”.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  hex : <span class="hljs-function"><span class="hljs-params">(hex)</span> -&gt;</span>
+    hex = hex.substring(<span class="hljs-number">1</span>) <span class="hljs-keyword">if</span> (hex.charAt(<span class="hljs-number">0</span>) <span class="hljs-keyword">is</span> <span class="hljs-string">'#'</span>)
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Color(
+      parseInt(hex.substring(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>), <span class="hljs-number">16</span>),
+      parseInt(hex.substring(<span class="hljs-number">2</span>, <span class="hljs-number">4</span>), <span class="hljs-number">16</span>),
+      parseInt(hex.substring(<span class="hljs-number">4</span>, <span class="hljs-number">6</span>), <span class="hljs-number">16</span>))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-95">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-95">&#182;</a>
+              </div>
+              <p>Creates a new <code>Color</code> using the supplied hue, saturation, and lightness
+(HSL) values.</p>
+<p>Each value must be in the range [0.0, 1.0].</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  hsl : <span class="hljs-function"><span class="hljs-params">(h, s, l, a = <span class="hljs-number">1</span>)</span> -&gt;</span>
+    r = g = b = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">if</span> (s == <span class="hljs-number">0</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-96">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-96">&#182;</a>
               </div>
               <p>When saturation is 0, the color is “achromatic” or “grayscale”.</p>
 
@@ -1572,11 +1867,11 @@ seen.Colors = {</pre></div></div>
         </li>
         
         
-        <li id="section-84">
+        <li id="section-97">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-84">&#182;</a>
+                <a class="pilcrow" href="#section-97">&#182;</a>
               </div>
               <p>Generates a new random color for each surface of the supplied <code>Shape</code>.</p>
 
@@ -1584,16 +1879,16 @@ seen.Colors = {</pre></div></div>
             
             <div class="content"><div class='highlight'><pre>  randomSurfaces : <span class="hljs-function"><span class="hljs-params">(shape, sat = <span class="hljs-number">0.5</span>, lit = <span class="hljs-number">0.4</span>)</span> -&gt;</span>
     <span class="hljs-keyword">for</span> surface <span class="hljs-keyword">in</span> shape.surfaces
-      surface.fill = <span class="hljs-keyword">new</span> seen.Material seen.Colors.hsl(Math.random(), sat, lit)</pre></div></div>
+      surface.fill seen.Colors.hsl(Math.random(), sat, lit)</pre></div></div>
             
         </li>
         
         
-        <li id="section-85">
+        <li id="section-98">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-85">&#182;</a>
+                <a class="pilcrow" href="#section-98">&#182;</a>
               </div>
               <p>Generates a random hue then randomly drifts the hue for each surface of
 the supplied <code>Shape</code>.</p>
@@ -1606,16 +1901,16 @@ the supplied <code>Shape</code>.</p>
       hue += (Math.random() - <span class="hljs-number">0.5</span>) * drift
       <span class="hljs-keyword">while</span> hue &lt; <span class="hljs-number">0</span> <span class="hljs-keyword">then</span> hue += <span class="hljs-number">1</span>
       <span class="hljs-keyword">while</span> hue &gt; <span class="hljs-number">1</span> <span class="hljs-keyword">then</span> hue -= <span class="hljs-number">1</span>
-      surface.fill = <span class="hljs-keyword">new</span> seen.Material seen.Colors.hsl(hue, <span class="hljs-number">0.5</span>, <span class="hljs-number">0.4</span>)</pre></div></div>
+      surface.fill seen.Colors.hsl(hue, <span class="hljs-number">0.5</span>, <span class="hljs-number">0.4</span>)</pre></div></div>
             
         </li>
         
         
-        <li id="section-86">
+        <li id="section-99">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-86">&#182;</a>
+                <a class="pilcrow" href="#section-99">&#182;</a>
               </div>
               <p>Generates a random color then sets the fill for every surface of the
 supplied <code>Shape</code>.</p>
@@ -1628,11 +1923,11 @@ supplied <code>Shape</code>.</p>
         </li>
         
         
-        <li id="section-87">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-87">&#182;</a>
+                <a class="pilcrow" href="#section-100">&#182;</a>
               </div>
               <p>A few <code>Color</code>s are supplied for convenience.</p>
 
@@ -1646,11 +1941,11 @@ supplied <code>Shape</code>.</p>
         </li>
         
         
-        <li id="section-88">
+        <li id="section-101">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-88">&#182;</a>
+                <a class="pilcrow" href="#section-101">&#182;</a>
               </div>
               <p>Convenience <code>Color</code> constructor.</p>
 
@@ -1661,11 +1956,11 @@ supplied <code>Shape</code>.</p>
         </li>
         
         
-        <li id="section-89">
+        <li id="section-102">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-89">&#182;</a>
+                <a class="pilcrow" href="#section-102">&#182;</a>
               </div>
               <h2 id="materials">Materials</h2>
 <h4 id="surface-material-properties">Surface material properties</h4>
@@ -1676,11 +1971,11 @@ supplied <code>Shape</code>.</p>
         </li>
         
         
-        <li id="section-90">
+        <li id="section-103">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-90">&#182;</a>
+                <a class="pilcrow" href="#section-103">&#182;</a>
               </div>
               
             </div>
@@ -1688,27 +1983,37 @@ supplied <code>Shape</code>.</p>
         </li>
         
         
-        <li id="section-91">
+        <li id="section-104">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-91">&#182;</a>
+                <a class="pilcrow" href="#section-104">&#182;</a>
               </div>
               <p><code>Material</code> objects hold the attributes that desribe the color and finish of a surface.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Material</span></span>
+  <span class="hljs-property">@create</span> : <span class="hljs-function"><span class="hljs-params">(value)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> value <span class="hljs-keyword">instanceof</span> seen.Material
+      <span class="hljs-keyword">return</span> value
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> value <span class="hljs-keyword">instanceof</span> seen.Color
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Material(value)
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> <span class="hljs-keyword">typeof</span> value <span class="hljs-keyword">is</span> <span class="hljs-string">'string'</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Material(seen.Colors.parse(value))
+    <span class="hljs-keyword">else</span>
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Material()
+
   defaults :</pre></div></div>
             
         </li>
         
         
-        <li id="section-92">
+        <li id="section-105">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-92">&#182;</a>
+                <a class="pilcrow" href="#section-105">&#182;</a>
               </div>
               <p>The base color of the material.</p>
 
@@ -1719,11 +2024,11 @@ supplied <code>Shape</code>.</p>
         </li>
         
         
-        <li id="section-93">
+        <li id="section-106">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-93">&#182;</a>
+                <a class="pilcrow" href="#section-106">&#182;</a>
               </div>
               <p>The <code>metallic</code> attribute determines how the specular highlights are
 calculated. Normally, specular highlights are the color of the light
@@ -1737,11 +2042,11 @@ from the <code>specularColor</code> attribute.</p>
         </li>
         
         
-        <li id="section-94">
+        <li id="section-107">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-94">&#182;</a>
+                <a class="pilcrow" href="#section-107">&#182;</a>
               </div>
               <p>The color used for specular highlights when <code>metallic</code> is true.</p>
 
@@ -1752,11 +2057,11 @@ from the <code>specularColor</code> attribute.</p>
         </li>
         
         
-        <li id="section-95">
+        <li id="section-108">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-95">&#182;</a>
+                <a class="pilcrow" href="#section-108">&#182;</a>
               </div>
               <p>The <code>specularExponent</code> determines how “shiny” the material is. A low
 exponent will create a low-intesity, diffuse specular shine. A high
@@ -1769,11 +2074,11 @@ exponent will create an intense, point-like specular shine.</p>
         </li>
         
         
-        <li id="section-96">
+        <li id="section-109">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-96">&#182;</a>
+                <a class="pilcrow" href="#section-109">&#182;</a>
               </div>
               <p>A <code>Shader</code> object may be supplied to override the shader used for this
 material. For example, if you want to apply a flat color to text or
@@ -1789,11 +2094,11 @@ other shapes, set this value to <code>seen.Shaders.Flat</code>.</p>
         </li>
         
         
-        <li id="section-97">
+        <li id="section-110">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-97">&#182;</a>
+                <a class="pilcrow" href="#section-110">&#182;</a>
               </div>
               <p>Apply the shader’s shading to this material, with the option to override
 the shader with the material’s shader (if defined).</p>
@@ -1809,11 +2114,11 @@ the shader with the material’s shader (if defined).</p>
         </li>
         
         
-        <li id="section-98">
+        <li id="section-111">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-98">&#182;</a>
+                <a class="pilcrow" href="#section-111">&#182;</a>
               </div>
               <h2 id="lights">Lights</h2>
 <hr>
@@ -1823,11 +2128,11 @@ the shader with the material’s shader (if defined).</p>
         </li>
         
         
-        <li id="section-99">
+        <li id="section-112">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-99">&#182;</a>
+                <a class="pilcrow" href="#section-112">&#182;</a>
               </div>
               
             </div>
@@ -1835,11 +2140,11 @@ the shader with the material’s shader (if defined).</p>
         </li>
         
         
-        <li id="section-100">
+        <li id="section-113">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-100">&#182;</a>
+                <a class="pilcrow" href="#section-113">&#182;</a>
               </div>
               <p>This model object holds the attributes and transformation of a light source.</p>
 
@@ -1866,11 +2171,11 @@ seen.Lights = {</pre></div></div>
         </li>
         
         
-        <li id="section-101">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-101">&#182;</a>
+                <a class="pilcrow" href="#section-114">&#182;</a>
               </div>
               <p>A point light emits light eminating in all directions from a single point.
 The <code>point</code> property determines the location of the point light. Note,
@@ -1883,11 +2188,11 @@ though, that it may also be moved through the transformation of the light.</p>
         </li>
         
         
-        <li id="section-102">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-102">&#182;</a>
+                <a class="pilcrow" href="#section-115">&#182;</a>
               </div>
               <p>A directional lights emit light in parallel lines, not eminating from any
 single point. For these lights, only the <code>normal</code> property is used to
@@ -1900,11 +2205,11 @@ determine the direction of the light. This may also be transformed.</p>
         </li>
         
         
-        <li id="section-103">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-103">&#182;</a>
+                <a class="pilcrow" href="#section-116">&#182;</a>
               </div>
               <p>Ambient lights emit a constant amount of light everywhere at once.
 Transformation of the light has no effect.</p>
@@ -1917,11 +2222,11 @@ Transformation of the light has no effect.</p>
         </li>
         
         
-        <li id="section-104">
+        <li id="section-117">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-104">&#182;</a>
+                <a class="pilcrow" href="#section-117">&#182;</a>
               </div>
               <h2 id="shaders">Shaders</h2>
 <hr>
@@ -1931,11 +2236,11 @@ Transformation of the light has no effect.</p>
         </li>
         
         
-        <li id="section-105">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-105">&#182;</a>
+                <a class="pilcrow" href="#section-118">&#182;</a>
               </div>
               
             </div>
@@ -1946,11 +2251,11 @@ EYE_NORMAL = seen.Points.Z()</pre></div></div>
         </li>
         
         
-        <li id="section-106">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-106">&#182;</a>
+                <a class="pilcrow" href="#section-119">&#182;</a>
               </div>
               <p>These shading functions compute the shading for a surface. To reduce code
 duplication, we aggregate them in a utils object.</p>
@@ -1966,11 +2271,11 @@ duplication, we aggregate them in a utils object.</p>
         </li>
         
         
-        <li id="section-107">
+        <li id="section-120">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-107">&#182;</a>
+                <a class="pilcrow" href="#section-120">&#182;</a>
               </div>
               <p>Apply diffuse phong shading</p>
 
@@ -1986,11 +2291,11 @@ duplication, we aggregate them in a utils object.</p>
         </li>
         
         
-        <li id="section-108">
+        <li id="section-121">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-108">&#182;</a>
+                <a class="pilcrow" href="#section-121">&#182;</a>
               </div>
               <p>Apply diffuse phong shading</p>
 
@@ -2001,11 +2306,11 @@ duplication, we aggregate them in a utils object.</p>
         </li>
         
         
-        <li id="section-109">
+        <li id="section-122">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-109">&#182;</a>
+                <a class="pilcrow" href="#section-122">&#182;</a>
               </div>
               <p>Compute and apply specular phong shading</p>
 
@@ -2021,11 +2326,11 @@ duplication, we aggregate them in a utils object.</p>
         </li>
         
         
-        <li id="section-110">
+        <li id="section-123">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-110">&#182;</a>
+                <a class="pilcrow" href="#section-123">&#182;</a>
               </div>
               <p>Apply ambient shading</p>
 
@@ -2037,11 +2342,11 @@ duplication, we aggregate them in a utils object.</p>
         </li>
         
         
-        <li id="section-111">
+        <li id="section-124">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-111">&#182;</a>
+                <a class="pilcrow" href="#section-124">&#182;</a>
               </div>
               <p>The <code>Shader</code> class is the base class for all shader objects.</p>
 
@@ -2052,11 +2357,11 @@ duplication, we aggregate them in a utils object.</p>
         </li>
         
         
-        <li id="section-112">
+        <li id="section-125">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-112">&#182;</a>
+                <a class="pilcrow" href="#section-125">&#182;</a>
               </div>
               <p>Every <code>Shader</code> implementation must override the <code>shade</code> method.</p>
 <p><code>lights</code> is an object containing the ambient, point, and directional light sources.
@@ -2070,11 +2375,11 @@ duplication, we aggregate them in a utils object.</p>
         </li>
         
         
-        <li id="section-113">
+        <li id="section-126">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-113">&#182;</a>
+                <a class="pilcrow" href="#section-126">&#182;</a>
               </div>
               <p>The <code>Phong</code> shader implements the Phong shading model with a diffuse,
 specular, and ambient term.</p>
@@ -2107,11 +2412,11 @@ specular, and ambient term.</p>
         </li>
         
         
-        <li id="section-114">
+        <li id="section-127">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-114">&#182;</a>
+                <a class="pilcrow" href="#section-127">&#182;</a>
               </div>
               <p>The <code>DiffusePhong</code> shader implements the Phong shading model with a diffuse
 and ambient term (no specular).</p>
@@ -2138,11 +2443,11 @@ and ambient term (no specular).</p>
         </li>
         
         
-        <li id="section-115">
+        <li id="section-128">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-115">&#182;</a>
+                <a class="pilcrow" href="#section-128">&#182;</a>
               </div>
               <p>The <code>Ambient</code> shader colors surfaces from ambient light only.</p>
 
@@ -2163,11 +2468,11 @@ and ambient term (no specular).</p>
         </li>
         
         
-        <li id="section-116">
+        <li id="section-129">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-116">&#182;</a>
+                <a class="pilcrow" href="#section-129">&#182;</a>
               </div>
               <p>The <code>Flat</code> shader colors surfaces with the material color, disregarding all
 light sources.</p>
@@ -2188,11 +2493,148 @@ seen.Shaders = {
         </li>
         
         
-        <li id="section-117">
+        <li id="section-130">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-117">&#182;</a>
+                <a class="pilcrow" href="#section-130">&#182;</a>
+              </div>
+              <h2 id="affine">Affine</h2>
+<h4 id="fake-projections-with-affine-transforms">Fake projections with affine transforms</h4>
+<hr>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-131">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-131">&#182;</a>
+              </div>
+              <p>It is not possible exactly render text in a scene with a perspective
+projection because Canvas and SVG support only affine transformations. So,
+in order to fake it, we create an affine transform that approximates the
+linear effects of a perspective projection on an unrendered planar surface
+that represents the text’s shape. We can use this transform directly in the
+text painter to warp the text.</p>
+<p>This fake projection will produce unrealistic results with large strings of
+text that are not broken into their own shapes.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>seen.Affine = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-132">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-132">&#182;</a>
+              </div>
+              <p>This is the set of points that must be used by a surface that will use an
+affine transform for rendering.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  ORTHONORMAL_BASIS :<span class="hljs-function"> -&gt;</span> [
+    seen.P( <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>)
+    seen.P(<span class="hljs-number">20</span>, <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>)
+    seen.P( <span class="hljs-number">0</span>, <span class="hljs-number">20</span>, <span class="hljs-number">0</span>)
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-133">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-133">&#182;</a>
+              </div>
+              <p>This matrix is built using the method from this StackOverflow answer:
+<a href="http://stackoverflow.com/questions/22954239/given-three-points-compute-affine-transformation">http://stackoverflow.com/questions/22954239/given-three-points-compute-affine-transformation</a></p>
+<p>We further re-arranged the rows to avoid having to do any matrix factorization.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  INITIAL_STATE_MATRIX : [
+    [<span class="hljs-number">20</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">1</span>,  <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">0</span>]
+    [ <span class="hljs-number">0</span>, <span class="hljs-number">20</span>, <span class="hljs-number">1</span>,  <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">0</span>]
+    [ <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">1</span>,  <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">0</span>]
+    [ <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">20</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">1</span>]
+    [ <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">20</span>, <span class="hljs-number">1</span>]
+    [ <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">1</span>]
+  ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-134">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-134">&#182;</a>
+              </div>
+              <p>Computes the parameters of an affine transform from the 3 projected
+points.</p>
+<p>Because we control the initial values of the points, we can re-use the
+state matrix. Furthermore, because we have use a special layout (upper
+triangular) for this matrix, we avoid any matrix factorization and can go
+directly to back-substitution to solve the matrix equation.</p>
+<p>To use the affine transform, use the indices like so (note that we flip y):
+    x[0], x[3], -x[1], -x[4], x[2], x[5]</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  solveForAffineTransform : <span class="hljs-function"><span class="hljs-params">(points)</span> -&gt;</span>
+    A = seen.Affine.INITIAL_STATE_MATRIX
+
+    b = [
+      points[<span class="hljs-number">1</span>].x
+      points[<span class="hljs-number">2</span>].x
+      points[<span class="hljs-number">0</span>].x
+      points[<span class="hljs-number">1</span>].y
+      points[<span class="hljs-number">2</span>].y
+      points[<span class="hljs-number">0</span>].y
+    ]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-135">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-135">&#182;</a>
+              </div>
+              <p>Use back substitution to solve A*x=b for x</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    x = <span class="hljs-keyword">new</span> Array(<span class="hljs-number">6</span>)
+    n = A.length
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [(n-<span class="hljs-number">1</span>).<span class="hljs-number">.0</span>] <span class="hljs-keyword">by</span> -<span class="hljs-number">1</span>
+      x[i] = b[i]
+      <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> [(i+<span class="hljs-number">1</span>)...n]
+        x[i] -= A[i][j] * x[j]
+      x[i] /= A[i][i]
+
+    <span class="hljs-keyword">return</span> x
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-136">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-136">&#182;</a>
               </div>
               <h2 id="render-contexts">Render Contexts</h2>
 <hr>
@@ -2202,11 +2644,11 @@ seen.Shaders = {
         </li>
         
         
-        <li id="section-118">
+        <li id="section-137">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-118">&#182;</a>
+                <a class="pilcrow" href="#section-137">&#182;</a>
               </div>
               
             </div>
@@ -2214,11 +2656,11 @@ seen.Shaders = {
         </li>
         
         
-        <li id="section-119">
+        <li id="section-138">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-119">&#182;</a>
+                <a class="pilcrow" href="#section-138">&#182;</a>
               </div>
               <p>The <code>RenderContext</code> uses <code>RenderModel</code>s produced by the scene’s render method to paint the shapes into an HTML element.
 Since we support both SVG and Canvas painters, the <code>RenderContext</code> and <code>RenderLayerContext</code> define a common interface.</p>
@@ -2241,11 +2683,11 @@ Since we support both SVG and Canvas painters, the <code>RenderContext</code> an
         </li>
         
         
-        <li id="section-120">
+        <li id="section-139">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-120">&#182;</a>
+                <a class="pilcrow" href="#section-139">&#182;</a>
               </div>
               <p>Returns a new <code>Animator</code> with this context’s render method pre-registered.</p>
 
@@ -2257,11 +2699,11 @@ Since we support both SVG and Canvas painters, the <code>RenderContext</code> an
         </li>
         
         
-        <li id="section-121">
+        <li id="section-140">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-121">&#182;</a>
+                <a class="pilcrow" href="#section-140">&#182;</a>
               </div>
               <p>Add a new <code>RenderLayerContext</code> to this context. This allows us to easily stack paintable components such as
 a fill backdrop, or even multiple scenes in one context.</p>
@@ -2285,11 +2727,11 @@ a fill backdrop, or even multiple scenes in one context.</p>
         </li>
         
         
-        <li id="section-122">
+        <li id="section-141">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-122">&#182;</a>
+                <a class="pilcrow" href="#section-141">&#182;</a>
               </div>
               <p>The <code>RenderLayerContext</code> defines the interface for producing painters that can paint various things into the current layer.</p>
 
@@ -2307,11 +2749,11 @@ a fill backdrop, or even multiple scenes in one context.</p>
         </li>
         
         
-        <li id="section-123">
+        <li id="section-142">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-123">&#182;</a>
+                <a class="pilcrow" href="#section-142">&#182;</a>
               </div>
               <p>Create a render context for the element with the specified <code>elementId</code>. elementId
 should correspond to either an SVG or Canvas element.</p>
@@ -2321,8 +2763,8 @@ should correspond to either an SVG or Canvas element.</p>
             <div class="content"><div class='highlight'><pre>seen.<span class="hljs-function"><span class="hljs-title">Context</span> = <span class="hljs-params">(elementId, scene = <span class="hljs-literal">null</span>)</span> -&gt;</span>
   tag = seen.Util.element(elementId)?.tagName.toUpperCase()
   context = <span class="hljs-keyword">switch</span> tag
-    <span class="hljs-keyword">when</span> <span class="hljs-string">'SVG'</span>    <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> seen.SvgRenderContext(elementId)
-    <span class="hljs-keyword">when</span> <span class="hljs-string">'CANVAS'</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> seen.CanvasRenderContext(elementId)
+    <span class="hljs-keyword">when</span> <span class="hljs-string">'SVG'</span>, <span class="hljs-string">'G'</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> seen.SvgRenderContext(elementId)
+    <span class="hljs-keyword">when</span> <span class="hljs-string">'CANVAS'</span>   <span class="hljs-keyword">then</span> <span class="hljs-keyword">new</span> seen.CanvasRenderContext(elementId)
   <span class="hljs-keyword">if</span> context? <span class="hljs-keyword">and</span> scene?
     context.sceneLayer(scene)
   <span class="hljs-keyword">return</span> context</pre></div></div>
@@ -2330,11 +2772,11 @@ should correspond to either an SVG or Canvas element.</p>
         </li>
         
         
-        <li id="section-124">
+        <li id="section-143">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-124">&#182;</a>
+                <a class="pilcrow" href="#section-143">&#182;</a>
               </div>
               <h2 id="painters">Painters</h2>
 <h4 id="surface-painters">Surface painters</h4>
@@ -2345,11 +2787,11 @@ should correspond to either an SVG or Canvas element.</p>
         </li>
         
         
-        <li id="section-125">
+        <li id="section-144">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-125">&#182;</a>
+                <a class="pilcrow" href="#section-144">&#182;</a>
               </div>
               
             </div>
@@ -2357,11 +2799,11 @@ should correspond to either an SVG or Canvas element.</p>
         </li>
         
         
-        <li id="section-126">
+        <li id="section-145">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-126">&#182;</a>
+                <a class="pilcrow" href="#section-145">&#182;</a>
               </div>
               <p>Each <code>Painter</code> overrides the paint method. It uses the supplied
 <code>RenderLayerContext</code>‘s builders to create and style the geometry on screen.</p>
@@ -2371,7 +2813,7 @@ should correspond to either an SVG or Canvas element.</p>
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Painter</span></span>
   paint : <span class="hljs-function"><span class="hljs-params">(renderModel, context)</span> -&gt;</span>
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PathPainter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Painter</span></span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">PathPainter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Painter</span></span>
   paint : <span class="hljs-function"><span class="hljs-params">(renderModel, context)</span> -&gt;</span>
     painter = context.path().path(renderModel.projected.points)
 
@@ -2388,28 +2830,29 @@ should correspond to either an SVG or Canvas element.</p>
         <span class="hljs-string">'stroke-width'</span> : renderModel.surface[<span class="hljs-string">'stroke-width'</span>] ? <span class="hljs-number">1</span>
       )
 
-<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TextPainter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Painter</span></span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">TextPainter</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Painter</span></span>
   paint : <span class="hljs-function"><span class="hljs-params">(renderModel, context)</span> -&gt;</span>
-    xform = renderModel.transform.copy().multiply renderModel.projection
     style = {
       fill          : <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> renderModel.fill? <span class="hljs-keyword">then</span> <span class="hljs-string">'none'</span> <span class="hljs-keyword">else</span> renderModel.fill.hex()
+      font          : renderModel.surface.font
       <span class="hljs-string">'text-anchor'</span> : renderModel.surface.anchor ? <span class="hljs-string">'middle'</span>
     }
+    xform = seen.Affine.solveForAffineTransform(renderModel.projected.points)
     context.text().fillText(xform, renderModel.surface.text, style)
 
 seen.Painters = {
-  path  : <span class="hljs-keyword">new</span> PathPainter()
-  text  : <span class="hljs-keyword">new</span> TextPainter()
+  path : <span class="hljs-keyword">new</span> seen.PathPainter()
+  text : <span class="hljs-keyword">new</span> seen.TextPainter()
 }</pre></div></div>
             
         </li>
         
         
-        <li id="section-127">
+        <li id="section-146">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-127">&#182;</a>
+                <a class="pilcrow" href="#section-146">&#182;</a>
               </div>
               <h2 id="rendermodels">RenderModels</h2>
 <hr>
@@ -2419,11 +2862,11 @@ seen.Painters = {
         </li>
         
         
-        <li id="section-128">
+        <li id="section-147">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-128">&#182;</a>
+                <a class="pilcrow" href="#section-147">&#182;</a>
               </div>
               
             </div>
@@ -2434,11 +2877,11 @@ DEFAULT_NORMAL = seen.Points.Z()</pre></div></div>
         </li>
         
         
-        <li id="section-129">
+        <li id="section-148">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-129">&#182;</a>
+                <a class="pilcrow" href="#section-148">&#182;</a>
               </div>
               <p>The <code>RenderModel</code> object contains the transformed and projected points as
 well as various data needed to shade and paint a <code>Surface</code>.</p>
@@ -2450,28 +2893,79 @@ prevent unnecessary re-computation.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">RenderModel</span></span>
-  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@surface</span>, <span class="hljs-property">@transform</span>, <span class="hljs-property">@projection</span>)</span> -&gt;</span>
+  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@surface</span>, <span class="hljs-property">@transform</span>, <span class="hljs-property">@projection</span>, <span class="hljs-property">@viewport</span>)</span> -&gt;</span>
     <span class="hljs-property">@points</span>      = <span class="hljs-property">@surface</span>.points
     <span class="hljs-property">@transformed</span> = <span class="hljs-property">@_initRenderData</span>()
     <span class="hljs-property">@projected</span>   = <span class="hljs-property">@_initRenderData</span>()
     <span class="hljs-property">@_update</span>()
 
-  <span class="hljs-attribute">update</span>: <span class="hljs-function"><span class="hljs-params">(transform, projection)</span> -&gt;</span>
-    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@surface</span>.dirty <span class="hljs-keyword">and</span> seen.Util.arraysEqual(transform.m, <span class="hljs-property">@transform</span>.m) <span class="hljs-keyword">and</span> seen.Util.arraysEqual(projection.m, <span class="hljs-property">@projection</span>.m)
+  <span class="hljs-attribute">update</span>: <span class="hljs-function"><span class="hljs-params">(transform, projection, viewport)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@surface</span>.dirty <span class="hljs-keyword">and</span> seen.Util.arraysEqual(transform.m, <span class="hljs-property">@transform</span>.m) <span class="hljs-keyword">and</span> seen.Util.arraysEqual(projection.m, <span class="hljs-property">@projection</span>.m) <span class="hljs-keyword">and</span> seen.Util.arraysEqual(viewport.m, <span class="hljs-property">@viewport</span>.m)
       <span class="hljs-keyword">return</span>
     <span class="hljs-keyword">else</span>
       <span class="hljs-property">@transform</span>  = transform
       <span class="hljs-property">@projection</span> = projection
+      <span class="hljs-property">@viewport</span>   = viewport
       <span class="hljs-property">@_update</span>()
 
-  <span class="hljs-attribute">_update</span>: <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span>
-    <span class="hljs-property">@_math</span>(<span class="hljs-property">@transformed</span>, <span class="hljs-property">@points</span>, <span class="hljs-property">@transform</span>, <span class="hljs-literal">false</span>)
-    <span class="hljs-property">@_math</span>(<span class="hljs-property">@projected</span>, <span class="hljs-property">@transformed</span>.points, <span class="hljs-property">@projection</span>, <span class="hljs-literal">true</span>)
+  <span class="hljs-attribute">_update</span>: <span class="hljs-function"><span class="hljs-params">()</span> -&gt;</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-149">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-149">&#182;</a>
+              </div>
+              <p>Apply model transforms to surface points</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@_math</span>(<span class="hljs-property">@transformed</span>, <span class="hljs-property">@points</span>, <span class="hljs-property">@transform</span>, <span class="hljs-literal">false</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-150">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-150">&#182;</a>
+              </div>
+              <p>Project into camera space</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    cameraSpace = <span class="hljs-property">@transformed</span>.points.map <span class="hljs-function"><span class="hljs-params">(p)</span> =&gt;</span> p.copy().transform(<span class="hljs-property">@projection</span>)
+    <span class="hljs-property">@inFrustrum</span> = <span class="hljs-property">@_checkFrustrum</span>(cameraSpace)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-151">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-151">&#182;</a>
+              </div>
+              <p>Project into screen space</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@_math</span>(<span class="hljs-property">@projected</span>, cameraSpace, <span class="hljs-property">@viewport</span>, <span class="hljs-literal">true</span>)
     <span class="hljs-property">@surface</span>.dirty = <span class="hljs-literal">false</span>
+
+  _checkFrustrum : <span class="hljs-function"><span class="hljs-params">(points)</span> -&gt;</span>
+    <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> points
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span> <span class="hljs-keyword">if</span> (p.z &lt;= -<span class="hljs-number">2</span>)
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>
 
   <span class="hljs-attribute">_initRenderData</span>:<span class="hljs-function"> -&gt;</span>
     <span class="hljs-keyword">return</span> {
       points     : (p.copy() <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> <span class="hljs-property">@points</span>)
+      bounds     : <span class="hljs-keyword">new</span> seen.Bounds()
       barycenter : seen.P()
       normal     : seen.P()
       v0         : seen.P()
@@ -2483,11 +2977,11 @@ prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-130">
+        <li id="section-152">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-130">&#182;</a>
+                <a class="pilcrow" href="#section-152">&#182;</a>
               </div>
               <p>Apply transform to points</p>
 
@@ -2500,11 +2994,11 @@ prevent unnecessary re-computation.</p>
         </li>
         
         
-        <li id="section-131">
+        <li id="section-153">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-131">&#182;</a>
+                <a class="pilcrow" href="#section-153">&#182;</a>
               </div>
               <p>Applying the clip is what ultimately scales the x and y coordinates in
 a perpsective projection</p>
@@ -2516,11 +3010,11 @@ a perpsective projection</p>
         </li>
         
         
-        <li id="section-132">
+        <li id="section-154">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-132">&#182;</a>
+                <a class="pilcrow" href="#section-154">&#182;</a>
               </div>
               <p>Compute barycenter, which is used in aligning shapes in the painters
 algorithm</p>
@@ -2535,11 +3029,28 @@ algorithm</p>
         </li>
         
         
-        <li id="section-133">
+        <li id="section-155">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-133">&#182;</a>
+                <a class="pilcrow" href="#section-155">&#182;</a>
+              </div>
+              <p>Compute the bounding box of the points</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    set.bounds.reset()
+    <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> set.points
+      set.bounds.add(p)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-156">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-156">&#182;</a>
               </div>
               <p>Compute normal, which is used for backface culling (when enabled)</p>
 
@@ -2557,11 +3068,11 @@ algorithm</p>
         </li>
         
         
-        <li id="section-134">
+        <li id="section-157">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-134">&#182;</a>
+                <a class="pilcrow" href="#section-157">&#182;</a>
               </div>
               <p>The <code>LightRenderModel</code> stores pre-computed values necessary for shading
 surfaces with the supplied <code>Light</code>.</p>
@@ -2580,11 +3091,11 @@ surfaces with the supplied <code>Light</code>.</p>
         </li>
         
         
-        <li id="section-135">
+        <li id="section-158">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-135">&#182;</a>
+                <a class="pilcrow" href="#section-158">&#182;</a>
               </div>
               <h2 id="layers">Layers</h2>
 <hr>
@@ -2594,11 +3105,11 @@ surfaces with the supplied <code>Light</code>.</p>
         </li>
         
         
-        <li id="section-136">
+        <li id="section-159">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-136">&#182;</a>
+                <a class="pilcrow" href="#section-159">&#182;</a>
               </div>
               
             </div>
@@ -2625,11 +3136,11 @@ surfaces with the supplied <code>Light</code>.</p>
         </li>
         
         
-        <li id="section-137">
+        <li id="section-160">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-137">&#182;</a>
+                <a class="pilcrow" href="#section-160">&#182;</a>
               </div>
               <h2 id="svg-context">SVG Context</h2>
 <hr>
@@ -2639,11 +3150,11 @@ surfaces with the supplied <code>Light</code>.</p>
         </li>
         
         
-        <li id="section-138">
+        <li id="section-161">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-138">&#182;</a>
+                <a class="pilcrow" href="#section-161">&#182;</a>
               </div>
               
             </div>
@@ -2651,11 +3162,11 @@ surfaces with the supplied <code>Light</code>.</p>
         </li>
         
         
-        <li id="section-139">
+        <li id="section-162">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-139">&#182;</a>
+                <a class="pilcrow" href="#section-162">&#182;</a>
               </div>
               <p>Creates a new SVG element in the SVG namespace.</p>
 
@@ -2706,13 +3217,9 @@ surfaces with the supplied <code>Light</code>.</p>
 
   <span class="hljs-title">constructor</span> : <span class="hljs-params">(<span class="hljs-property">@elementFactory</span>)</span> -&gt;</span>
 
-  fillText : <span class="hljs-function"><span class="hljs-params">(transform, text, style = {})</span> -&gt;</span>
+  fillText : <span class="hljs-function"><span class="hljs-params">(m, text, style = {})</span> -&gt;</span>
     el = <span class="hljs-property">@elementFactory</span>(<span class="hljs-property">@_svgTag</span>)
-
-    m = seen.Matrices.flipY().multiply(transform).m
-
-    el.setAttribute(<span class="hljs-string">'transform'</span>, <span class="hljs-string">"matrix(<span class="hljs-subst">#{m[<span class="hljs-number">0</span>]}</span> <span class="hljs-subst">#{m[<span class="hljs-number">4</span>]}</span> <span class="hljs-subst">#{m[<span class="hljs-number">1</span>]}</span> <span class="hljs-subst">#{m[<span class="hljs-number">5</span>]}</span> <span class="hljs-subst">#{m[<span class="hljs-number">3</span>]}</span> <span class="hljs-subst">#{m[<span class="hljs-number">7</span>]}</span>)"</span>)
-    el.setAttribute(<span class="hljs-string">'font-family'</span>, <span class="hljs-string">'Roboto'</span>)
+    el.setAttribute(<span class="hljs-string">'transform'</span>, <span class="hljs-string">"matrix(<span class="hljs-subst">#{m[<span class="hljs-number">0</span>]}</span> <span class="hljs-subst">#{m[<span class="hljs-number">3</span>]}</span> <span class="hljs-subst">#{-m[<span class="hljs-number">1</span>]}</span> <span class="hljs-subst">#{-m[<span class="hljs-number">4</span>]}</span> <span class="hljs-subst">#{m[<span class="hljs-number">2</span>]}</span> <span class="hljs-subst">#{m[<span class="hljs-number">5</span>]}</span>)"</span>)
 
     str = <span class="hljs-string">''</span>
     <span class="hljs-keyword">for</span> key, value <span class="hljs-keyword">of</span> style
@@ -2764,11 +3271,11 @@ surfaces with the supplied <code>Light</code>.</p>
         </li>
         
         
-        <li id="section-140">
+        <li id="section-163">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-140">&#182;</a>
+                <a class="pilcrow" href="#section-163">&#182;</a>
               </div>
               <p>Returns an element with tagname <code>type</code>.</p>
 <p>This method uses an internal iterator to add new elements as they are
@@ -2818,11 +3325,11 @@ seen.<span class="hljs-function"><span class="hljs-title">SvgContext</span> = <s
         </li>
         
         
-        <li id="section-141">
+        <li id="section-164">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-141">&#182;</a>
+                <a class="pilcrow" href="#section-164">&#182;</a>
               </div>
               <h2 id="html5-canvas-context">HTML5 Canvas Context</h2>
 <hr>
@@ -2832,11 +3339,11 @@ seen.<span class="hljs-function"><span class="hljs-title">SvgContext</span> = <s
         </li>
         
         
-        <li id="section-142">
+        <li id="section-165">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-142">&#182;</a>
+                <a class="pilcrow" href="#section-165">&#182;</a>
               </div>
               
             </div>
@@ -2850,11 +3357,11 @@ seen.<span class="hljs-function"><span class="hljs-title">SvgContext</span> = <s
         </li>
         
         
-        <li id="section-143">
+        <li id="section-166">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-143">&#182;</a>
+                <a class="pilcrow" href="#section-166">&#182;</a>
               </div>
               <p>Copy over SVG CSS attributes</p>
 
@@ -2872,11 +3379,11 @@ seen.<span class="hljs-function"><span class="hljs-title">SvgContext</span> = <s
         </li>
         
         
-        <li id="section-144">
+        <li id="section-167">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-144">&#182;</a>
+                <a class="pilcrow" href="#section-167">&#182;</a>
               </div>
               <p>Copy over SVG CSS attributes</p>
 
@@ -2916,18 +3423,21 @@ seen.<span class="hljs-function"><span class="hljs-title">SvgContext</span> = <s
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">CanvasTextPainter</span></span>
   constructor : <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@ctx</span>)</span> -&gt;</span>
 
-  fillText : <span class="hljs-function"><span class="hljs-params">(transform, text, style = {})</span> -&gt;</span>
-    m = seen.Matrices.flipY().multiply(transform).m
+  fillText : <span class="hljs-function"><span class="hljs-params">(m, text, style = {})</span> -&gt;</span>
     <span class="hljs-property">@ctx</span>.save()
-    <span class="hljs-property">@ctx</span>.font = <span class="hljs-string">'16px Roboto'</span> <span class="hljs-comment"># TODO method</span>
-    <span class="hljs-property">@ctx</span>.setTransform(m[<span class="hljs-number">0</span>], m[<span class="hljs-number">4</span>], m[<span class="hljs-number">1</span>], m[<span class="hljs-number">5</span>], m[<span class="hljs-number">3</span>], m[<span class="hljs-number">7</span>])
+    <span class="hljs-property">@ctx</span>.setTransform(m[<span class="hljs-number">0</span>], m[<span class="hljs-number">3</span>], -m[<span class="hljs-number">1</span>], -m[<span class="hljs-number">4</span>], m[<span class="hljs-number">2</span>], m[<span class="hljs-number">5</span>])
 
+    <span class="hljs-keyword">if</span> style.font? <span class="hljs-keyword">then</span> <span class="hljs-property">@ctx</span>.font = style.font
     <span class="hljs-keyword">if</span> style.fill? <span class="hljs-keyword">then</span> <span class="hljs-property">@ctx</span>.fillStyle = style.fill
-    <span class="hljs-keyword">if</span> style[<span class="hljs-string">'text-anchor'</span>]? <span class="hljs-keyword">then</span> <span class="hljs-property">@ctx</span>.textAlign = style[<span class="hljs-string">'text-anchor'</span>]
+    <span class="hljs-keyword">if</span> style[<span class="hljs-string">'text-anchor'</span>]? <span class="hljs-keyword">then</span> <span class="hljs-property">@ctx</span>.textAlign = <span class="hljs-property">@_cssToCanvasAnchor</span>(style[<span class="hljs-string">'text-anchor'</span>])
 
     <span class="hljs-property">@ctx</span>.fillText(text, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
     <span class="hljs-property">@ctx</span>.restore()
     <span class="hljs-keyword">return</span> @
+
+  _cssToCanvasAnchor : <span class="hljs-function"><span class="hljs-params">(anchor)</span> -&gt;</span>
+    <span class="hljs-keyword">if</span> anchor <span class="hljs-keyword">is</span> <span class="hljs-string">'middle'</span> <span class="hljs-keyword">then</span> <span class="hljs-keyword">return</span> <span class="hljs-string">'center'</span>
+    <span class="hljs-keyword">return</span> anchor
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">CanvasLayerRenderContext</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">seen</span>.<span class="hljs-title">RenderLayerContext</span></span>
   constructor : <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@ctx</span>)</span> -&gt;</span>
@@ -2966,11 +3476,11 @@ seen.<span class="hljs-function"><span class="hljs-title">CanvasContext</span> =
         </li>
         
         
-        <li id="section-145">
+        <li id="section-168">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-145">&#182;</a>
+                <a class="pilcrow" href="#section-168">&#182;</a>
               </div>
               <h2 id="interaction">Interaction</h2>
 <h4 id="mouse-drag-and-zoom">Mouse drag and zoom</h4>
@@ -2981,11 +3491,11 @@ seen.<span class="hljs-function"><span class="hljs-title">CanvasContext</span> =
         </li>
         
         
-        <li id="section-146">
+        <li id="section-169">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-146">&#182;</a>
+                <a class="pilcrow" href="#section-169">&#182;</a>
               </div>
               
             </div>
@@ -2993,11 +3503,11 @@ seen.<span class="hljs-function"><span class="hljs-title">CanvasContext</span> =
         </li>
         
         
-        <li id="section-147">
+        <li id="section-170">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-147">&#182;</a>
+                <a class="pilcrow" href="#section-170">&#182;</a>
               </div>
               <p>A global window event dispatcher. Attaches listeners only if window is defined.</p>
 
@@ -3027,11 +3537,11 @@ seen.<span class="hljs-function"><span class="hljs-title">CanvasContext</span> =
         </li>
         
         
-        <li id="section-148">
+        <li id="section-171">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-148">&#182;</a>
+                <a class="pilcrow" href="#section-171">&#182;</a>
               </div>
               <p>An event dispatcher for mouse and drag events on a single dom element. The
 available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39;, &#39;mouseMove&#39;,
@@ -3042,6 +3552,8 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">MouseEvents</span></span>
   constructor : <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@el</span>, options)</span> -&gt;</span>
     seen.Util.defaults(@, options, <span class="hljs-property">@defaults</span>)
+
+    <span class="hljs-property">@el</span> = seen.Util.element(<span class="hljs-property">@el</span>)
 
     <span class="hljs-property">@_uid</span> = seen.Util.uniqueId(<span class="hljs-string">'mouser-'</span>)
 
@@ -3062,11 +3574,11 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
         </li>
         
         
-        <li id="section-149">
+        <li id="section-172">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-149">&#182;</a>
+                <a class="pilcrow" href="#section-172">&#182;</a>
               </div>
               <p>Attaches listeners to the element</p>
 
@@ -3080,11 +3592,11 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
         </li>
         
         
-        <li id="section-150">
+        <li id="section-173">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-150">&#182;</a>
+                <a class="pilcrow" href="#section-173">&#182;</a>
               </div>
               <p>Dettaches listeners to the element</p>
 
@@ -3127,11 +3639,11 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
         </li>
         
         
-        <li id="section-151">
+        <li id="section-174">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-151">&#182;</a>
+                <a class="pilcrow" href="#section-174">&#182;</a>
               </div>
               <p>A class for computing mouse interia for interial scrolling</p>
 
@@ -3169,11 +3681,11 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
         </li>
         
         
-        <li id="section-152">
+        <li id="section-175">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-152">&#182;</a>
+                <a class="pilcrow" href="#section-175">&#182;</a>
               </div>
               <p>Apply damping to slow the motion once the user has stopped dragging.</p>
 
@@ -3187,11 +3699,11 @@ available events are <code>&#39;dragStart&#39;, &#39;drag&#39;, &#39;dragEnd&#39
         </li>
         
         
-        <li id="section-153">
+        <li id="section-176">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-153">&#182;</a>
+                <a class="pilcrow" href="#section-176">&#182;</a>
               </div>
               <p>Adds simple mouse drag eventing to a DOM element. A ‘drag’ event is emitted
 as the user is dragging their mouse. This is the easiest way to add mouse-
@@ -3215,7 +3727,7 @@ look or mouse-rotate to a scene.</p>
       last     : <span class="hljs-literal">null</span>
       inertia  : <span class="hljs-keyword">new</span> seen.InertialMouse()
 
-    <span class="hljs-property">@dispatch</span> = seen.Events.dispatch(<span class="hljs-string">'drag'</span>)
+    <span class="hljs-property">@dispatch</span> = seen.Events.dispatch(<span class="hljs-string">'drag'</span>, <span class="hljs-string">'dragStart'</span>, <span class="hljs-string">'dragEnd'</span>, <span class="hljs-string">'dragEndInertia'</span>)
     <span class="hljs-property">@on</span>       = <span class="hljs-property">@dispatch</span>.<span class="hljs-literal">on</span>
 
     mouser = <span class="hljs-keyword">new</span> seen.MouseEvents(<span class="hljs-property">@el</span>)
@@ -3236,6 +3748,7 @@ look or mouse-rotate to a scene.</p>
     <span class="hljs-property">@_dragState</span>.dragging = <span class="hljs-literal">true</span>
     <span class="hljs-property">@_dragState</span>.origin   = <span class="hljs-property">@_getPageCoords</span>(e)
     <span class="hljs-property">@_dragState</span>.last     = <span class="hljs-property">@_getPageCoords</span>(e)
+    <span class="hljs-property">@dispatch</span>.dragStart(e)
 
   _onDragEnd : <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span>
     <span class="hljs-property">@_dragState</span>.dragging = <span class="hljs-literal">false</span>
@@ -3248,6 +3761,8 @@ look or mouse-rotate to a scene.</p>
 
       <span class="hljs-property">@_dragState</span>.inertia.update(dragEvent.offsetRelative)
       <span class="hljs-property">@_startInertia</span>()
+
+    <span class="hljs-property">@dispatch</span>.dragEnd(e)
 
   _onDrag : <span class="hljs-function"><span class="hljs-params">(e)</span> =&gt;</span>
     page = <span class="hljs-property">@_getPageCoords</span>(e)
@@ -3269,11 +3784,11 @@ look or mouse-rotate to a scene.</p>
         </li>
         
         
-        <li id="section-154">
+        <li id="section-177">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-154">&#182;</a>
+                <a class="pilcrow" href="#section-177">&#182;</a>
               </div>
               <p>Apply damping and get x,y intertia values</p>
 
@@ -3283,6 +3798,7 @@ look or mouse-rotate to a scene.</p>
 
     <span class="hljs-keyword">if</span> Math.abs(intertia[<span class="hljs-number">0</span>]) &lt; <span class="hljs-number">1</span> <span class="hljs-keyword">and</span> Math.abs(intertia[<span class="hljs-number">1</span>]) &lt; <span class="hljs-number">1</span>
       <span class="hljs-property">@_stopInertia</span>()
+      <span class="hljs-property">@dispatch</span>.dragEndInertia()
       <span class="hljs-keyword">return</span>
 
     <span class="hljs-property">@dispatch</span>.drag(
@@ -3304,11 +3820,11 @@ look or mouse-rotate to a scene.</p>
         </li>
         
         
-        <li id="section-155">
+        <li id="section-178">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-155">&#182;</a>
+                <a class="pilcrow" href="#section-178">&#182;</a>
               </div>
               <p>Adds simple mouse wheel eventing to a DOM element. A ‘zoom’ event is emitted
 as the user is scrolls their mouse wheel.</p>
@@ -3334,11 +3850,11 @@ as the user is scrolls their mouse wheel.</p>
         </li>
         
         
-        <li id="section-156">
+        <li id="section-179">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-156">&#182;</a>
+                <a class="pilcrow" href="#section-179">&#182;</a>
               </div>
               <p>This prevents the page from scrolling when we mousewheel the element</p>
 
@@ -3355,11 +3871,11 @@ as the user is scrolls their mouse wheel.</p>
         </li>
         
         
-        <li id="section-157">
+        <li id="section-180">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-157">&#182;</a>
+                <a class="pilcrow" href="#section-180">&#182;</a>
               </div>
               <h2 id="surfaces-and-shapes">Surfaces and Shapes</h2>
 <hr>
@@ -3369,11 +3885,11 @@ as the user is scrolls their mouse wheel.</p>
         </li>
         
         
-        <li id="section-158">
+        <li id="section-181">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-158">&#182;</a>
+                <a class="pilcrow" href="#section-181">&#182;</a>
               </div>
               
             </div>
@@ -3381,11 +3897,11 @@ as the user is scrolls their mouse wheel.</p>
         </li>
         
         
-        <li id="section-159">
+        <li id="section-182">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-159">&#182;</a>
+                <a class="pilcrow" href="#section-182">&#182;</a>
               </div>
               <p>A <code>Surface</code> is a defined as a planar object in 3D space. These paths don’t
 necessarily need to be convex, but they should be non-degenerate. This
@@ -3398,62 +3914,70 @@ library does not support shapes with holes.</p>
         </li>
         
         
-        <li id="section-160">
+        <li id="section-183">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-160">&#182;</a>
+                <a class="pilcrow" href="#section-183">&#182;</a>
               </div>
               <p>When ‘false’ this will override backface culling, which is useful if your
 material is transparent. See comment in <code>seen.Scene</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  cullBackfaces : <span class="hljs-literal">true</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  cullBackfaces  : <span class="hljs-literal">true</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-161">
+        <li id="section-184">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-161">&#182;</a>
+                <a class="pilcrow" href="#section-184">&#182;</a>
               </div>
               <p>Fill and stroke may be <code>Material</code> objects, which define the color and
 finish of the object and are rendered using the scene’s shader.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  fill          : <span class="hljs-keyword">new</span> seen.Material(seen.C.gray)
-  stroke        : <span class="hljs-literal">null</span>
+            <div class="content"><div class='highlight'><pre>  fillMaterial   : <span class="hljs-keyword">new</span> seen.Material(seen.C.gray)
+  strokeMaterial : <span class="hljs-literal">null</span>
 
-  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@points</span>, <span class="hljs-property">@painter</span> = seen.Painters.path)</span> -&gt;</span></pre></div></div>
+  constructor : <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@points</span>, <span class="hljs-property">@painter</span> = seen.Painters.path)</span> -&gt;</span></pre></div></div>
             
         </li>
         
         
-        <li id="section-162">
+        <li id="section-185">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-162">&#182;</a>
+                <a class="pilcrow" href="#section-185">&#182;</a>
               </div>
               <p>We store a unique id for every surface so we can look them up quickly
 with the <code>renderModel</code> cache.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@id</span> = <span class="hljs-string">'s'</span> + seen.Util.uniqueId()</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-property">@id</span> = <span class="hljs-string">'s'</span> + seen.Util.uniqueId()
+
+  fill : <span class="hljs-function"><span class="hljs-params">(fill)</span> -&gt;</span>
+    <span class="hljs-property">@fillMaterial</span> = seen.Material.create(fill)
+    <span class="hljs-keyword">return</span> @
+
+  stroke : <span class="hljs-function"><span class="hljs-params">(stroke)</span> -&gt;</span>
+    <span class="hljs-property">@strokeMaterial</span> = seen.Material.create(stroke)
+    <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
         
         
-        <li id="section-163">
+        <li id="section-186">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-163">&#182;</a>
+                <a class="pilcrow" href="#section-186">&#182;</a>
               </div>
               <p>A <code>Shape</code> contains a collection of surface. They may create a closed 3D
 shape, but not necessarily. For example, a cube is a closed shape, but a
@@ -3462,17 +3986,17 @@ patch is not.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Shape</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">seen</span>.<span class="hljs-title">Transformable</span></span>
-  <span class="hljs-attribute">constructor</span>: <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@type</span>, <span class="hljs-property">@surfaces</span>)</span> -&gt;</span>
+  constructor : <span class="hljs-function"><span class="hljs-params">(<span class="hljs-property">@type</span>, <span class="hljs-property">@surfaces</span>)</span> -&gt;</span>
     <span class="hljs-keyword">super</span>()</pre></div></div>
             
         </li>
         
         
-        <li id="section-164">
+        <li id="section-187">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-164">&#182;</a>
+                <a class="pilcrow" href="#section-187">&#182;</a>
               </div>
               <p>Visit each surface</p>
 
@@ -3485,45 +4009,45 @@ patch is not.</p>
         </li>
         
         
-        <li id="section-165">
+        <li id="section-188">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-165">&#182;</a>
+                <a class="pilcrow" href="#section-188">&#182;</a>
               </div>
               <p>Apply the supplied fill <code>Material</code> to each surface</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">fill</span>: <span class="hljs-function"><span class="hljs-params">(fill)</span> -&gt;</span>
-    <span class="hljs-property">@eachSurface</span> <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> s.fill = fill
+            <div class="content"><div class='highlight'><pre>  fill : <span class="hljs-function"><span class="hljs-params">(fill)</span> -&gt;</span>
+    <span class="hljs-property">@eachSurface</span> <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> s.fill(fill)
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
         
         
-        <li id="section-166">
+        <li id="section-189">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-166">&#182;</a>
+                <a class="pilcrow" href="#section-189">&#182;</a>
               </div>
               <p>Apply the supplied stroke <code>Material</code> to each surface</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="hljs-attribute">stroke</span>: <span class="hljs-function"><span class="hljs-params">(stroke)</span> -&gt;</span>
-    <span class="hljs-property">@eachSurface</span> <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> s.stroke = stroke
+            <div class="content"><div class='highlight'><pre>  stroke : <span class="hljs-function"><span class="hljs-params">(stroke)</span> -&gt;</span>
+    <span class="hljs-property">@eachSurface</span> <span class="hljs-function"><span class="hljs-params">(s)</span> -&gt;</span> s.stroke(stroke)
     <span class="hljs-keyword">return</span> @</pre></div></div>
             
         </li>
         
         
-        <li id="section-167">
+        <li id="section-190">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-167">&#182;</a>
+                <a class="pilcrow" href="#section-190">&#182;</a>
               </div>
               <h2 id="models">Models</h2>
 <hr>
@@ -3533,11 +4057,11 @@ patch is not.</p>
         </li>
         
         
-        <li id="section-168">
+        <li id="section-191">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-168">&#182;</a>
+                <a class="pilcrow" href="#section-191">&#182;</a>
               </div>
               
             </div>
@@ -3545,11 +4069,11 @@ patch is not.</p>
         </li>
         
         
-        <li id="section-169">
+        <li id="section-192">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-169">&#182;</a>
+                <a class="pilcrow" href="#section-192">&#182;</a>
               </div>
               <p>The object model class. It stores <code>Shapes</code>, <code>Lights</code>, and other <code>Models</code> as
 well as a transformation matrix.</p>
@@ -3568,11 +4092,11 @@ chains of transformations for creating, for example, articulated skeletons.</p>
         </li>
         
         
-        <li id="section-170">
+        <li id="section-193">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-170">&#182;</a>
+                <a class="pilcrow" href="#section-193">&#182;</a>
               </div>
               <p>Add a <code>Shape</code>, <code>Light</code>, and other <code>Model</code> as a child of this <code>Model</code>
 Any number of children can by supplied as arguments.</p>
@@ -3590,11 +4114,11 @@ Any number of children can by supplied as arguments.</p>
         </li>
         
         
-        <li id="section-171">
+        <li id="section-194">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-171">&#182;</a>
+                <a class="pilcrow" href="#section-194">&#182;</a>
               </div>
               <p>Remove a shape, model, or light from the model. NOTE: the scene may still
 contain a renderModel in its cache. If you are adding and removing many items,
@@ -3612,11 +4136,11 @@ consider calling <code>.flush()</code> on the scene to flush its renderModel cac
         </li>
         
         
-        <li id="section-172">
+        <li id="section-195">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-172">&#182;</a>
+                <a class="pilcrow" href="#section-195">&#182;</a>
               </div>
               <p>Create a new child model and return it.</p>
 
@@ -3630,11 +4154,11 @@ consider calling <code>.flush()</code> on the scene to flush its renderModel cac
         </li>
         
         
-        <li id="section-173">
+        <li id="section-196">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-173">&#182;</a>
+                <a class="pilcrow" href="#section-196">&#182;</a>
               </div>
               <p>Visit each <code>Shape</code> in this <code>Model</code> and all recursive child <code>Model</code>s.</p>
 
@@ -3650,11 +4174,11 @@ consider calling <code>.flush()</code> on the scene to flush its renderModel cac
         </li>
         
         
-        <li id="section-174">
+        <li id="section-197">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-174">&#182;</a>
+                <a class="pilcrow" href="#section-197">&#182;</a>
               </div>
               <p>Visit each <code>Light</code> and <code>Shape</code>, accumulating the recursive transformation
 matrices along the way. The light callback will be called with each light
@@ -3684,11 +4208,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-175">
+        <li id="section-198">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-175">&#182;</a>
+                <a class="pilcrow" href="#section-198">&#182;</a>
               </div>
               <p>The default model contains standard Hollywood-style 3-part lighting</p>
 
@@ -3700,11 +4224,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-176">
+        <li id="section-199">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-176">&#182;</a>
+                <a class="pilcrow" href="#section-199">&#182;</a>
               </div>
               <p>Key light</p>
 
@@ -3718,11 +4242,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-177">
+        <li id="section-200">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-177">&#182;</a>
+                <a class="pilcrow" href="#section-200">&#182;</a>
               </div>
               <p>Back light</p>
 
@@ -3735,11 +4259,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-178">
+        <li id="section-201">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-178">&#182;</a>
+                <a class="pilcrow" href="#section-201">&#182;</a>
               </div>
               <p>Fill light</p>
 
@@ -3754,11 +4278,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-179">
+        <li id="section-202">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-179">&#182;</a>
+                <a class="pilcrow" href="#section-202">&#182;</a>
               </div>
               <h2 id="shapes">Shapes</h2>
 <h4 id="shape-primitives-and-shape-making-methods">Shape primitives and shape-making methods</h4>
@@ -3769,11 +4293,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-180">
+        <li id="section-203">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-180">&#182;</a>
+                <a class="pilcrow" href="#section-203">&#182;</a>
               </div>
               
             </div>
@@ -3781,11 +4305,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-181">
+        <li id="section-204">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-181">&#182;</a>
+                <a class="pilcrow" href="#section-204">&#182;</a>
               </div>
               <p>Map to points in the surfaces of a tetrahedron</p>
 
@@ -3801,11 +4325,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-182">
+        <li id="section-205">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-182">&#182;</a>
+                <a class="pilcrow" href="#section-205">&#182;</a>
               </div>
               <p>Map to points in the surfaces of a cube</p>
 
@@ -3823,11 +4347,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-183">
+        <li id="section-206">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-183">&#182;</a>
+                <a class="pilcrow" href="#section-206">&#182;</a>
               </div>
               <p>Map to points in the surfaces of a rectangular pyramid</p>
 
@@ -3844,11 +4368,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-184">
+        <li id="section-207">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-184">&#182;</a>
+                <a class="pilcrow" href="#section-207">&#182;</a>
               </div>
               <p>Altitude of eqiulateral triangle for computing triangular patch size</p>
 
@@ -3859,11 +4383,11 @@ seen.Models = {</pre></div></div>
         </li>
         
         
-        <li id="section-185">
+        <li id="section-208">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-185">&#182;</a>
+                <a class="pilcrow" href="#section-208">&#182;</a>
               </div>
               <p>Points array of an icosahedron</p>
 
@@ -3889,11 +4413,11 @@ ICOSAHEDRON_POINTS = [
         </li>
         
         
-        <li id="section-186">
+        <li id="section-209">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-186">&#182;</a>
+                <a class="pilcrow" href="#section-209">&#182;</a>
               </div>
               <p>Map to points in the surfaces of an icosahedron</p>
 
@@ -3927,11 +4451,11 @@ seen.Shapes = {</pre></div></div>
         </li>
         
         
-        <li id="section-187">
+        <li id="section-210">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-187">&#182;</a>
+                <a class="pilcrow" href="#section-210">&#182;</a>
               </div>
               <p>Returns a 2x2x2 cube, centered on the origin.</p>
 
@@ -3954,11 +4478,11 @@ seen.Shapes = {</pre></div></div>
         </li>
         
         
-        <li id="section-188">
+        <li id="section-211">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-188">&#182;</a>
+                <a class="pilcrow" href="#section-211">&#182;</a>
               </div>
               <p>Returns a 1x1x1 cube from the origin to [1, 1, 1].</p>
 
@@ -3981,11 +4505,11 @@ seen.Shapes = {</pre></div></div>
         </li>
         
         
-        <li id="section-189">
+        <li id="section-212">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-189">&#182;</a>
+                <a class="pilcrow" href="#section-212">&#182;</a>
               </div>
               <p>Returns an axis-aligned 3D rectangle whose boundaries are defined by the
 two supplied points.</p>
@@ -4016,11 +4540,11 @@ two supplied points.</p>
         </li>
         
         
-        <li id="section-190">
+        <li id="section-213">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-190">&#182;</a>
+                <a class="pilcrow" href="#section-213">&#182;</a>
               </div>
               <p>Returns a square pyramid inside a unit cube</p>
 
@@ -4040,11 +4564,11 @@ two supplied points.</p>
         </li>
         
         
-        <li id="section-191">
+        <li id="section-214">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-191">&#182;</a>
+                <a class="pilcrow" href="#section-214">&#182;</a>
               </div>
               <p>Returns a tetrahedron that fits inside a 2x2x2 cube.</p>
 
@@ -4062,11 +4586,11 @@ two supplied points.</p>
         </li>
         
         
-        <li id="section-192">
+        <li id="section-215">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-192">&#182;</a>
+                <a class="pilcrow" href="#section-215">&#182;</a>
               </div>
               <p>Returns an icosahedron that fits within a 2x2x2 cube, centered on the
 origin.</p>
@@ -4079,11 +4603,11 @@ origin.</p>
         </li>
         
         
-        <li id="section-193">
+        <li id="section-216">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-193">&#182;</a>
+                <a class="pilcrow" href="#section-216">&#182;</a>
               </div>
               <p>Returns a sub-divided icosahedron, which approximates a sphere with
 triangles of equal size.</p>
@@ -4101,11 +4625,11 @@ triangles of equal size.</p>
         </li>
         
         
-        <li id="section-194">
+        <li id="section-217">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-194">&#182;</a>
+                <a class="pilcrow" href="#section-217">&#182;</a>
               </div>
               <p>Returns a planar triangular patch. The supplied arguments determine the
 number of triangle in the patch.</p>
@@ -4127,7 +4651,7 @@ number of triangle in the patch.</p>
         pts1 = [
           seen.P(x, y)
           seen.P(x + <span class="hljs-number">1</span>, y + <span class="hljs-number">0.5</span>)
-          seen.P(x, y + <span class="hljs-number">1</span>) 
+          seen.P(x, y + <span class="hljs-number">1</span>)
         ]
 
         <span class="hljs-keyword">for</span> pts <span class="hljs-keyword">in</span> [pts0, pts1]
@@ -4149,33 +4673,31 @@ number of triangle in the patch.</p>
         </li>
         
         
-        <li id="section-195">
+        <li id="section-218">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-195">&#182;</a>
+                <a class="pilcrow" href="#section-218">&#182;</a>
               </div>
-              <p>Return a text surface that can render 3D text when using an orthographic projection.</p>
+              <p>Return a text surface that can render 3D text using an affine transform estimate of the projection</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  text : <span class="hljs-function"><span class="hljs-params">(text)</span> -&gt;</span>
-    surface = <span class="hljs-keyword">new</span> seen.Surface([
-      seen.P(<span class="hljs-number">0</span>,  <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
-      seen.P(<span class="hljs-number">20</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
-      seen.P(<span class="hljs-number">0</span>, <span class="hljs-number">20</span>, <span class="hljs-number">0</span>)
-    ], seen.Painters.text)
+            <div class="content"><div class='highlight'><pre>  text : <span class="hljs-function"><span class="hljs-params">(text, surfaceOptions = {})</span> -&gt;</span>
+    surface = <span class="hljs-keyword">new</span> seen.Surface(seen.Affine.ORTHONORMAL_BASIS(), seen.Painters.text)
     surface.text = text
+    <span class="hljs-keyword">for</span> key, val <span class="hljs-keyword">of</span> surfaceOptions
+      surface[key] = val
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.Shape(<span class="hljs-string">'text'</span>, [surface])</pre></div></div>
             
         </li>
         
         
-        <li id="section-196">
+        <li id="section-219">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-196">&#182;</a>
+                <a class="pilcrow" href="#section-219">&#182;</a>
               </div>
               <p>Returns a shape that is an extrusion of the supplied points into the z axis.</p>
 
@@ -4210,11 +4732,11 @@ number of triangle in the patch.</p>
         </li>
         
         
-        <li id="section-197">
+        <li id="section-220">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-197">&#182;</a>
+                <a class="pilcrow" href="#section-220">&#182;</a>
               </div>
               <p>Returns an extruded block arrow shape.</p>
 
@@ -4236,13 +4758,13 @@ number of triangle in the patch.</p>
         </li>
         
         
-        <li id="section-198">
+        <li id="section-221">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-198">&#182;</a>
+                <a class="pilcrow" href="#section-221">&#182;</a>
               </div>
-              <p>Returns a shape with a single surface using the supplied points array </p>
+              <p>Returns a shape with a single surface using the supplied points array</p>
 
             </div>
             
@@ -4252,11 +4774,11 @@ number of triangle in the patch.</p>
         </li>
         
         
-        <li id="section-199">
+        <li id="section-222">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-199">&#182;</a>
+                <a class="pilcrow" href="#section-222">&#182;</a>
               </div>
               <p>Accepts a 2-dimensional array of tuples, returns a shape where the tuples
 represent points of a planar surface.</p>
@@ -4272,11 +4794,11 @@ represent points of a planar surface.</p>
         </li>
         
         
-        <li id="section-200">
+        <li id="section-223">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-200">&#182;</a>
+                <a class="pilcrow" href="#section-223">&#182;</a>
               </div>
               <p>Joins the points into surfaces using the coordinate map, which is an
 2-dimensional array of index integers.</p>
@@ -4293,11 +4815,11 @@ represent points of a planar surface.</p>
         </li>
         
         
-        <li id="section-201">
+        <li id="section-224">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-201">&#182;</a>
+                <a class="pilcrow" href="#section-224">&#182;</a>
               </div>
               <p>Accepts an array of 3-tuples and returns an array of 3-tuples representing
 the triangular subdivision of the surface.</p>
@@ -4320,11 +4842,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-202">
+        <li id="section-225">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-202">&#182;</a>
+                <a class="pilcrow" href="#section-225">&#182;</a>
               </div>
               <p>Parser for Wavefront .obj files</p>
 <p>Note: Wavefront .obj array indicies are 1-based.</p>
@@ -4364,11 +4886,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-203">
+        <li id="section-226">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-203">&#182;</a>
+                <a class="pilcrow" href="#section-226">&#182;</a>
               </div>
               <p>This method accepts Wavefront .obj file content and returns a <code>Shape</code> object.</p>
 
@@ -4389,11 +4911,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-204">
+        <li id="section-227">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-204">&#182;</a>
+                <a class="pilcrow" href="#section-227">&#182;</a>
               </div>
               <h2 id="animator">Animator</h2>
 <hr>
@@ -4403,11 +4925,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-205">
+        <li id="section-228">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-205">&#182;</a>
+                <a class="pilcrow" href="#section-228">&#182;</a>
               </div>
               
             </div>
@@ -4415,11 +4937,11 @@ the triangular subdivision of the surface.</p>
         </li>
         
         
-        <li id="section-206">
+        <li id="section-229">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-206">&#182;</a>
+                <a class="pilcrow" href="#section-229">&#182;</a>
               </div>
               <p>Polyfill requestAnimationFrame</p>
 
@@ -4437,11 +4959,11 @@ DEFAULT_FRAME_DELAY = <span class="hljs-number">30</span> <span class="hljs-comm
         </li>
         
         
-        <li id="section-207">
+        <li id="section-230">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-207">&#182;</a>
+                <a class="pilcrow" href="#section-230">&#182;</a>
               </div>
               <p>The animator class is useful for creating an animation loop. We supply pre
 and post events for apply animation changes between frames.</p>
@@ -4458,11 +4980,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-208">
+        <li id="section-231">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-208">&#182;</a>
+                <a class="pilcrow" href="#section-231">&#182;</a>
               </div>
               <p>Start the animation loop. The delay between frames can be supplied as an argument.</p>
 
@@ -4477,11 +4999,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-209">
+        <li id="section-232">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-209">&#182;</a>
+                <a class="pilcrow" href="#section-232">&#182;</a>
               </div>
               <p>Stop the animation loop.</p>
 
@@ -4494,11 +5016,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-210">
+        <li id="section-233">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-210">&#182;</a>
+                <a class="pilcrow" href="#section-233">&#182;</a>
               </div>
               <p>Use requestAnimationFrame if available</p>
 
@@ -4514,11 +5036,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-211">
+        <li id="section-234">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-211">&#182;</a>
+                <a class="pilcrow" href="#section-234">&#182;</a>
               </div>
               <p>The main animation frame method</p>
 
@@ -4530,11 +5052,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-212">
+        <li id="section-235">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-212">&#182;</a>
+                <a class="pilcrow" href="#section-235">&#182;</a>
               </div>
               <p>create timestamp param even if requestAnimationFrame isn’t available</p>
 
@@ -4554,11 +5076,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-213">
+        <li id="section-236">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-213">&#182;</a>
+                <a class="pilcrow" href="#section-236">&#182;</a>
               </div>
               <p>Add a callback that will be invoked before the frame</p>
 
@@ -4571,11 +5093,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-214">
+        <li id="section-237">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-214">&#182;</a>
+                <a class="pilcrow" href="#section-237">&#182;</a>
               </div>
               <p>Add a callback that will be invoked after the frame</p>
 
@@ -4588,11 +5110,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-215">
+        <li id="section-238">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-215">&#182;</a>
+                <a class="pilcrow" href="#section-238">&#182;</a>
               </div>
               <p>Add a frame callback</p>
 
@@ -4605,11 +5127,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-216">
+        <li id="section-239">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-216">&#182;</a>
+                <a class="pilcrow" href="#section-239">&#182;</a>
               </div>
               <p>A seen.Animator for rendering the seen.Context</p>
 
@@ -4623,11 +5145,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-217">
+        <li id="section-240">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-217">&#182;</a>
+                <a class="pilcrow" href="#section-240">&#182;</a>
               </div>
               <p>A transition object to manage to animation of shapes</p>
 
@@ -4645,11 +5167,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-218">
+        <li id="section-241">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-218">&#182;</a>
+                <a class="pilcrow" href="#section-241">&#182;</a>
               </div>
               <p>Setup the first frame before the tick increment</p>
 
@@ -4662,11 +5184,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-219">
+        <li id="section-242">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-219">&#182;</a>
+                <a class="pilcrow" href="#section-242">&#182;</a>
               </div>
               <p>Execute a tick and draw a frame</p>
 
@@ -4679,11 +5201,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-220">
+        <li id="section-243">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-220">&#182;</a>
+                <a class="pilcrow" href="#section-243">&#182;</a>
               </div>
               <p>Cleanup or update on last frame after tick</p>
 
@@ -4702,11 +5224,11 @@ and post events for apply animation changes between frames.</p>
         </li>
         
         
-        <li id="section-221">
+        <li id="section-244">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-221">&#182;</a>
+                <a class="pilcrow" href="#section-244">&#182;</a>
               </div>
               <p>A seen.Animator for updating seen.Transtions. We include keyframing to make
 sure we wait for one transition to finish before starting the next one.</p>
@@ -4723,11 +5245,11 @@ sure we wait for one transition to finish before starting the next one.</p>
         </li>
         
         
-        <li id="section-222">
+        <li id="section-245">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-222">&#182;</a>
+                <a class="pilcrow" href="#section-245">&#182;</a>
               </div>
               <p>Adds a transition object to the current set of transitions. Note that
 transitions will not start until they have been enqueued by invoking
@@ -4741,11 +5263,11 @@ transitions will not start until they have been enqueued by invoking
         </li>
         
         
-        <li id="section-223">
+        <li id="section-246">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-223">&#182;</a>
+                <a class="pilcrow" href="#section-246">&#182;</a>
               </div>
               <p>Enqueues the current set of transitions into the keyframe queue and sets
 up a new set of transitions.</p>
@@ -4759,11 +5281,11 @@ up a new set of transitions.</p>
         </li>
         
         
-        <li id="section-224">
+        <li id="section-247">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-224">&#182;</a>
+                <a class="pilcrow" href="#section-247">&#182;</a>
               </div>
               <p>When this animator updates, it invokes <code>update()</code> on all of the
 currently animating transitions. If any of the current transitions are
@@ -4782,11 +5304,11 @@ keyframe queue on the next update.</p>
         </li>
         
         
-        <li id="section-225">
+        <li id="section-248">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-225">&#182;</a>
+                <a class="pilcrow" href="#section-248">&#182;</a>
               </div>
               <h2 id="camera">Camera</h2>
 <h4 id="projections-viewports-and-cameras">Projections, Viewports, and Cameras</h4>
@@ -4797,11 +5319,11 @@ keyframe queue on the next update.</p>
         </li>
         
         
-        <li id="section-226">
+        <li id="section-249">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-226">&#182;</a>
+                <a class="pilcrow" href="#section-249">&#182;</a>
               </div>
               
             </div>
@@ -4809,11 +5331,11 @@ keyframe queue on the next update.</p>
         </li>
         
         
-        <li id="section-227">
+        <li id="section-250">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-227">&#182;</a>
+                <a class="pilcrow" href="#section-250">&#182;</a>
               </div>
               <p>These projection methods return a 3D to 2D <code>Matrix</code> transformation.
 Each projection assumes the camera is located at (0,0,0).</p>
@@ -4825,11 +5347,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-228">
+        <li id="section-251">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-228">&#182;</a>
+                <a class="pilcrow" href="#section-251">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix</p>
 
@@ -4842,11 +5364,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-229">
+        <li id="section-252">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-229">&#182;</a>
+                <a class="pilcrow" href="#section-252">&#182;</a>
               </div>
               <p>Creates a perspective projection matrix with the supplied frustrum</p>
 
@@ -4883,11 +5405,11 @@ Each projection assumes the camera is located at (0,0,0).</p>
         </li>
         
         
-        <li id="section-230">
+        <li id="section-253">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-230">&#182;</a>
+                <a class="pilcrow" href="#section-253">&#182;</a>
               </div>
               <p>Creates a orthographic projection matrix with the supplied frustrum</p>
 
@@ -4927,11 +5449,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-231">
+        <li id="section-254">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-231">&#182;</a>
+                <a class="pilcrow" href="#section-254">&#182;</a>
               </div>
               <p>Create a viewport where the scene’s origin is centered in the view</p>
 
@@ -4944,17 +5466,17 @@ seen.Viewports = {</pre></div></div>
 
     postscale = seen.M()
       .scale(width, -height, height)
-      .translate(x + width/<span class="hljs-number">2</span>, y + height/<span class="hljs-number">2</span>)
+      .translate(x + width/<span class="hljs-number">2</span>, y + height/<span class="hljs-number">2</span>, height)
     <span class="hljs-keyword">return</span> {prescale, postscale}</pre></div></div>
             
         </li>
         
         
-        <li id="section-232">
+        <li id="section-255">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-232">&#182;</a>
+                <a class="pilcrow" href="#section-255">&#182;</a>
               </div>
               <p>Create a view port where the scene’s origin is aligned with the origin ([0, 0]) of the view</p>
 
@@ -4974,11 +5496,11 @@ seen.Viewports = {</pre></div></div>
         </li>
         
         
-        <li id="section-233">
+        <li id="section-256">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-233">&#182;</a>
+                <a class="pilcrow" href="#section-256">&#182;</a>
               </div>
               <p>The <code>Camera</code> model contains all three major components of the 3D to 2D tranformation.</p>
 <p>First, we transform object from world-space (the same space that the coordinates of
@@ -5003,11 +5525,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-234">
+        <li id="section-257">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-234">&#182;</a>
+                <a class="pilcrow" href="#section-257">&#182;</a>
               </div>
               <h2 id="scene">Scene</h2>
 <hr>
@@ -5017,11 +5539,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-235">
+        <li id="section-258">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-235">&#182;</a>
+                <a class="pilcrow" href="#section-258">&#182;</a>
               </div>
               
             </div>
@@ -5029,11 +5551,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-236">
+        <li id="section-259">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-236">&#182;</a>
+                <a class="pilcrow" href="#section-259">&#182;</a>
               </div>
               <p>A <code>Scene</code> is the main object for a view of a scene.</p>
 
@@ -5045,11 +5567,11 @@ screen coordinates in the z = 0 plane.</p>
         </li>
         
         
-        <li id="section-237">
+        <li id="section-260">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-237">&#182;</a>
+                <a class="pilcrow" href="#section-260">&#182;</a>
               </div>
               <p>The root model for the scene, which contains <code>Shape</code>s, <code>Light</code>s, and
 other <code>Model</code>s</p>
@@ -5061,11 +5583,11 @@ other <code>Model</code>s</p>
         </li>
         
         
-        <li id="section-238">
+        <li id="section-261">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-238">&#182;</a>
+                <a class="pilcrow" href="#section-261">&#182;</a>
               </div>
               <p>The <code>Camera</code>, which defines the projection transformation. The default
 projection is perspective.</p>
@@ -5077,11 +5599,11 @@ projection is perspective.</p>
         </li>
         
         
-        <li id="section-239">
+        <li id="section-262">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-239">&#182;</a>
+                <a class="pilcrow" href="#section-262">&#182;</a>
               </div>
               <p>The <code>Viewport</code>, which defines the projection from shape-space to
 projection-space then to screen-space. The default viewport is on a
@@ -5095,11 +5617,11 @@ viewport with the same width/height as the DOM element.</p>
         </li>
         
         
-        <li id="section-240">
+        <li id="section-263">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-240">&#182;</a>
+                <a class="pilcrow" href="#section-263">&#182;</a>
               </div>
               <p>The scene’s shader determines which lighting model is used.</p>
 
@@ -5110,11 +5632,11 @@ viewport with the same width/height as the DOM element.</p>
         </li>
         
         
-        <li id="section-241">
+        <li id="section-264">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-241">&#182;</a>
+                <a class="pilcrow" href="#section-264">&#182;</a>
               </div>
               <p>The <code>cullBackfaces</code> boolean can be used to turn off backface-culling
 for the whole scene. Beware, turning this off can slow down a scene’s
@@ -5128,11 +5650,11 @@ individual surfaces with a boolean on those objects.</p>
         </li>
         
         
-        <li id="section-242">
+        <li id="section-265">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-242">&#182;</a>
+                <a class="pilcrow" href="#section-265">&#182;</a>
               </div>
               <p>The <code>fractionalPoints</code> boolean determines if we round the surface
 coordinates to the nearest integer. Rounding the coordinates before
@@ -5148,11 +5670,11 @@ jittering effect when animating.</p>
         </li>
         
         
-        <li id="section-243">
+        <li id="section-266">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-243">&#182;</a>
+                <a class="pilcrow" href="#section-266">&#182;</a>
               </div>
               <p>The <code>cache</code> boolean (default : true) enables a simple cache for
 renderModels, which are generated for each surface in the scene. The
@@ -5170,11 +5692,11 @@ no eviction policy. To flush the cache, call <code>.flushCache()</code></p>
         </li>
         
         
-        <li id="section-244">
+        <li id="section-267">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-244">&#182;</a>
+                <a class="pilcrow" href="#section-267">&#182;</a>
               </div>
               <p>The primary method that produces the render models, which are then used
 by the <code>RenderContext</code> to paint the scene.</p>
@@ -5186,11 +5708,11 @@ by the <code>RenderContext</code> to paint the scene.</p>
         </li>
         
         
-        <li id="section-245">
+        <li id="section-268">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-245">&#182;</a>
+                <a class="pilcrow" href="#section-268">&#182;</a>
               </div>
               <p>Compute the projection matrix including the viewport and camera
 transformation matrices.</p>
@@ -5200,7 +5722,7 @@ transformation matrices.</p>
             <div class="content"><div class='highlight'><pre>    projection = <span class="hljs-property">@camera</span>.m.copy()
       .multiply(<span class="hljs-property">@viewport</span>.prescale)
       .multiply(<span class="hljs-property">@camera</span>.projection)
-      .multiply(<span class="hljs-property">@viewport</span>.postscale)
+    viewport   = <span class="hljs-property">@viewport</span>.postscale
 
     renderModels = []
     <span class="hljs-property">@model</span>.eachRenderable(
@@ -5209,11 +5731,11 @@ transformation matrices.</p>
         </li>
         
         
-        <li id="section-246">
+        <li id="section-269">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-246">&#182;</a>
+                <a class="pilcrow" href="#section-269">&#182;</a>
               </div>
               <p>Compute light model data.</p>
 
@@ -5227,57 +5749,57 @@ transformation matrices.</p>
         </li>
         
         
-        <li id="section-247">
+        <li id="section-270">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-247">&#182;</a>
+                <a class="pilcrow" href="#section-270">&#182;</a>
               </div>
               <p>Compute transformed and projected geometry.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>          renderModel = <span class="hljs-property">@_renderSurface</span>(surface, transform, projection)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>          renderModel = <span class="hljs-property">@_renderSurface</span>(surface, transform, projection, viewport)</pre></div></div>
             
         </li>
         
         
-        <li id="section-248">
+        <li id="section-271">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-248">&#182;</a>
+                <a class="pilcrow" href="#section-271">&#182;</a>
               </div>
               <p>Test projected normal’s z-coordinate for culling (if enabled).</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">if</span> (<span class="hljs-keyword">not</span> <span class="hljs-property">@cullBackfaces</span> <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> surface.cullBackfaces <span class="hljs-keyword">or</span> renderModel.projected.normal.z &lt; <span class="hljs-number">0</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">if</span> (<span class="hljs-keyword">not</span> <span class="hljs-property">@cullBackfaces</span> <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> surface.cullBackfaces <span class="hljs-keyword">or</span> renderModel.projected.normal.z &lt; <span class="hljs-number">0</span>) <span class="hljs-keyword">and</span> renderModel.inFrustrum</pre></div></div>
             
         </li>
         
         
-        <li id="section-249">
+        <li id="section-272">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-249">&#182;</a>
+                <a class="pilcrow" href="#section-272">&#182;</a>
               </div>
               <p>Render fill and stroke using material and shader.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>            renderModel.fill   = surface.fill?.render(lights, <span class="hljs-property">@shader</span>, renderModel.transformed)
-            renderModel.stroke = surface.stroke?.render(lights, <span class="hljs-property">@shader</span>, renderModel.transformed)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>            renderModel.fill   = surface.fillMaterial?.render(lights, <span class="hljs-property">@shader</span>, renderModel.transformed)
+            renderModel.stroke = surface.strokeMaterial?.render(lights, <span class="hljs-property">@shader</span>, renderModel.transformed)</pre></div></div>
             
         </li>
         
         
-        <li id="section-250">
+        <li id="section-273">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-250">&#182;</a>
+                <a class="pilcrow" href="#section-273">&#182;</a>
               </div>
               <p>Round coordinates (if enabled)</p>
 
@@ -5292,11 +5814,11 @@ transformation matrices.</p>
         </li>
         
         
-        <li id="section-251">
+        <li id="section-274">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-251">&#182;</a>
+                <a class="pilcrow" href="#section-274">&#182;</a>
               </div>
               <p>Sort render models by projected z coordinate. This ensures that the surfaces
 farthest from the eye are painted first. (Painter’s Algorithm)</p>
@@ -5311,36 +5833,36 @@ farthest from the eye are painted first. (Painter’s Algorithm)</p>
         </li>
         
         
-        <li id="section-252">
+        <li id="section-275">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-252">&#182;</a>
+                <a class="pilcrow" href="#section-275">&#182;</a>
               </div>
               <p>Get or create the rendermodel for the given surface. If <code>@cache</code> is true, we cache these models
 to reduce object creation and recomputation.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  _renderSurface : <span class="hljs-function"><span class="hljs-params">(surface, transform, projection)</span> -&gt;</span>
+            <div class="content"><div class='highlight'><pre>  _renderSurface : <span class="hljs-function"><span class="hljs-params">(surface, transform, projection, viewport)</span> -&gt;</span>
     <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-property">@cache</span>
-      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.RenderModel(surface, transform, projection)
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> seen.RenderModel(surface, transform, projection, viewport)
 
     renderModel = <span class="hljs-property">@_renderModelCache</span>[surface.id]
     <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> renderModel?
-      renderModel = <span class="hljs-property">@_renderModelCache</span>[surface.id] = <span class="hljs-keyword">new</span> seen.RenderModel(surface, transform, projection)
+      renderModel = <span class="hljs-property">@_renderModelCache</span>[surface.id] = <span class="hljs-keyword">new</span> seen.RenderModel(surface, transform, projection, viewport)
     <span class="hljs-keyword">else</span>
-      renderModel.update(transform, projection)
+      renderModel.update(transform, projection, viewport)
     <span class="hljs-keyword">return</span> renderModel</pre></div></div>
             
         </li>
         
         
-        <li id="section-253">
+        <li id="section-276">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-253">&#182;</a>
+                <a class="pilcrow" href="#section-276">&#182;</a>
               </div>
               <p>Removes all elements from the cache. This may be necessary if you add and
 remove many shapes from the scene’s models since this cache has no

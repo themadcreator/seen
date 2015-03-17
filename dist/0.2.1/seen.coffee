@@ -143,8 +143,6 @@ TRANSPOSE_INDICES = [0,  4,  8, 12,
                      2,  6, 10, 14,
                      3,  7, 11, 15]
 
-
-
 # The `Matrix` class stores transformations in the scene. These include:
 # (1) Camera Projection and Viewport transformations.
 # (2) Transformations of any `Transformable` type object, such as `Shape`s or `Model`s
@@ -471,221 +469,79 @@ class seen.Quaternion
     return seen.M(m)
 
 
-# The `Bounds` object contains an axis-aligned bounding box.
-class seen.Bounds
-
-  @points : (points) ->
-    box = new seen.Bounds()
-    box.add(p) for p in points
-    return box
-
-  @xywh : (x, y, w, h) ->
-    return seen.Boundses.xyzwhd(x, y, 0, w, h, 0)
-
-  @xyzwhd : (x, y, z, w, h, d) ->
-    box = new seen.Bounds()
-    box.add(seen.P(x, y, z))
-    box.add(seen.P(x+w, y+h, z+d))
-    return box
-
-  constructor : () ->
-    @min = null
-    @max = null
-
-  # Creates a copy of this box object with the same bounds
-  copy : () ->
-    box = new seen.Bounds()
-    box.min = @min?.copy()
-    box.max = @max?.copy()
-    return box
-
-  # Adds this point to the bounding box, extending it if necessary
-  add : (p) ->
-    if not (@min? and @max?)
-      @min = p.copy()
-      @max = p.copy()
-    else
-      @min.x = Math.min(@min.x, p.x)
-      @min.y = Math.min(@min.y, p.y)
-      @min.z = Math.min(@min.z, p.z)
-
-      @max.x = Math.max(@max.x, p.x)
-      @max.y = Math.max(@max.y, p.y)
-      @max.z = Math.max(@max.z, p.z)
-    return @
-
-  # Returns true of this box contains at least one point
-  valid : ->
-    return (@min? and @max?)
-
-  # Trims this box so that it results in the intersection of this box and the
-  # supplied box.
-  intersect : (box) ->
-    if not @valid() or not box.valid()
-      @min = null
-      @max = null
-    else
-      @min = seen.P(
-        Math.max(@min.x, box.min.x)
-        Math.max(@min.y, box.min.y)
-        Math.max(@min.z, box.min.z)
-      )
-      @max = seen.P(
-        Math.min(@max.x, box.max.x)
-        Math.min(@max.y, box.max.y)
-        Math.min(@max.z, box.max.z)
-      )
-      if @min.x > @max.x or @min.y > @max.y or @min.z > @max.z
-        @min = null
-        @max = null
-    return @
-
-
-  # Pads the min and max of this box using the supplied x, y, and z
-  pad : (x, y, z) ->
-    if @valid()
-      y ?= x
-      z ?= y
-      p  = seen.P(x,y,z)
-      @min.subtract(p)
-      @max.add(p)
-    return @
-
-  # Returns this bounding box to an empty state
-  reset : () ->
-    @min = null
-    @max = null
-    return @
-
-  # Return true iff the point p lies within this bounding box. Points on the
-  # edge of the box are included.
-  contains : (p) ->
-    if not @valid()
-      return false
-    else if @min.x > p.x or @max.x < p.x
-      return false
-    else if @min.y > p.y or @max.y < p.y
-      return false
-    else if @min.z > p.z or @max.z < p.z
-      return false
-    else
-      return true
-
-  # Returns the center of the box or zero if no points are in the box
-  center : () ->
-    return seen.P(
-      @minX() + @width()/2
-      @minY() + @height()/2
-      @minZ() + @depth()/2
-    )
-
-  # Returns the width (x extent) of the box
-  width  : () => @maxX() - @minX()
-
-  # Returns the height (y extent) of the box
-  height : () => @maxY() - @minY()
-
-  # Returns the depth (z extent) of the box
-  depth  : () => @maxZ() - @minZ()
-
-  minX : () => return @min?.x ? 0
-  minY : () => return @min?.y ? 0
-  minZ : () => return @min?.z ? 0
-
-  maxX : () => return @max?.x ? 0
-  maxY : () => return @max?.y ? 0
-  maxZ : () => return @max?.z ? 0
-
-
 # ## Colors
 # ------------------
 
 # `Color` objects store RGB and Alpha values from 0 to 255.
 class seen.Color
-  constructor : (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->
+  constructor: (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->
 
   # Returns a new `Color` object with the same rgb and alpha values as the current object
-  copy : () ->
+  copy: () ->
     return new seen.Color(@r, @g, @b, @a)
 
   # Scales the rgb channels by the supplied scalar value.
-  scale : (n) ->
+  scale: (n) ->
     @r *= n
     @g *= n
     @b *= n
     return @
 
   # Offsets each rgb channel by the supplied scalar value.
-  offset : (n) ->
+  offset: (n) ->
     @r += n
     @g += n
     @b += n
     return @
 
   # Clamps each rgb channel to the supplied minimum and maximum scalar values.
-  clamp : (min = 0, max = 0xFF) ->
+  clamp: (min = 0, max = 0xFF) ->
     @r = Math.min(max, Math.max(min, @r))
     @g = Math.min(max, Math.max(min, @g))
     @b = Math.min(max, Math.max(min, @b))
     return @
 
   # Takes the minimum between each channel of this `Color` and the supplied `Color` object.
-  minChannels : (c) ->
+  minChannels: (c) ->
     @r = Math.min(c.r, @r)
     @g = Math.min(c.g, @g)
     @b = Math.min(c.b, @b)
     return @
 
   # Adds the channels of the current `Color` with each respective channel from the supplied `Color` object.
-  addChannels : (c) ->
+  addChannels: (c) ->
     @r += c.r
     @g += c.g
     @b += c.b
     return @
 
   # Multiplies the channels of the current `Color` with each respective channel from the supplied `Color` object.
-  multiplyChannels : (c) ->
+  multiplyChannels: (c) ->
     @r *= c.r
     @g *= c.g
     @b *= c.b
     return @
 
   # Converts the `Color` into a hex string of the form "#RRGGBB".
-  hex : () ->
+  hex: () ->
     c = (@r << 16 | @g << 8 | @b).toString(16)
     while (c.length < 6) then c = '0' + c
     return '#' + c
 
   # Converts the `Color` into a CSS-style string of the form "rgba(RR, GG, BB, AA)"
-  style : () ->
+  style: () ->
     return "rgba(#{@r},#{@g},#{@b},#{@a})"
 
 seen.Colors = {
-  CSS_RGBA_STRING_REGEX : /rgb(a)?\(([0-9.]+),([0-9.]+),*([0-9.]+)(,([0-9.]+))?\)/
-
-  # Parses a hex string starting with an octothorpe (#) or an rgb/rgba CSS
-  # string. Note that the CSS rgba format uses a float value of 0-1.0 for
-  # alpha, but seen uses an in from 0-255.
-  parse : (str) ->
-    if str.charAt(0) is '#' and str.length is 7
-      return seen.Colors.hex(str)
-    else if str.indexOf('rgb') is 0
-      m = seen.Colors.CSS_RGBA_STRING_REGEX.exec(str)
-      return seen.Colors.black() unless m?
-      a = if m[6]? then Math.round(parseFloat(m[6]) * 0xFF) else undefined
-      return new seen.Color(parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4]), a)
-    else
-      return seen.Colors.black()
-
   # Creates a new `Color` using the supplied rgb and alpha values.
   #
   # Each value must be in the range [0, 255] or, equivalently, [0x00, 0xFF].
-  rgb : (r, g, b, a = 255) ->
+  rgb: (r, g, b, a = 255) ->
     return new seen.Color(r, g, b, a)
 
   # Creates a new `Color` using the supplied hex string of the form "#RRGGBB".
-  hex : (hex) ->
-    hex = hex.substring(1) if (hex.charAt(0) is '#')
+  hex: (hex) ->
+    hex = hex.substring(1) if (hex.charAt(0) == '#')
     return new seen.Color(
       parseInt(hex.substring(0, 2), 16),
       parseInt(hex.substring(2, 4), 16),
@@ -695,7 +551,7 @@ seen.Colors = {
   # (HSL) values.
   #
   # Each value must be in the range [0.0, 1.0].
-  hsl : (h, s, l, a = 1) ->
+  hsl: (h, s, l, a = 1) ->
     r = g = b = 0
     if (s == 0)
       # When saturation is 0, the color is "achromatic" or "grayscale".
@@ -727,7 +583,7 @@ seen.Colors = {
   # Generates a new random color for each surface of the supplied `Shape`.
   randomSurfaces : (shape, sat = 0.5, lit = 0.4) ->
     for surface in shape.surfaces
-      surface.fill seen.Colors.hsl(Math.random(), sat, lit)
+      surface.fill = new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
 
   # Generates a random hue then randomly drifts the hue for each surface of
   # the supplied `Shape`.
@@ -737,7 +593,7 @@ seen.Colors = {
       hue += (Math.random() - 0.5) * drift
       while hue < 0 then hue += 1
       while hue > 1 then hue -= 1
-      surface.fill seen.Colors.hsl(hue, 0.5, 0.4)
+      surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
 
   # Generates a random color then sets the fill for every surface of the
   # supplied `Shape`.
@@ -762,16 +618,6 @@ seen.C = (r,g,b,a) -> new seen.Color(r,g,b,a)
 
 # `Material` objects hold the attributes that desribe the color and finish of a surface.
 class seen.Material
-  @create : (value) ->
-    if value instanceof seen.Material
-      return value
-    else if value instanceof seen.Color
-      return new seen.Material(value)
-    else if typeof value is 'string'
-      return new seen.Material(seen.Colors.parse(value))
-    else
-      return new seen.Material()
-
   defaults :
     # The base color of the material.
     color            : seen.Colors.gray()
@@ -958,77 +804,6 @@ seen.Shaders = {
 }
 
 
-# ## Affine
-# #### Fake projections with affine transforms
-# ------------------
-#
-# It is not possible exactly render text in a scene with a perspective
-# projection because Canvas and SVG support only affine transformations. So,
-# in order to fake it, we create an affine transform that approximates the
-# linear effects of a perspective projection on an unrendered planar surface
-# that represents the text's shape. We can use this transform directly in the
-# text painter to warp the text.
-#
-# This fake projection will produce unrealistic results with large strings of
-# text that are not broken into their own shapes.
-seen.Affine = {
-
-  # This is the set of points that must be used by a surface that will use an
-  # affine transform for rendering.
-  ORTHONORMAL_BASIS : -> [
-    seen.P( 0, 0,  0)
-    seen.P(20, 0,  0)
-    seen.P( 0, 20, 0)
-  ]
-
-  # This matrix is built using the method from this StackOverflow answer:
-  # http://stackoverflow.com/questions/22954239/given-three-points-compute-affine-transformation
-  #
-  # We further re-arranged the rows to avoid having to do any matrix factorization.
-  INITIAL_STATE_MATRIX : [
-    [20,  0, 1,  0,  0, 0]
-    [ 0, 20, 1,  0,  0, 0]
-    [ 0,  0, 1,  0,  0, 0]
-    [ 0,  0, 0, 20,  0, 1]
-    [ 0,  0, 0,  0, 20, 1]
-    [ 0,  0, 0,  0,  0, 1]
-  ]
-
-  # Computes the parameters of an affine transform from the 3 projected
-  # points.
-  # 
-  # Because we control the initial values of the points, we can re-use the
-  # state matrix. Furthermore, because we have use a special layout (upper
-  # triangular) for this matrix, we avoid any matrix factorization and can go
-  # directly to back-substitution to solve the matrix equation.
-  #
-  # To use the affine transform, use the indices like so (note that we flip y):
-  #     x[0], x[3], -x[1], -x[4], x[2], x[5]
-  solveForAffineTransform : (points) ->
-    A = seen.Affine.INITIAL_STATE_MATRIX
-
-    b = [
-      points[1].x
-      points[2].x
-      points[0].x
-      points[1].y
-      points[2].y
-      points[0].y
-    ]
-
-    # Use back substitution to solve A*x=b for x
-    x = new Array(6)
-    n = A.length
-    for i in [(n-1)..0] by -1
-      x[i] = b[i]
-      for j in [(i+1)...n]
-        x[i] -= A[i][j] * x[j]
-      x[i] /= A[i][i]
-
-    return x
-}
-
-
 # ## Render Contexts
 # ------------------
 
@@ -1099,7 +874,7 @@ seen.Context = (elementId, scene = null) ->
 class seen.Painter
   paint : (renderModel, context) ->
 
-class seen.PathPainter extends seen.Painter
+class PathPainter extends seen.Painter
   paint : (renderModel, context) ->
     painter = context.path().path(renderModel.projected.points)
 
@@ -1116,19 +891,18 @@ class seen.PathPainter extends seen.Painter
         'stroke-width' : renderModel.surface['stroke-width'] ? 1
       )
 
-class seen.TextPainter extends seen.Painter
+class TextPainter extends seen.Painter
   paint : (renderModel, context) ->
+    xform = renderModel.transform.copy().multiply renderModel.projection
     style = {
       fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
-      font          : renderModel.surface.font
       'text-anchor' : renderModel.surface.anchor ? 'middle'
     }
-    xform = seen.Affine.solveForAffineTransform(renderModel.projected.points)
     context.text().fillText(xform, renderModel.surface.text, style)
 
 seen.Painters = {
-  path : new seen.PathPainter()
-  text : new seen.TextPainter()
+  path  : new PathPainter()
+  text  : new TextPainter()
 }
 
 
@@ -1146,40 +920,28 @@ DEFAULT_NORMAL = seen.Points.Z()
 #
 # If you need to force a re-computation, mark the surface as 'dirty'.
 class seen.RenderModel
-  constructor: (@surface, @transform, @projection, @viewport) ->
+  constructor: (@surface, @transform, @projection) ->
     @points      = @surface.points
     @transformed = @_initRenderData()
     @projected   = @_initRenderData()
     @_update()
 
-  update: (transform, projection, viewport) ->
-    if not @surface.dirty and seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m) and seen.Util.arraysEqual(viewport.m, @viewport.m)
+  update: (transform, projection) ->
+    if not @surface.dirty and seen.Util.arraysEqual(transform.m, @transform.m) and seen.Util.arraysEqual(projection.m, @projection.m)
       return
     else
       @transform  = transform
       @projection = projection
-      @viewport   = viewport
       @_update()
 
   _update: () ->
-    # Apply model transforms to surface points
     @_math(@transformed, @points, @transform, false)
-    # Project into camera space
-    cameraSpace = @transformed.points.map (p) => p.copy().transform(@projection)
-    @inFrustrum = @_checkFrustrum(cameraSpace)
-    # Project into screen space
-    @_math(@projected, cameraSpace, @viewport, true)
+    @_math(@projected, @transformed.points, @projection, true)
     @surface.dirty = false
-
-  _checkFrustrum : (points) ->
-    for p in points
-      return false if (p.z <= -2)
-    return true
 
   _initRenderData: ->
     return {
       points     : (p.copy() for p in @points)
-      bounds     : new seen.Bounds()
       barycenter : seen.P()
       normal     : seen.P()
       v0         : seen.P()
@@ -1201,11 +963,6 @@ class seen.RenderModel
     for p in set.points
       set.barycenter.add(p)
     set.barycenter.divide(set.points.length)
-
-    # Compute the bounding box of the points
-    set.bounds.reset()
-    for p in set.points
-      set.bounds.add(p)
 
     # Compute normal, which is used for backface culling (when enabled)
     if set.points.length < 2
@@ -1300,9 +1057,13 @@ class seen.SvgTextPainter
 
   constructor : (@elementFactory) ->
 
-  fillText : (m, text, style = {}) ->
+  fillText : (transform, text, style = {}) ->
     el = @elementFactory(@_svgTag)
-    el.setAttribute('transform', "matrix(#{m[0]} #{m[3]} #{-m[1]} #{-m[4]} #{m[2]} #{m[5]})")
+
+    m = seen.Matrices.flipY().multiply(transform).m
+
+    el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
+    el.setAttribute('font-family', 'Roboto')
 
     str = ''
     for key, value of style
@@ -1446,21 +1207,18 @@ class seen.CanvasCirclePainter extends seen.CanvasStyler
 class seen.CanvasTextPainter
   constructor : (@ctx) ->
 
-  fillText : (m, text, style = {}) ->
+  fillText : (transform, text, style = {}) ->
+    m = seen.Matrices.flipY().multiply(transform).m
     @ctx.save()
-    @ctx.setTransform(m[0], m[3], -m[1], -m[4], m[2], m[5])
+    @ctx.font = '16px Roboto' # TODO method
+    @ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
 
-    if style.font? then @ctx.font = style.font
     if style.fill? then @ctx.fillStyle = style.fill
-    if style['text-anchor']? then @ctx.textAlign = @_cssToCanvasAnchor(style['text-anchor'])
+    if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
 
     @ctx.fillText(text, 0, 0)
     @ctx.restore()
     return @
-
-  _cssToCanvasAnchor : (anchor) ->
-    if anchor is 'middle' then return 'center'
-    return anchor
 
 class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
   constructor : (@ctx) ->
@@ -1530,8 +1288,6 @@ seen.WindowEvents = do ->
 class seen.MouseEvents
   constructor : (@el, options) ->
     seen.Util.defaults(@, options, @defaults)
-
-    @el = seen.Util.element(@el)
 
     @_uid = seen.Util.uniqueId('mouser-')
 
@@ -1645,7 +1401,7 @@ class seen.Drag
       last     : null
       inertia  : new seen.InertialMouse()
 
-    @dispatch = seen.Events.dispatch('drag', 'dragStart', 'dragEnd', 'dragEndInertia')
+    @dispatch = seen.Events.dispatch('drag')
     @on       = @dispatch.on
 
     mouser = new seen.MouseEvents(@el)
@@ -1666,7 +1422,6 @@ class seen.Drag
     @_dragState.dragging = true
     @_dragState.origin   = @_getPageCoords(e)
     @_dragState.last     = @_getPageCoords(e)
-    @dispatch.dragStart(e)
 
   _onDragEnd : (e) =>
     @_dragState.dragging = false
@@ -1679,8 +1434,6 @@ class seen.Drag
 
       @_dragState.inertia.update(dragEvent.offsetRelative)
       @_startInertia()
-
-    @dispatch.dragEnd(e)
 
   _onDrag : (e) =>
     page = @_getPageCoords(e)
@@ -1704,7 +1457,6 @@ class seen.Drag
 
     if Math.abs(intertia[0]) < 1 and Math.abs(intertia[1]) < 1
       @_stopInertia()
-      @dispatch.dragEndInertia()
       return
 
     @dispatch.drag(
@@ -1759,31 +1511,23 @@ class seen.Zoom
 class seen.Surface
   # When 'false' this will override backface culling, which is useful if your
   # material is transparent. See comment in `seen.Scene`.
-  cullBackfaces  : true
+  cullBackfaces : true
 
   # Fill and stroke may be `Material` objects, which define the color and
   # finish of the object and are rendered using the scene's shader.
-  fillMaterial   : new seen.Material(seen.C.gray)
-  strokeMaterial : null
+  fill          : new seen.Material(seen.C.gray)
+  stroke        : null
 
-  constructor : (@points, @painter = seen.Painters.path) ->
+  constructor: (@points, @painter = seen.Painters.path) ->
     # We store a unique id for every surface so we can look them up quickly
     # with the `renderModel` cache.
     @id = 's' + seen.Util.uniqueId()
-
-  fill : (fill) ->
-    @fillMaterial = seen.Material.create(fill)
-    return @
-
-  stroke : (stroke) ->
-    @strokeMaterial = seen.Material.create(stroke)
-    return @
 
 # A `Shape` contains a collection of surface. They may create a closed 3D
 # shape, but not necessarily. For example, a cube is a closed shape, but a
 # patch is not.
 class seen.Shape extends seen.Transformable
-  constructor : (@type, @surfaces) ->
+  constructor: (@type, @surfaces) ->
     super()
 
   # Visit each surface
@@ -1792,13 +1536,13 @@ class seen.Shape extends seen.Transformable
     return @
 
   # Apply the supplied fill `Material` to each surface
-  fill : (fill) ->
-    @eachSurface (s) -> s.fill(fill)
+  fill: (fill) ->
+    @eachSurface (s) -> s.fill = fill
     return @
 
   # Apply the supplied stroke `Material` to each surface
-  stroke : (stroke) ->
-    @eachSurface (s) -> s.stroke(stroke)
+  stroke: (stroke) ->
+    @eachSurface (s) -> s.stroke = stroke
     return @
 
 
@@ -2077,7 +1821,7 @@ seen.Shapes = {
         pts1 = [
           seen.P(x, y)
           seen.P(x + 1, y + 0.5)
-          seen.P(x, y + 1)
+          seen.P(x, y + 1) 
         ]
 
         for pts in [pts0, pts1]
@@ -2094,12 +1838,14 @@ seen.Shapes = {
 
     return new seen.Shape('patch', surfaces.map((s) -> new seen.Surface(s)))
 
-  # Return a text surface that can render 3D text using an affine transform estimate of the projection
-  text : (text, surfaceOptions = {}) ->
-    surface = new seen.Surface(seen.Affine.ORTHONORMAL_BASIS(), seen.Painters.text)
+  # Return a text surface that can render 3D text when using an orthographic projection.
+  text : (text) ->
+    surface = new seen.Surface([
+      seen.P(0,  0, 0)
+      seen.P(20, 0, 0)
+      seen.P(0, 20, 0)
+    ], seen.Painters.text)
     surface.text = text
-    for key, val of surfaceOptions
-      surface[key] = val
     return new seen.Shape('text', [surface])
 
   # Returns a shape that is an extrusion of the supplied points into the z axis.
@@ -2143,7 +1889,7 @@ seen.Shapes = {
     ]
     return seen.Shapes.extrude(points, seen.P(0,0,thickness))
 
-  # Returns a shape with a single surface using the supplied points array
+  # Returns a shape with a single surface using the supplied points array 
   path : (points) ->
     return new seen.Shape('path', [new seen.Surface(points)])
 
@@ -2154,7 +1900,7 @@ seen.Shapes = {
     for f in s.surfaces
       surfaces.push new seen.Surface((seen.P(p...) for p in f))
     return new seen.Shape('custom', surfaces)
-
+    
   # Joins the points into surfaces using the coordinate map, which is an
   # 2-dimensional array of index integers.
   mapPointsToSurfaces : (points, coordinateMap) ->
@@ -2447,7 +2193,7 @@ seen.Viewports = {
 
     postscale = seen.M()
       .scale(width, -height, height)
-      .translate(x + width/2, y + height/2, height)
+      .translate(x + width/2, y + height/2)
     return {prescale, postscale}
 
   # Create a view port where the scene's origin is aligned with the origin ([0, 0]) of the view
@@ -2540,7 +2286,7 @@ class seen.Scene
     projection = @camera.m.copy()
       .multiply(@viewport.prescale)
       .multiply(@camera.projection)
-    viewport   = @viewport.postscale
+      .multiply(@viewport.postscale)
 
     renderModels = []
     @model.eachRenderable(
@@ -2551,13 +2297,13 @@ class seen.Scene
       (shape, lights, transform) =>
         for surface in shape.surfaces
           # Compute transformed and projected geometry.
-          renderModel = @_renderSurface(surface, transform, projection, viewport)
+          renderModel = @_renderSurface(surface, transform, projection)
 
           # Test projected normal's z-coordinate for culling (if enabled).
-          if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0) and renderModel.inFrustrum
+          if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0)
             # Render fill and stroke using material and shader.
-            renderModel.fill   = surface.fillMaterial?.render(lights, @shader, renderModel.transformed)
-            renderModel.stroke = surface.strokeMaterial?.render(lights, @shader, renderModel.transformed)
+            renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
+            renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
 
             # Round coordinates (if enabled)
             if @fractionalPoints isnt true
@@ -2575,15 +2321,15 @@ class seen.Scene
 
   # Get or create the rendermodel for the given surface. If `@cache` is true, we cache these models
   # to reduce object creation and recomputation.
-  _renderSurface : (surface, transform, projection, viewport) ->
+  _renderSurface : (surface, transform, projection) ->
     if not @cache
-      return new seen.RenderModel(surface, transform, projection, viewport)
+      return new seen.RenderModel(surface, transform, projection)
 
     renderModel = @_renderModelCache[surface.id]
     if not renderModel?
-      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection, viewport)
+      renderModel = @_renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection)
     else
-      renderModel.update(transform, projection, viewport)
+      renderModel.update(transform, projection)
     return renderModel
 
   # Removes all elements from the cache. This may be necessary if you add and

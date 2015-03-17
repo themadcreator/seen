@@ -1,4 +1,4 @@
-/** seen.js v0.2.3 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
+/** seen.js v0.2.2 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
 (function() {
   var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DEFAULT_FRAME_DELAY, DEFAULT_NORMAL, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, EYE_NORMAL, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PYRAMID_COORDINATE_MAP, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, requestAnimationFrame, seen, _ref, _ref1, _ref2, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -730,22 +730,6 @@
   })();
 
   seen.Colors = {
-    CSS_RGBA_STRING_REGEX: /rgb(a)?\(([0-9.]+),([0-9.]+),*([0-9.]+)(,([0-9.]+))?\)/,
-    parse: function(str) {
-      var a, m;
-      if (str.charAt(0) === '#' && str.length === 7) {
-        return seen.Colors.hex(str);
-      } else if (str.indexOf('rgb') === 0) {
-        m = seen.Colors.CSS_RGBA_STRING_REGEX.exec(str);
-        if (m == null) {
-          return seen.Colors.black();
-        }
-        a = m[6] != null ? Math.round(parseFloat(m[6]) * 0xFF) : void 0;
-        return new seen.Color(parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4]), a);
-      } else {
-        return seen.Colors.black();
-      }
-    },
     rgb: function(r, g, b, a) {
       if (a == null) {
         a = 255;
@@ -803,7 +787,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         surface = _ref[_i];
-        _results.push(surface.fill(seen.Colors.hsl(Math.random(), sat, lit)));
+        _results.push(surface.fill = new seen.Material(seen.Colors.hsl(Math.random(), sat, lit)));
       }
       return _results;
     },
@@ -830,7 +814,7 @@
         while (hue > 1) {
           hue -= 1;
         }
-        _results.push(surface.fill(seen.Colors.hsl(hue, 0.5, 0.4)));
+        _results.push(surface.fill = new seen.Material(seen.Colors.hsl(hue, 0.5, 0.4)));
       }
       return _results;
     },
@@ -859,18 +843,6 @@
   };
 
   seen.Material = (function() {
-    Material.create = function(value) {
-      if (value instanceof seen.Material) {
-        return value;
-      } else if (value instanceof seen.Color) {
-        return new seen.Material(value);
-      } else if (typeof value === 'string') {
-        return new seen.Material(seen.Colors.parse(value));
-      } else {
-        return new seen.Material();
-      }
-    };
-
     Material.prototype.defaults = {
       color: seen.Colors.gray(),
       metallic: false,
@@ -1095,28 +1067,6 @@
     }
   };
 
-  seen.Affine = {
-    ORTHONORMAL_BASIS: function() {
-      return [seen.P(0, 0, 0), seen.P(20, 0, 0), seen.P(0, 20, 0)];
-    },
-    INITIAL_STATE_MATRIX: [[20, 0, 1, 0, 0, 0], [0, 20, 1, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 20, 0, 1], [0, 0, 0, 0, 20, 1], [0, 0, 0, 0, 0, 1]],
-    solveForAffineTransform: function(points) {
-      var A, b, i, j, n, x, _i, _j, _ref, _ref1;
-      A = seen.Affine.INITIAL_STATE_MATRIX;
-      b = [points[1].x, points[2].x, points[0].x, points[1].y, points[2].y, points[0].y];
-      x = new Array(6);
-      n = A.length;
-      for (i = _i = _ref = n - 1; _i >= 0; i = _i += -1) {
-        x[i] = b[i];
-        for (j = _j = _ref1 = i + 1; _ref1 <= n ? _j < n : _j > n; j = _ref1 <= n ? ++_j : --_j) {
-          x[i] -= A[i][j] * x[j];
-        }
-        x[i] /= A[i][i];
-      }
-      return x;
-    }
-  };
-
   seen.RenderContext = (function() {
     function RenderContext() {
       this.render = __bind(this.render, this);
@@ -1249,12 +1199,11 @@
 
     TextPainter.prototype.paint = function(renderModel, context) {
       var style, xform, _ref;
+      xform = renderModel.transform.copy().multiply(renderModel.projection);
       style = {
         fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
-        font: renderModel.surface.font,
         'text-anchor': (_ref = renderModel.surface.anchor) != null ? _ref : 'middle'
       };
-      xform = seen.Affine.solveForAffineTransform(renderModel.projected.points);
       return context.text().fillText(xform, renderModel.surface.text, style);
     };
 
@@ -1530,13 +1479,15 @@
       this.elementFactory = elementFactory;
     }
 
-    SvgTextPainter.prototype.fillText = function(m, text, style) {
-      var el, key, str, value;
+    SvgTextPainter.prototype.fillText = function(transform, text, style) {
+      var el, key, m, str, value;
       if (style == null) {
         style = {};
       }
       el = this.elementFactory(this._svgTag);
-      el.setAttribute('transform', "matrix(" + m[0] + " " + m[3] + " " + (-m[1]) + " " + (-m[4]) + " " + m[2] + " " + m[5] + ")");
+      m = seen.Matrices.flipY().multiply(transform).m;
+      el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
+      el.setAttribute('font-family', 'Roboto');
       str = '';
       for (key in style) {
         value = style[key];
@@ -1797,31 +1748,24 @@
       this.ctx = ctx;
     }
 
-    CanvasTextPainter.prototype.fillText = function(m, text, style) {
+    CanvasTextPainter.prototype.fillText = function(transform, text, style) {
+      var m;
       if (style == null) {
         style = {};
       }
+      m = seen.Matrices.flipY().multiply(transform).m;
       this.ctx.save();
-      this.ctx.setTransform(m[0], m[3], -m[1], -m[4], m[2], m[5]);
-      if (style.font != null) {
-        this.ctx.font = style.font;
-      }
+      this.ctx.font = '16px Roboto';
+      this.ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7]);
       if (style.fill != null) {
         this.ctx.fillStyle = style.fill;
       }
       if (style['text-anchor'] != null) {
-        this.ctx.textAlign = this._cssToCanvasAnchor(style['text-anchor']);
+        this.ctx.textAlign = style['text-anchor'];
       }
       this.ctx.fillText(text, 0, 0);
       this.ctx.restore();
       return this;
-    };
-
-    CanvasTextPainter.prototype._cssToCanvasAnchor = function(anchor) {
-      if (anchor === 'middle') {
-        return 'center';
-      }
-      return anchor;
     };
 
     return CanvasTextPainter;
@@ -2178,25 +2122,15 @@
   seen.Surface = (function() {
     Surface.prototype.cullBackfaces = true;
 
-    Surface.prototype.fillMaterial = new seen.Material(seen.C.gray);
+    Surface.prototype.fill = new seen.Material(seen.C.gray);
 
-    Surface.prototype.strokeMaterial = null;
+    Surface.prototype.stroke = null;
 
     function Surface(points, painter) {
       this.points = points;
       this.painter = painter != null ? painter : seen.Painters.path;
       this.id = 's' + seen.Util.uniqueId();
     }
-
-    Surface.prototype.fill = function(fill) {
-      this.fillMaterial = seen.Material.create(fill);
-      return this;
-    };
-
-    Surface.prototype.stroke = function(stroke) {
-      this.strokeMaterial = seen.Material.create(stroke);
-      return this;
-    };
 
     return Surface;
 
@@ -2218,14 +2152,14 @@
 
     Shape.prototype.fill = function(fill) {
       this.eachSurface(function(s) {
-        return s.fill(fill);
+        return s.fill = fill;
       });
       return this;
     };
 
     Shape.prototype.stroke = function(stroke) {
       this.eachSurface(function(s) {
-        return s.stroke(stroke);
+        return s.stroke = stroke;
       });
       return this;
     };
@@ -2478,17 +2412,10 @@
         return new seen.Surface(s);
       }));
     },
-    text: function(text, surfaceOptions) {
-      var key, surface, val;
-      if (surfaceOptions == null) {
-        surfaceOptions = {};
-      }
-      surface = new seen.Surface(seen.Affine.ORTHONORMAL_BASIS(), seen.Painters.text);
+    text: function(text) {
+      var surface;
+      surface = new seen.Surface([seen.P(0, 0, 0), seen.P(20, 0, 0), seen.P(0, 20, 0)], seen.Painters.text);
       surface.text = text;
-      for (key in surfaceOptions) {
-        val = surfaceOptions[key];
-        surface[key] = val;
-      }
       return new seen.Shape('text', [surface]);
     },
     extrude: function(points, offset) {
@@ -3032,8 +2959,8 @@
             surface = _ref3[_i];
             renderModel = _this._renderSurface(surface, transform, projection, viewport);
             if ((!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) && renderModel.inFrustrum) {
-              renderModel.fill = (_ref4 = surface.fillMaterial) != null ? _ref4.render(lights, _this.shader, renderModel.transformed) : void 0;
-              renderModel.stroke = (_ref5 = surface.strokeMaterial) != null ? _ref5.render(lights, _this.shader, renderModel.transformed) : void 0;
+              renderModel.fill = (_ref4 = surface.fill) != null ? _ref4.render(lights, _this.shader, renderModel.transformed) : void 0;
+              renderModel.stroke = (_ref5 = surface.stroke) != null ? _ref5.render(lights, _this.shader, renderModel.transformed) : void 0;
               if (_this.fractionalPoints !== true) {
                 _ref6 = renderModel.projected.points;
                 for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {

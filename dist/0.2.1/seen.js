@@ -1,6 +1,6 @@
-/** seen.js v0.2.3 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
+/** seen.js v0.2.1 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
 (function() {
-  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DEFAULT_FRAME_DELAY, DEFAULT_NORMAL, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, EYE_NORMAL, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PYRAMID_COORDINATE_MAP, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, requestAnimationFrame, seen, _ref, _ref1, _ref2, _svg,
+  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DEFAULT_FRAME_DELAY, DEFAULT_NORMAL, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, EYE_NORMAL, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PYRAMID_COORDINATE_MAP, PathPainter, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, TextPainter, requestAnimationFrame, seen, _ref, _ref1, _ref2, _svg,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
@@ -487,171 +487,6 @@
 
   })();
 
-  seen.Bounds = (function() {
-    Bounds.points = function(points) {
-      var box, p, _i, _len;
-      box = new seen.Bounds();
-      for (_i = 0, _len = points.length; _i < _len; _i++) {
-        p = points[_i];
-        box.add(p);
-      }
-      return box;
-    };
-
-    Bounds.xywh = function(x, y, w, h) {
-      return seen.Boundses.xyzwhd(x, y, 0, w, h, 0);
-    };
-
-    Bounds.xyzwhd = function(x, y, z, w, h, d) {
-      var box;
-      box = new seen.Bounds();
-      box.add(seen.P(x, y, z));
-      box.add(seen.P(x + w, y + h, z + d));
-      return box;
-    };
-
-    function Bounds() {
-      this.maxZ = __bind(this.maxZ, this);
-      this.maxY = __bind(this.maxY, this);
-      this.maxX = __bind(this.maxX, this);
-      this.minZ = __bind(this.minZ, this);
-      this.minY = __bind(this.minY, this);
-      this.minX = __bind(this.minX, this);
-      this.depth = __bind(this.depth, this);
-      this.height = __bind(this.height, this);
-      this.width = __bind(this.width, this);
-      this.min = null;
-      this.max = null;
-    }
-
-    Bounds.prototype.copy = function() {
-      var box, _ref, _ref1;
-      box = new seen.Bounds();
-      box.min = (_ref = this.min) != null ? _ref.copy() : void 0;
-      box.max = (_ref1 = this.max) != null ? _ref1.copy() : void 0;
-      return box;
-    };
-
-    Bounds.prototype.add = function(p) {
-      if (!((this.min != null) && (this.max != null))) {
-        this.min = p.copy();
-        this.max = p.copy();
-      } else {
-        this.min.x = Math.min(this.min.x, p.x);
-        this.min.y = Math.min(this.min.y, p.y);
-        this.min.z = Math.min(this.min.z, p.z);
-        this.max.x = Math.max(this.max.x, p.x);
-        this.max.y = Math.max(this.max.y, p.y);
-        this.max.z = Math.max(this.max.z, p.z);
-      }
-      return this;
-    };
-
-    Bounds.prototype.valid = function() {
-      return (this.min != null) && (this.max != null);
-    };
-
-    Bounds.prototype.intersect = function(box) {
-      if (!this.valid() || !box.valid()) {
-        this.min = null;
-        this.max = null;
-      } else {
-        this.min = seen.P(Math.max(this.min.x, box.min.x), Math.max(this.min.y, box.min.y), Math.max(this.min.z, box.min.z));
-        this.max = seen.P(Math.min(this.max.x, box.max.x), Math.min(this.max.y, box.max.y), Math.min(this.max.z, box.max.z));
-        if (this.min.x > this.max.x || this.min.y > this.max.y || this.min.z > this.max.z) {
-          this.min = null;
-          this.max = null;
-        }
-      }
-      return this;
-    };
-
-    Bounds.prototype.pad = function(x, y, z) {
-      var p;
-      if (this.valid()) {
-        if (y == null) {
-          y = x;
-        }
-        if (z == null) {
-          z = y;
-        }
-        p = seen.P(x, y, z);
-        this.min.subtract(p);
-        this.max.add(p);
-      }
-      return this;
-    };
-
-    Bounds.prototype.reset = function() {
-      this.min = null;
-      this.max = null;
-      return this;
-    };
-
-    Bounds.prototype.contains = function(p) {
-      if (!this.valid()) {
-        return false;
-      } else if (this.min.x > p.x || this.max.x < p.x) {
-        return false;
-      } else if (this.min.y > p.y || this.max.y < p.y) {
-        return false;
-      } else if (this.min.z > p.z || this.max.z < p.z) {
-        return false;
-      } else {
-        return true;
-      }
-    };
-
-    Bounds.prototype.center = function() {
-      return seen.P(this.minX() + this.width() / 2, this.minY() + this.height() / 2, this.minZ() + this.depth() / 2);
-    };
-
-    Bounds.prototype.width = function() {
-      return this.maxX() - this.minX();
-    };
-
-    Bounds.prototype.height = function() {
-      return this.maxY() - this.minY();
-    };
-
-    Bounds.prototype.depth = function() {
-      return this.maxZ() - this.minZ();
-    };
-
-    Bounds.prototype.minX = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.min) != null ? _ref1.x : void 0) != null ? _ref : 0;
-    };
-
-    Bounds.prototype.minY = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.min) != null ? _ref1.y : void 0) != null ? _ref : 0;
-    };
-
-    Bounds.prototype.minZ = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.min) != null ? _ref1.z : void 0) != null ? _ref : 0;
-    };
-
-    Bounds.prototype.maxX = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.max) != null ? _ref1.x : void 0) != null ? _ref : 0;
-    };
-
-    Bounds.prototype.maxY = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.max) != null ? _ref1.y : void 0) != null ? _ref : 0;
-    };
-
-    Bounds.prototype.maxZ = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.max) != null ? _ref1.z : void 0) != null ? _ref : 0;
-    };
-
-    return Bounds;
-
-  })();
-
   seen.Color = (function() {
     function Color(r, g, b, a) {
       this.r = r != null ? r : 0;
@@ -730,22 +565,6 @@
   })();
 
   seen.Colors = {
-    CSS_RGBA_STRING_REGEX: /rgb(a)?\(([0-9.]+),([0-9.]+),*([0-9.]+)(,([0-9.]+))?\)/,
-    parse: function(str) {
-      var a, m;
-      if (str.charAt(0) === '#' && str.length === 7) {
-        return seen.Colors.hex(str);
-      } else if (str.indexOf('rgb') === 0) {
-        m = seen.Colors.CSS_RGBA_STRING_REGEX.exec(str);
-        if (m == null) {
-          return seen.Colors.black();
-        }
-        a = m[6] != null ? Math.round(parseFloat(m[6]) * 0xFF) : void 0;
-        return new seen.Color(parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4]), a);
-      } else {
-        return seen.Colors.black();
-      }
-    },
     rgb: function(r, g, b, a) {
       if (a == null) {
         a = 255;
@@ -803,7 +622,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         surface = _ref[_i];
-        _results.push(surface.fill(seen.Colors.hsl(Math.random(), sat, lit)));
+        _results.push(surface.fill = new seen.Material(seen.Colors.hsl(Math.random(), sat, lit)));
       }
       return _results;
     },
@@ -830,7 +649,7 @@
         while (hue > 1) {
           hue -= 1;
         }
-        _results.push(surface.fill(seen.Colors.hsl(hue, 0.5, 0.4)));
+        _results.push(surface.fill = new seen.Material(seen.Colors.hsl(hue, 0.5, 0.4)));
       }
       return _results;
     },
@@ -859,18 +678,6 @@
   };
 
   seen.Material = (function() {
-    Material.create = function(value) {
-      if (value instanceof seen.Material) {
-        return value;
-      } else if (value instanceof seen.Color) {
-        return new seen.Material(value);
-      } else if (typeof value === 'string') {
-        return new seen.Material(seen.Colors.parse(value));
-      } else {
-        return new seen.Material();
-      }
-    };
-
     Material.prototype.defaults = {
       color: seen.Colors.gray(),
       metallic: false,
@@ -1095,28 +902,6 @@
     }
   };
 
-  seen.Affine = {
-    ORTHONORMAL_BASIS: function() {
-      return [seen.P(0, 0, 0), seen.P(20, 0, 0), seen.P(0, 20, 0)];
-    },
-    INITIAL_STATE_MATRIX: [[20, 0, 1, 0, 0, 0], [0, 20, 1, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 20, 0, 1], [0, 0, 0, 0, 20, 1], [0, 0, 0, 0, 0, 1]],
-    solveForAffineTransform: function(points) {
-      var A, b, i, j, n, x, _i, _j, _ref, _ref1;
-      A = seen.Affine.INITIAL_STATE_MATRIX;
-      b = [points[1].x, points[2].x, points[0].x, points[1].y, points[2].y, points[0].y];
-      x = new Array(6);
-      n = A.length;
-      for (i = _i = _ref = n - 1; _i >= 0; i = _i += -1) {
-        x[i] = b[i];
-        for (j = _j = _ref1 = i + 1; _ref1 <= n ? _j < n : _j > n; j = _ref1 <= n ? ++_j : --_j) {
-          x[i] -= A[i][j] * x[j];
-        }
-        x[i] /= A[i][i];
-      }
-      return x;
-    }
-  };
-
   seen.RenderContext = (function() {
     function RenderContext() {
       this.render = __bind(this.render, this);
@@ -1211,7 +996,7 @@
 
   })();
 
-  seen.PathPainter = (function(_super) {
+  PathPainter = (function(_super) {
     __extends(PathPainter, _super);
 
     function PathPainter() {
@@ -1240,7 +1025,7 @@
 
   })(seen.Painter);
 
-  seen.TextPainter = (function(_super) {
+  TextPainter = (function(_super) {
     __extends(TextPainter, _super);
 
     function TextPainter() {
@@ -1249,12 +1034,11 @@
 
     TextPainter.prototype.paint = function(renderModel, context) {
       var style, xform, _ref;
+      xform = renderModel.transform.copy().multiply(renderModel.projection);
       style = {
         fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
-        font: renderModel.surface.font,
         'text-anchor': (_ref = renderModel.surface.anchor) != null ? _ref : 'middle'
       };
-      xform = seen.Affine.solveForAffineTransform(renderModel.projected.points);
       return context.text().fillText(xform, renderModel.surface.text, style);
     };
 
@@ -1263,57 +1047,37 @@
   })(seen.Painter);
 
   seen.Painters = {
-    path: new seen.PathPainter(),
-    text: new seen.TextPainter()
+    path: new PathPainter(),
+    text: new TextPainter()
   };
 
   DEFAULT_NORMAL = seen.Points.Z();
 
   seen.RenderModel = (function() {
-    function RenderModel(surface, transform, projection, viewport) {
+    function RenderModel(surface, transform, projection) {
       this.surface = surface;
       this.transform = transform;
       this.projection = projection;
-      this.viewport = viewport;
       this.points = this.surface.points;
       this.transformed = this._initRenderData();
       this.projected = this._initRenderData();
       this._update();
     }
 
-    RenderModel.prototype.update = function(transform, projection, viewport) {
-      if (!this.surface.dirty && seen.Util.arraysEqual(transform.m, this.transform.m) && seen.Util.arraysEqual(projection.m, this.projection.m) && seen.Util.arraysEqual(viewport.m, this.viewport.m)) {
+    RenderModel.prototype.update = function(transform, projection) {
+      if (!this.surface.dirty && seen.Util.arraysEqual(transform.m, this.transform.m) && seen.Util.arraysEqual(projection.m, this.projection.m)) {
 
       } else {
         this.transform = transform;
         this.projection = projection;
-        this.viewport = viewport;
         return this._update();
       }
     };
 
     RenderModel.prototype._update = function() {
-      var cameraSpace;
       this._math(this.transformed, this.points, this.transform, false);
-      cameraSpace = this.transformed.points.map((function(_this) {
-        return function(p) {
-          return p.copy().transform(_this.projection);
-        };
-      })(this));
-      this.inFrustrum = this._checkFrustrum(cameraSpace);
-      this._math(this.projected, cameraSpace, this.viewport, true);
+      this._math(this.projected, this.transformed.points, this.projection, true);
       return this.surface.dirty = false;
-    };
-
-    RenderModel.prototype._checkFrustrum = function(points) {
-      var p, _i, _len;
-      for (_i = 0, _len = points.length; _i < _len; _i++) {
-        p = points[_i];
-        if (p.z <= -2) {
-          return false;
-        }
-      }
-      return true;
     };
 
     RenderModel.prototype._initRenderData = function() {
@@ -1329,7 +1093,6 @@
           }
           return _results;
         }).call(this),
-        bounds: new seen.Bounds(),
         barycenter: seen.P(),
         normal: seen.P(),
         v0: seen.P(),
@@ -1338,7 +1101,7 @@
     };
 
     RenderModel.prototype._math = function(set, points, transform, applyClip) {
-      var i, p, sp, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+      var i, p, sp, _i, _j, _len, _len1, _ref;
       if (applyClip == null) {
         applyClip = false;
       }
@@ -1357,12 +1120,6 @@
         set.barycenter.add(p);
       }
       set.barycenter.divide(set.points.length);
-      set.bounds.reset();
-      _ref1 = set.points;
-      for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
-        p = _ref1[_k];
-        set.bounds.add(p);
-      }
       if (set.points.length < 2) {
         set.v0.set(DEFAULT_NORMAL);
         set.v1.set(DEFAULT_NORMAL);
@@ -1530,13 +1287,15 @@
       this.elementFactory = elementFactory;
     }
 
-    SvgTextPainter.prototype.fillText = function(m, text, style) {
-      var el, key, str, value;
+    SvgTextPainter.prototype.fillText = function(transform, text, style) {
+      var el, key, m, str, value;
       if (style == null) {
         style = {};
       }
       el = this.elementFactory(this._svgTag);
-      el.setAttribute('transform', "matrix(" + m[0] + " " + m[3] + " " + (-m[1]) + " " + (-m[4]) + " " + m[2] + " " + m[5] + ")");
+      m = seen.Matrices.flipY().multiply(transform).m;
+      el.setAttribute('transform', "matrix(" + m[0] + " " + m[4] + " " + m[1] + " " + m[5] + " " + m[3] + " " + m[7] + ")");
+      el.setAttribute('font-family', 'Roboto');
       str = '';
       for (key in style) {
         value = style[key];
@@ -1797,31 +1556,24 @@
       this.ctx = ctx;
     }
 
-    CanvasTextPainter.prototype.fillText = function(m, text, style) {
+    CanvasTextPainter.prototype.fillText = function(transform, text, style) {
+      var m;
       if (style == null) {
         style = {};
       }
+      m = seen.Matrices.flipY().multiply(transform).m;
       this.ctx.save();
-      this.ctx.setTransform(m[0], m[3], -m[1], -m[4], m[2], m[5]);
-      if (style.font != null) {
-        this.ctx.font = style.font;
-      }
+      this.ctx.font = '16px Roboto';
+      this.ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7]);
       if (style.fill != null) {
         this.ctx.fillStyle = style.fill;
       }
       if (style['text-anchor'] != null) {
-        this.ctx.textAlign = this._cssToCanvasAnchor(style['text-anchor']);
+        this.ctx.textAlign = style['text-anchor'];
       }
       this.ctx.fillText(text, 0, 0);
       this.ctx.restore();
       return this;
-    };
-
-    CanvasTextPainter.prototype._cssToCanvasAnchor = function(anchor) {
-      if (anchor === 'middle') {
-        return 'center';
-      }
-      return anchor;
     };
 
     return CanvasTextPainter;
@@ -1920,7 +1672,6 @@
       this._onMouseDown = __bind(this._onMouseDown, this);
       this._onMouseMove = __bind(this._onMouseMove, this);
       seen.Util.defaults(this, options, this.defaults);
-      this.el = seen.Util.element(this.el);
       this._uid = seen.Util.uniqueId('mouser-');
       this.dispatch = seen.Events.dispatch('dragStart', 'drag', 'dragEnd', 'mouseMove', 'mouseDown', 'mouseUp', 'mouseWheel');
       this.on = this.dispatch.on;
@@ -2053,7 +1804,7 @@
         last: null,
         inertia: new seen.InertialMouse()
       };
-      this.dispatch = seen.Events.dispatch('drag', 'dragStart', 'dragEnd', 'dragEndInertia');
+      this.dispatch = seen.Events.dispatch('drag');
       this.on = this.dispatch.on;
       mouser = new seen.MouseEvents(this.el);
       mouser.on("dragStart." + this._uid, this._onDragStart);
@@ -2076,8 +1827,7 @@
       this._stopInertia();
       this._dragState.dragging = true;
       this._dragState.origin = this._getPageCoords(e);
-      this._dragState.last = this._getPageCoords(e);
-      return this.dispatch.dragStart(e);
+      return this._dragState.last = this._getPageCoords(e);
     };
 
     Drag.prototype._onDragEnd = function(e) {
@@ -2090,9 +1840,8 @@
           offsetRelative: [page[0] - this._dragState.last[0], page[1] - this._dragState.last[1]]
         };
         this._dragState.inertia.update(dragEvent.offsetRelative);
-        this._startInertia();
+        return this._startInertia();
       }
-      return this.dispatch.dragEnd(e);
     };
 
     Drag.prototype._onDrag = function(e) {
@@ -2117,7 +1866,6 @@
       intertia = this._dragState.inertia.damp().get();
       if (Math.abs(intertia[0]) < 1 && Math.abs(intertia[1]) < 1) {
         this._stopInertia();
-        this.dispatch.dragEndInertia();
         return;
       }
       this.dispatch.drag({
@@ -2178,25 +1926,15 @@
   seen.Surface = (function() {
     Surface.prototype.cullBackfaces = true;
 
-    Surface.prototype.fillMaterial = new seen.Material(seen.C.gray);
+    Surface.prototype.fill = new seen.Material(seen.C.gray);
 
-    Surface.prototype.strokeMaterial = null;
+    Surface.prototype.stroke = null;
 
     function Surface(points, painter) {
       this.points = points;
       this.painter = painter != null ? painter : seen.Painters.path;
       this.id = 's' + seen.Util.uniqueId();
     }
-
-    Surface.prototype.fill = function(fill) {
-      this.fillMaterial = seen.Material.create(fill);
-      return this;
-    };
-
-    Surface.prototype.stroke = function(stroke) {
-      this.strokeMaterial = seen.Material.create(stroke);
-      return this;
-    };
 
     return Surface;
 
@@ -2218,14 +1956,14 @@
 
     Shape.prototype.fill = function(fill) {
       this.eachSurface(function(s) {
-        return s.fill(fill);
+        return s.fill = fill;
       });
       return this;
     };
 
     Shape.prototype.stroke = function(stroke) {
       this.eachSurface(function(s) {
-        return s.stroke(stroke);
+        return s.stroke = stroke;
       });
       return this;
     };
@@ -2478,17 +2216,10 @@
         return new seen.Surface(s);
       }));
     },
-    text: function(text, surfaceOptions) {
-      var key, surface, val;
-      if (surfaceOptions == null) {
-        surfaceOptions = {};
-      }
-      surface = new seen.Surface(seen.Affine.ORTHONORMAL_BASIS(), seen.Painters.text);
+    text: function(text) {
+      var surface;
+      surface = new seen.Surface([seen.P(0, 0, 0), seen.P(20, 0, 0), seen.P(0, 20, 0)], seen.Painters.text);
       surface.text = text;
-      for (key in surfaceOptions) {
-        val = surfaceOptions[key];
-        surface[key] = val;
-      }
       return new seen.Shape('text', [surface]);
     },
     extrude: function(points, offset) {
@@ -2951,7 +2682,7 @@
         y = 0;
       }
       prescale = seen.M().translate(-x, -y, -height).scale(1 / width, 1 / height, 1 / height);
-      postscale = seen.M().scale(width, -height, height).translate(x + width / 2, y + height / 2, height);
+      postscale = seen.M().scale(width, -height, height).translate(x + width / 2, y + height / 2);
       return {
         prescale: prescale,
         postscale: postscale
@@ -3017,9 +2748,8 @@
     }
 
     Scene.prototype.render = function() {
-      var projection, renderModels, viewport;
-      projection = this.camera.m.copy().multiply(this.viewport.prescale).multiply(this.camera.projection);
-      viewport = this.viewport.postscale;
+      var projection, renderModels;
+      projection = this.camera.m.copy().multiply(this.viewport.prescale).multiply(this.camera.projection).multiply(this.viewport.postscale);
       renderModels = [];
       this.model.eachRenderable(function(light, transform) {
         return new seen.LightRenderModel(light, transform);
@@ -3030,10 +2760,10 @@
           _results = [];
           for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
             surface = _ref3[_i];
-            renderModel = _this._renderSurface(surface, transform, projection, viewport);
-            if ((!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) && renderModel.inFrustrum) {
-              renderModel.fill = (_ref4 = surface.fillMaterial) != null ? _ref4.render(lights, _this.shader, renderModel.transformed) : void 0;
-              renderModel.stroke = (_ref5 = surface.strokeMaterial) != null ? _ref5.render(lights, _this.shader, renderModel.transformed) : void 0;
+            renderModel = _this._renderSurface(surface, transform, projection);
+            if (!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) {
+              renderModel.fill = (_ref4 = surface.fill) != null ? _ref4.render(lights, _this.shader, renderModel.transformed) : void 0;
+              renderModel.stroke = (_ref5 = surface.stroke) != null ? _ref5.render(lights, _this.shader, renderModel.transformed) : void 0;
               if (_this.fractionalPoints !== true) {
                 _ref6 = renderModel.projected.points;
                 for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
@@ -3055,16 +2785,16 @@
       return renderModels;
     };
 
-    Scene.prototype._renderSurface = function(surface, transform, projection, viewport) {
+    Scene.prototype._renderSurface = function(surface, transform, projection) {
       var renderModel;
       if (!this.cache) {
-        return new seen.RenderModel(surface, transform, projection, viewport);
+        return new seen.RenderModel(surface, transform, projection);
       }
       renderModel = this._renderModelCache[surface.id];
       if (renderModel == null) {
-        renderModel = this._renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection, viewport);
+        renderModel = this._renderModelCache[surface.id] = new seen.RenderModel(surface, transform, projection);
       } else {
-        renderModel.update(transform, projection, viewport);
+        renderModel.update(transform, projection);
       }
       return renderModel;
     };

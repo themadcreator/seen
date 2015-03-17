@@ -1,0 +1,217 @@
+<html>
+<head>
+  <title>SVG Masks and Effects | seen.js</title>
+  
+  <link href="http://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css"/>
+  
+  <link href="css/theme.css" rel="stylesheet" type="text/css"/>
+  
+  
+  <script src="lib/seen.js"></script>
+  
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js"></script>
+  
+</head>
+<body>
+  <div class="page">
+    <h1>SVG Masks and Effects</h1>
+    <h4></h4>
+
+        <div class="nav-bar">
+      <div class="nav-button-wrapper" style="text-align : left;">
+        
+          <a href="demo-multi-views.html"><div class="nav-button">
+          <div class="label">prev</div><div class="title">Same Scene, Multiple Angles</div>
+          </div></a>
+        
+      </div>
+      <div class="nav-button-wrapper" style="text-align : center;">
+          <a href="index.html"><div class="nav-button">
+          <div class="label">up</div><div class="title">to index</div>
+          </div></a>
+      </div>
+      <div class="nav-button-wrapper" style="text-align : right;">
+        
+          <a href="demo-text.html"><div class="nav-button">
+          <div class="label">next</div><div class="title">Text</div>
+          </div></a>
+        
+      </div>
+    </div>
+
+    
+  <svg width="900" height="500" id="seen-canvas" xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+    <image xlink:href="assets/berries.jpg" x="0" y="0" height="500px" width="900px"/>
+    <clipPath id="berry-mask">
+      <path fill-rule="evenodd" clip-rule="evenodd" fill="#0034A6" d="M0,0c0,0,1,346.667,1,353c0,0.667,0,1.333,0,2
+        c7.082-0.648,14.172-1.925,21.244-1.831c25.255,0.333,50.404-1.558,75.544-3.342c6.711-0.477,13.598,0.169,20.19-1.834
+        c0.195-1.007-0.089-1.67-0.698-2.099c0.802-0.806,0.701-1.903,0.762-2.948c0.632-2.327,0.791-4.651-0.037-6.971
+        c0.001-0.007,0.001-0.014,0.002-0.021c0.058,0.086,0.109,0.175,0.17,0.26c3.419-1.909,2.204-5.15,2.188-7.969
+        c-0.026-4.782-1.785-9.506-0.513-14.346c0.498-1.571,1.908-2.922,1.191-4.781c3.351,0.147,3.66-2.642,4.509-4.858
+        c3.552-9.265,5.557-19.241,12.431-26.97c0.826-1.395,1.255-2.902,1.3-4.517c0.299-0.238,0.481-0.604,0.528-1.011
+        c1.104-9.535,7.922-16.301,11.891-24.438c2.103-4.312,5.298-8.04,9.641-10.509c7.756-2.645,13.456-9.839,22.286-10.108
+        c0.357-0.176,0.654-0.4,0.885-0.679c0.295-0.009,0.595-0.024,0.9-0.05c3.212,0.49,5.699-1.586,8.532-2.433
+        c0.555-0.367,0.99-0.826,1.249-1.429c2.273,1.761,4.77,2.401,7.593,1.396c0.186-0.165,0.396-0.344,0.561-0.537
+        c3.393,0.243,5.403,3.556,8.686,4.042c2.159,2.649,3.731,5.883,7.124,7.316c5.194,2.195,8.547,5.951,9.898,11.462
+        c0.278,1.135,0.857,2.098,1.945,2.656c-0.004,0.188-0.008,0.376-0.012,0.564c-1.143,1.36-0.627,2.866-0.227,4.262
+        c1.406,4.904,2.938,9.772,4.269,14.698c0.124,0.113,0.248,0.219,0.371,0.322c-0.369,0.11-0.756,0.225-1.183,0.351
+        c-0.221,0.46-0.38,0.949-0.454,1.454c-0.415,3.243,0.133,6.563-0.57,9.782c-1.126,5.16-0.616,10.08,1.824,14.783
+        c0.28,0.217,0.525,0.447,0.756,0.683c-0.97,1.577,0.107,3.336-0.19,4.972c0.11,3.131-0.075,6.293,1.067,9.309
+        c1.243,3.088,0.292,6.967,3.415,9.367c0.024,0.013,0.044,0.028,0.068,0.041c-0.243,0.118-0.5,0.286-0.773,0.513
+        c0.095,4.299,1.224,8.578,0.29,12.896c0.579,6.518,1.634,7.781,6.348,7.588c11.771-0.394,23.541-0.777,35.31-1.207
+        c0.621-0.022,1.227-0.429,1.84-0.656c0,0,0-0.001-0.001-0.001c3.277-0.065,6.555-0.129,9.833-0.192
+        c14.267-0.942,28.536-1.864,42.8-2.841c4.434-0.304,8.959,0.456,13.292-1.114c5.384-0.229,10.847,0.975,16.133-1.025
+        c0.002,0,0.003,0,0.005,0l0.385,0.147c0,0,0.374-0.101,0.374-0.101c13.032,0.752,25.969-1.693,38.995-1.125
+        c9.371-0.683,18.743-1.357,28.114-2.04c3.271-0.891,6.613-0.115,9.903-0.43c1.37-0.131,3.282,0.862,3.978-0.9
+        c0.586-1.484-0.632-2.738-1.678-3.889c-3.498-3.845-6.631-7.918-7.392-13.297c-0.269-0.729-0.586-1.436-0.958-2.12
+        c-1.139-4.105-0.133-8.849-3.655-12.246c-0.11,0.01-0.206,0.034-0.308,0.051c0.012-0.018,0.023-0.037,0.036-0.056
+        c3.981-3.128-1.269-2.865-1.896-4.403c2.42-0.089,3.801,3.425,6.369,1.286c0.265-0.411,0.464-0.854,0.583-1.329
+        c0.516-1.439,0.456-2.58,0.077-3.557c0.057-2.064-0.178-4.204,0.939-5.992c0.376-0.161,0.753-0.322,1.13-0.479
+        c0.65-0.484,1.144-1.086,1.396-1.869c0.018-0.096,0.021-0.183,0.034-0.275c0.17-0.135,0.34-0.27,0.51-0.404
+        c0.445-2.302,1.819-4.188,2.796-6.252c0.877-1.852,1.1-3.59-0.249-5.063c1.134-0.062,2.231-0.403,3.337-0.67
+        c3.729-1.915,7.702-3.497,9.856-7.48c-0.013-0.315-0.024-0.609-0.034-0.886c2.329-1.596,4.658-3.19,6.987-4.785
+        c0.247-0.084,0.49-0.183,0.724-0.319c0.029-0.031,0.059-0.062,0.088-0.094c0.087,0.015,0.168,0.027,0.256,0.043
+        c4.144-0.861,6.488-5.254,10.733-5.692c5.589-0.576,10.231-3.367,15.064-5.778c3.947-1.241,7.856-0.652,11.759,0.268
+        c9.84,1.885,18.462,6.766,27.309,11.098c0.079-0.026,0.161-0.052,0.241-0.078c0.402,2.076,2.074,2.562,3.857,2.909
+        c2.303,2.637,2.886,6.358,5.281,8.938c0.056,0.282,0.113,0.574,0.197,0.863c0.904,3.661,3.033,7.007,4.771,10.007
+        c0.004,0,0.008,0,0.013,0c-0.603,3,2.19,5.109,2.402,7.904c0.337,0.402,0.752,0.679,1.253,0.833c0.756,0.173,1.504,0.141,2.247-0.07
+        c1.513-0.608,3.015-1.229,4.187-2.411c1.491,1.521,3.3,2.379,5.489,2.435c0.492-0.132,0.9-0.393,1.224-0.786
+        c0.01-0.129,0.005-0.258,0.009-0.388c0.351,0.022,0.7,0.021,1.05-0.036c3.913-0.307,7.818-0.418,11.647,0.716
+        c0.161,0.028,0.324,0.055,0.486,0.082c1.395,2.202,3.189,1.498,4.959,0.983c0.752,0.222,1.49,0.493,2.205,0.859
+        c0.889,0.5,1.823,0.867,2.855,0.934c1.075,0.03,2.058-0.193,2.829-1.013c4.349,0.282,7.044,5.544,12.004,3.984v0.001
+        c2.395,2.882,5.998,3.967,8.949,6.022c1.705,1.869,4.053,3.177,5.365,5.389c-0.052,0.642-0.098,1.279-0.039,1.876
+        c1.876,4.062,5.045,7.334,6.833,11.512c0.93,2.174,2.916,4.128,5.964,3.312c7.052-0.432,14.103-0.862,21.154-1.294
+        c1.605-0.517,3.707-0.345,3.899-2.816c0.661-5.299,1.48-10.565,2.811-15.742c0.777-2.138,2.071-4.124,1.905-6.536
+        c-0.001-0.011-0.002-0.021-0.003-0.031c1.57-0.708,2.102-2.354,2.721-3.865c1.363-3.327,2.722-6.651,4.585-9.744
+        c0.973-1.935,2.872-3.437,2.855-5.826c2.15,0.307,3.281-0.977,4.23-2.648c2.609-4.598,5.627-8.832,10.076-11.912
+        c1.45-1.004,2.443-2.444,2.736-4.221c0.898,0.288,1.646,0.161,1.94-1.235c1.119,0.26,2.079-0.345,3.106-0.639
+        c10.002-2.861,18.761-9.855,29.882-9.015c0.118,0.009,0.253-0.198,0.373-0.312c0.03-0.031,0.053-0.065,0.082-0.096
+        c1.469,0.743,2.406-0.335,3.365-1.327c0.068-0.098,0.129-0.201,0.195-0.3c0.487,0.103,0.975,0.206,1.462,0.309
+        c0.041,0.09,0.07,0.179,0.125,0.27c0.527,0.832,1.289,1.357,2.201,1.689c1.996,0.469,3.912,1.131,5.65,2.238
+        c1.02,0.581,1.942,1.331,3.062,1.737c2.015,0.309,3.981,1.228,6.068,0.592c0.29,2.301,2.548,3.489,3.653,5.326
+        c2.445,1.845,1.178,6.258,4.793,7.28c-0.365,2.779,1.374,4.412,3.255,5.968c0.83,2.615,2.112,5.138,1.63,8.02
+        c3.402,4.334,2.199,8.604,0.036,13.015c-1.005,2.047-1.41,4.363-3.336,5.916c-0.733,0.591-1.688,1.682-0.442,2.412
+        c4.878,2.859,3.894,8.372,5.898,12.516c-1.134,0.759-1.009,1.937-1.021,3.069c0.761-0.314,1.5-0.829,2.285-0.912
+        c13.175-1.397,26.363-2.647,39.613-3.087c0.051-0.268,0.129-0.527,0.236-0.777l-0.001-0.001c9.375-0.156,18.781,0.139,28.02-1.967
+        l-0.3-0.343c0.006-0.015,0.008-0.03,0.013-0.045c0.096,0.129,0.191,0.259,0.287,0.388c5.606-0.407,11.213-0.813,16.819-1.22
+        c3.43-0.222,7.338,1.283,10.202-0.912c7.732-5.923,16.144-10.663,24.507-15.564c7.131-4.178,14.317-8.051,22.314-10.211V0H0z"/>
+    </clipPath>
+    <defs>
+      <filter id="blur-filter" x="0" y="0">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+      </filter>
+    </defs>
+    <g id="seen-group" clip-path="url(#berry-mask)" filter="url(#blur-filter)"></g>
+  </svg>
+
+
+    <div class="caption">
+    
+<p>This SVG contains a clipmask and a gaussian blur filter on seen.js SVG group</p>
+
+    </div>
+
+    
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script type="text/coffeescript" id="code">
+  width           = 900
+  height          = 500
+  petalPercentage = 0.03
+
+  model    = new seen.Model()
+  material = new seen.Material(seen.Colors.rgb(0xFF, 0xAA, 0xAA), {specularExponent : 1})
+  rand     = -> (2*Math.random() - 1)
+
+  # Lights
+  model.add seen.Lights.directional
+    normal    : seen.P(-1, 1, 0.5).normalize()
+    color     : seen.Colors.hex('#FFFF00')
+    intensity : 0.008
+
+  model.add seen.Lights.ambient
+    intensity : 0.004
+
+  # Load petals
+  petalShapes = []
+  petalLoads  = ['assets/petal0.obj', 'assets/petal1.obj'].map (url) -> 
+    return $.get(url, {}).then (contents) ->
+      shapeFactory = ->
+        shape = seen.Shapes.obj(contents, false)
+        for surface in shape.surfaces
+          surface.cullBackfaces = false
+          surface.fill          = material
+        return shape
+      petalShapes.push(shapeFactory)
+  petalsReady = $.when.apply($, petalLoads)
+
+  generatePetalShape = (rho0, rho1, speed) ->
+    shape = petalShapes[Math.floor(Math.random()*petalShapes.length)]()
+      .scale(3)
+      .rotz(rand())
+      .bake()
+    seen.Util.defaults(shape, {rho0, rho1, speed})
+    return shape
+
+  generateRandomPetal = ->
+    model
+      .append().translate(-width*0.8, (1.5*Math.random()-0.5)*height/2, Math.random()*-500)
+      .append().translate(0, rand()*50)
+      .add(generatePetalShape(rand(), rand(), Math.random() + 1))
+
+  # Create scene
+  scene = new seen.Scene
+    model    : model
+    viewport : seen.Viewports.center(width, height)
+
+  # Create render context from canvas
+  context = seen.Context('seen-group', scene).render()
+
+  # Create animator
+  animator = context.animate()
+    .onBefore((t, dt) ->
+      # Update petal animation
+      for group0 in model.children
+        group1 = group0.children[0]
+        shape  = group1.children[0]
+        group0.translate dt * 2e-1 * shape.speed
+        group1.rotx dt * 3e-3 * shape.rho0
+        shape.rotx dt * 1e-3 * shape.rho1
+
+        shape.rho0 += rand()*1e-1
+        shape.rho1 += rand()*1e-1
+
+      # Occassionally add a new petal
+      if Math.random() < petalPercentage then generateRandomPetal()
+    )
+    .onAfter(->
+      # Remove petals that have blown out of view
+      toRemove = model.children.filter (group0)->
+        group1 = group0.children[0]
+        shape  = group1.children[0]
+        renderModel = scene._renderModelCache[shape.surfaces[0].id]
+        return renderModel.projected.barycenter.x > width
+      model.remove(toRemove...)
+      if toRemove.length > 0 then scene.flushCache()
+    )
+
+  # Start animation once petal shapes are loaded
+  petalsReady.then -> animator.start()
+
+</script>
+
+
+    
+    <link href="http://yandex.st/highlightjs/8.0/styles/monokai_sublime.min.css" rel="stylesheet" type="text/css"/>
+<script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+<pre><code id="code-view"></code></pre>
+<script type="text/javascript">
+  var view = document.getElementById('code-view');
+  var code = document.getElementById('code');
+  view.innerHTML = code.innerHTML;
+  hljs.highlightBlock(view);
+</script>
+    
+  </div>
+</body>
+</html>
