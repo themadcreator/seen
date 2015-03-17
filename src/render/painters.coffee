@@ -27,11 +27,12 @@ class seen.PathPainter extends seen.Painter
 
 class seen.TextPainter extends seen.Painter
   paint : (renderModel, context) ->
-    xform = renderModel.transform.copy().multiply renderModel.projection
     style = {
       fill          : if not renderModel.fill? then 'none' else renderModel.fill.hex()
+      font          : renderModel.surface.font
       'text-anchor' : renderModel.surface.anchor ? 'middle'
     }
+    xform = seen.Affine.solveForAffineTransform(renderModel.projected.points)
     context.text().fillText(xform, renderModel.surface.text, style)
 
 seen.Painters = {

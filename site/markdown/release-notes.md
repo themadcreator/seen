@@ -1,3 +1,12 @@
+### v0.2.3
+
+*Mar 17, 2015*
+
++ Add depth of field demo that uses stackblur to create a depth-of-field effect.
+
++ Text shapes now compute an affine tranformation to utilize canvas and svg transforms on text.
+
++ Parsing hex and CSS color strings for easy material setting.
 
 ### v0.2.2
 

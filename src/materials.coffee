@@ -5,6 +5,16 @@
 
 # `Material` objects hold the attributes that desribe the color and finish of a surface.
 class seen.Material
+  @create : (value) ->
+    if value instanceof seen.Material
+      return value
+    else if value instanceof seen.Color
+      return new seen.Material(value)
+    else if typeof value is 'string'
+      return new seen.Material(seen.Colors.parse(value))
+    else
+      return new seen.Material()
+
   defaults :
     # The base color of the material.
     color            : seen.Colors.gray()

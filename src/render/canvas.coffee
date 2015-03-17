@@ -49,18 +49,21 @@ class seen.CanvasCirclePainter extends seen.CanvasStyler
 class seen.CanvasTextPainter
   constructor : (@ctx) ->
 
-  fillText : (transform, text, style = {}) ->
-    m = seen.Matrices.flipY().multiply(transform).m
+  fillText : (m, text, style = {}) ->
     @ctx.save()
-    @ctx.font = '16px Roboto' # TODO method
-    @ctx.setTransform(m[0], m[4], m[1], m[5], m[3], m[7])
+    @ctx.setTransform(m[0], m[3], -m[1], -m[4], m[2], m[5])
 
+    if style.font? then @ctx.font = style.font
     if style.fill? then @ctx.fillStyle = style.fill
-    if style['text-anchor']? then @ctx.textAlign = style['text-anchor']
+    if style['text-anchor']? then @ctx.textAlign = @_cssToCanvasAnchor(style['text-anchor'])
 
     @ctx.fillText(text, 0, 0)
     @ctx.restore()
     return @
+
+  _cssToCanvasAnchor : (anchor) ->
+    if anchor is 'middle' then return 'center'
+    return anchor
 
 class seen.CanvasLayerRenderContext extends seen.RenderLayerContext
   constructor : (@ctx) ->

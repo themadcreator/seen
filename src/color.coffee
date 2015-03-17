@@ -3,74 +3,90 @@
 
 # `Color` objects store RGB and Alpha values from 0 to 255.
 class seen.Color
-  constructor: (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->
+  constructor : (@r = 0, @g = 0, @b = 0, @a = 0xFF) ->
 
   # Returns a new `Color` object with the same rgb and alpha values as the current object
-  copy: () ->
+  copy : () ->
     return new seen.Color(@r, @g, @b, @a)
 
   # Scales the rgb channels by the supplied scalar value.
-  scale: (n) ->
+  scale : (n) ->
     @r *= n
     @g *= n
     @b *= n
     return @
 
   # Offsets each rgb channel by the supplied scalar value.
-  offset: (n) ->
+  offset : (n) ->
     @r += n
     @g += n
     @b += n
     return @
 
   # Clamps each rgb channel to the supplied minimum and maximum scalar values.
-  clamp: (min = 0, max = 0xFF) ->
+  clamp : (min = 0, max = 0xFF) ->
     @r = Math.min(max, Math.max(min, @r))
     @g = Math.min(max, Math.max(min, @g))
     @b = Math.min(max, Math.max(min, @b))
     return @
 
   # Takes the minimum between each channel of this `Color` and the supplied `Color` object.
-  minChannels: (c) ->
+  minChannels : (c) ->
     @r = Math.min(c.r, @r)
     @g = Math.min(c.g, @g)
     @b = Math.min(c.b, @b)
     return @
 
   # Adds the channels of the current `Color` with each respective channel from the supplied `Color` object.
-  addChannels: (c) ->
+  addChannels : (c) ->
     @r += c.r
     @g += c.g
     @b += c.b
     return @
 
   # Multiplies the channels of the current `Color` with each respective channel from the supplied `Color` object.
-  multiplyChannels: (c) ->
+  multiplyChannels : (c) ->
     @r *= c.r
     @g *= c.g
     @b *= c.b
     return @
 
   # Converts the `Color` into a hex string of the form "#RRGGBB".
-  hex: () ->
+  hex : () ->
     c = (@r << 16 | @g << 8 | @b).toString(16)
     while (c.length < 6) then c = '0' + c
     return '#' + c
 
   # Converts the `Color` into a CSS-style string of the form "rgba(RR, GG, BB, AA)"
-  style: () ->
+  style : () ->
     return "rgba(#{@r},#{@g},#{@b},#{@a})"
 
 seen.Colors = {
+  CSS_RGBA_STRING_REGEX : /rgb(a)?\(([0-9.]+),([0-9.]+),*([0-9.]+)(,([0-9.]+))?\)/
+
+  # Parses a hex string starting with an octothorpe (#) or an rgb/rgba CSS
+  # string. Note that the CSS rgba format uses a float value of 0-1.0 for
+  # alpha, but seen uses an in from 0-255.
+  parse : (str) ->
+    if str.charAt(0) is '#' and str.length is 7
+      return seen.Colors.hex(str)
+    else if str.indexOf('rgb') is 0
+      m = seen.Colors.CSS_RGBA_STRING_REGEX.exec(str)
+      return seen.Colors.black() unless m?
+      a = if m[6]? then Math.round(parseFloat(m[6]) * 0xFF) else undefined
+      return new seen.Color(parseFloat(m[2]), parseFloat(m[3]), parseFloat(m[4]), a)
+    else
+      return seen.Colors.black()
+
   # Creates a new `Color` using the supplied rgb and alpha values.
   #
   # Each value must be in the range [0, 255] or, equivalently, [0x00, 0xFF].
-  rgb: (r, g, b, a = 255) ->
+  rgb : (r, g, b, a = 255) ->
     return new seen.Color(r, g, b, a)
 
   # Creates a new `Color` using the supplied hex string of the form "#RRGGBB".
-  hex: (hex) ->
-    hex = hex.substring(1) if (hex.charAt(0) == '#')
+  hex : (hex) ->
+    hex = hex.substring(1) if (hex.charAt(0) is '#')
     return new seen.Color(
       parseInt(hex.substring(0, 2), 16),
       parseInt(hex.substring(2, 4), 16),
@@ -80,7 +96,7 @@ seen.Colors = {
   # (HSL) values.
   #
   # Each value must be in the range [0.0, 1.0].
-  hsl: (h, s, l, a = 1) ->
+  hsl : (h, s, l, a = 1) ->
     r = g = b = 0
     if (s == 0)
       # When saturation is 0, the color is "achromatic" or "grayscale".
@@ -112,7 +128,7 @@ seen.Colors = {
   # Generates a new random color for each surface of the supplied `Shape`.
   randomSurfaces : (shape, sat = 0.5, lit = 0.4) ->
     for surface in shape.surfaces
-      surface.fill = new seen.Material seen.Colors.hsl(Math.random(), sat, lit)
+      surface.fill seen.Colors.hsl(Math.random(), sat, lit)
 
   # Generates a random hue then randomly drifts the hue for each surface of
   # the supplied `Shape`.
@@ -122,7 +138,7 @@ seen.Colors = {
       hue += (Math.random() - 0.5) * drift
       while hue < 0 then hue += 1
       while hue > 1 then hue -= 1
-      surface.fill = new seen.Material seen.Colors.hsl(hue, 0.5, 0.4)
+      surface.fill seen.Colors.hsl(hue, 0.5, 0.4)
 
   # Generates a random color then sets the fill for every surface of the
   # supplied `Shape`.

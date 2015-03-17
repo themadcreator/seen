@@ -58,6 +58,13 @@ scenes = [
       .scale(window.test.height*0.4)
       .fill(new seen.Material seen.Colors.hex('#FF8800'))
 ,
+  png    : 'shapes-text-0.png'
+  script : ->
+    window.test.model.add seen.Shapes.text('seen.js', {font : '20px sans-serif'})
+      .rotz(0.1)
+      .rotx(0.1)
+      .fill('#0088FF')
+,
 
   # ===============================================
   #

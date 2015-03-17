@@ -69,8 +69,8 @@ class seen.Scene
           # Test projected normal's z-coordinate for culling (if enabled).
           if (not @cullBackfaces or not surface.cullBackfaces or renderModel.projected.normal.z < 0) and renderModel.inFrustrum
             # Render fill and stroke using material and shader.
-            renderModel.fill   = surface.fill?.render(lights, @shader, renderModel.transformed)
-            renderModel.stroke = surface.stroke?.render(lights, @shader, renderModel.transformed)
+            renderModel.fill   = surface.fillMaterial?.render(lights, @shader, renderModel.transformed)
+            renderModel.stroke = surface.strokeMaterial?.render(lights, @shader, renderModel.transformed)
 
             # Round coordinates (if enabled)
             if @fractionalPoints isnt true

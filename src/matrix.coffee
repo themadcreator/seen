@@ -18,6 +18,8 @@ TRANSPOSE_INDICES = [0,  4,  8, 12,
                      2,  6, 10, 14,
                      3,  7, 11, 15]
 
+
+
 # The `Matrix` class stores transformations in the scene. These include:
 # (1) Camera Projection and Viewport transformations.
 # (2) Transformations of any `Transformable` type object, such as `Shape`s or `Model`s

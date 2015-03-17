@@ -16,7 +16,7 @@ module.exports = {
     'css/theme.css'
   ]
   scripts : [
-    'lib/seen.min.js'
+    'lib/seen.js'
     'http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js'
   ]
 }

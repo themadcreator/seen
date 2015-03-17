@@ -25,6 +25,7 @@ DISTS = {
     'src/materials.coffee'
     'src/light.coffee'
     'src/shaders.coffee'
+    'src/affine.coffee'
     'src/render/context.coffee'
     'src/render/painters.coffee'
     'src/render/model.coffee'
@@ -112,6 +113,7 @@ task 'site', 'Build seen website', (options) ->
     exec("cp -rf site/#{resource} #{SITE_DIST}/#{resource}") # copy site resources
   exec("cp site/favicons/* #{SITE_DIST}/.") # copy favicons
   exec("cp dist/latest/seen.min.js #{SITE_DIST}/lib/.") # copy dist for demos
+  exec("cp dist/latest/seen.js #{SITE_DIST}/lib/.") # copy dist for demos
   exec("cp -r dist #{SITE_DIST}/dist") # copy dist for download
   console.log '  Copied static resources'
 

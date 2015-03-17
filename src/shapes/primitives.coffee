@@ -197,14 +197,12 @@ seen.Shapes = {
 
     return new seen.Shape('patch', surfaces.map((s) -> new seen.Surface(s)))
 
-  # Return a text surface that can render 3D text when using an orthographic projection.
-  text : (text) ->
-    surface = new seen.Surface([
-      seen.P(0,  0, 0)
-      seen.P(20, 0, 0)
-      seen.P(0, 20, 0)
-    ], seen.Painters.text)
+  # Return a text surface that can render 3D text using an affine transform estimate of the projection
+  text : (text, surfaceOptions = {}) ->
+    surface = new seen.Surface(seen.Affine.ORTHONORMAL_BASIS(), seen.Painters.text)
     surface.text = text
+    for key, val of surfaceOptions
+      surface[key] = val
     return new seen.Shape('text', [surface])
 
   # Returns a shape that is an extrusion of the supplied points into the z axis.

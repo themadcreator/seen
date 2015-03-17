@@ -47,13 +47,9 @@ class seen.SvgTextPainter
 
   constructor : (@elementFactory) ->
 
-  fillText : (transform, text, style = {}) ->
+  fillText : (m, text, style = {}) ->
     el = @elementFactory(@_svgTag)
-
-    m = seen.Matrices.flipY().multiply(transform).m
-
-    el.setAttribute('transform', "matrix(#{m[0]} #{m[4]} #{m[1]} #{m[5]} #{m[3]} #{m[7]})")
-    el.setAttribute('font-family', 'Roboto')
+    el.setAttribute('transform', "matrix(#{m[0]} #{m[3]} #{-m[1]} #{-m[4]} #{m[2]} #{m[5]})")
 
     str = ''
     for key, value of style
