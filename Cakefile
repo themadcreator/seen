@@ -118,8 +118,10 @@ task 'site', 'Build seen website', (options) ->
   console.log '  Copied static resources'
 
   # Generate docco
-  script = path.join('node_modules' , '.bin', 'docco')
-  exec("#{script} --output #{SITE_DIST}/docco dist/latest/seen.coffee")
+  script        = path.join('node_modules' , '.bin', 'docco')
+  doccoCss      = 'node_modules/docco/resources/classic/docco.css'
+  doccoTemplate = 'site/docco-template.jst'
+  exec("#{script} --output #{SITE_DIST}/docco --css #{doccoCss} --template #{doccoTemplate} dist/latest/seen.coffee")
   console.log '  Generated Docco'
 
   # Demo pages

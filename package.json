@@ -26,7 +26,7 @@
   "devDependencies": {
     "chai"          : "^1.9.1",
     "coffee-script" : "^1.7.1",
-    "docco"         : "^0.6.3",
+    "docco"         : "^0.7.0",
     "exec-sync"     : "^0.1.6",
     "express"       : "^3.5.0",
     "highlight.js"  : "^8.0.0",
