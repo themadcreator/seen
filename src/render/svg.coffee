@@ -53,7 +53,7 @@ class seen.SvgTextPainter
 
     str = ''
     for key, value of style
-      str += "#{key}:#{value};"
+      if value? then str += "#{key}:#{value};"
     el.setAttribute('style', str)
 
     el.textContent = text
