@@ -24,3 +24,5 @@ git checkout gh-pages
 cp -r site-dist/* .
 git add --all .
 git commit -m 'updating site'
+
+echo "Run git push make site GO LIVE!"
