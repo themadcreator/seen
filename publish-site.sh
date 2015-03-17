@@ -25,4 +25,4 @@ cp -r site-dist/* .
 git add --all .
 git commit -m 'updating site'
 
-echo "Run git push make site GO LIVE!"
+echo "Run 'git push --all' to make site GO LIVE!"
