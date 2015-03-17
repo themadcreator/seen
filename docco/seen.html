@@ -4,13 +4,13 @@
 <head>
   <title>seen.coffee</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
   <link rel="stylesheet" media="all" href="docco.css" />
 </head>
 <body>
   <div id="container">
     <div id="background"></div>
-    
+
     <ul class="sections">
         
           <li id="title">
@@ -19,6 +19,1298 @@
               </div>
           </li>
         
+
+        <h2 style="padding-left:13px;">Table of Contents</h2>
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-2">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Apache 2.0 License
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-3">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Init
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-6">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Util
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-12">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Events
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-21">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Math
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-80">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Colors
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-102">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Materials
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-111">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Lights
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-117">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Shaders
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-130">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Affine
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-136">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Render Contexts
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-143">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Painters
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-146">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  RenderModels
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-158">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Layers
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-160">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  SVG Context
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-164">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  HTML5 Canvas Context
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-168">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Interaction
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-180">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Surfaces and Shapes
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-190">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Models
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-202">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Shapes
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-227">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Animator
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-248">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Camera
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+            <li>
+              <a href="#section-257">
+                <div style="padding-left:13px; padding-bottom: 5px;">
+                  Scene
+                </div>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+          
+          
+          
+        
+
         
         
         <li id="section-1">
