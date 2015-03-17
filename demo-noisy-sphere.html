@@ -7,7 +7,7 @@
   <link href="css/theme.css" rel="stylesheet" type="text/css"/>
   
   
-  <script src="lib/seen.js"></script>
+  <script src="lib/seen.min.js"></script>
   
   <script src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js"></script>
   
@@ -71,7 +71,7 @@
   # Create a copy of the surface points so we can manipulate them later
   for surf in shape.surfaces
     surf.originals = surf.points.map (p) -> p.copy()
-    surf.fill.color.a = 150 # Add a little transparency
+    surf.fillMaterial.color.a = 150 # Add a little transparency
 
   # Apply animated 3D simplex noise to sphere vertices
   t = 0

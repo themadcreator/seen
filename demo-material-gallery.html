@@ -7,7 +7,7 @@
   <link href="css/theme.css" rel="stylesheet" type="text/css"/>
   
   
-  <script src="lib/seen.js"></script>
+  <script src="lib/seen.min.js"></script>
   
   <script src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.7.1/coffee-script.min.js"></script>
   
@@ -150,22 +150,22 @@
   updateHue = ->
     hue = parseFloat($('#hue-slider').slider('value')) / 100.0
     for surf in shape.surfaces
-      surf.fill.color = seen.Colors.hsl(hue, 0.5, 0.5)
-      surf.fill.specularColor = surf.fill.color
+      surf.fillMaterial.color = seen.Colors.hsl(hue, 0.5, 0.5)
+      surf.fillMaterial.specularColor = surf.fillMaterial.color
       surf.dirty = true
     context.render()
 
   updateShinyness = ->
     shinyness = parseFloat($('#shinyness-slider').slider('value'))
     for surf in shape.surfaces
-      surf.fill.specularExponent = shinyness
+      surf.fillMaterial.specularExponent = shinyness
       surf.dirty = true
     context.render()
 
   updateMetallic = ->
     metallic = $('input[name=metallic-radio]:checked').val() is 'yes'
     for surf in shape.surfaces
-      surf.fill.metallic = metallic
+      surf.fillMaterial.metallic = metallic
       surf.dirty = true
     context.render()
 
