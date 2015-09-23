@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block demo %}
-<script type="text/coffeescript" src="lib/simplex-noise.coffee"></script>
 <script type="text/coffeescript" id="code">
   width  = {{width}}
   height = {{height}}
@@ -30,7 +29,7 @@
 
   # Apply animated 3D simplex noise to sphere vertices
   t = 0
-  noiser = new Simplex3D(Math.random())
+  noiser = new seen.Simplex3D(Math.random())
   context.animate()
     .onBefore((t, dt) ->
       for surf in shape.surfaces

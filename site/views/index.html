@@ -58,7 +58,6 @@
 
   </div>
 
-  <script type="text/coffeescript" src="lib/simplex-noise.coffee"></script>
   <script type="text/coffeescript">
     width               = 900
     height              = 150
@@ -86,7 +85,7 @@
     context = seen.Context('seen-canvas', scene).render()
 
     # Apply animated 3D simplex noise to patch vertices
-    noiser = new Simplex3D(Math.random())
+    noiser = new seen.Simplex3D(Math.random())
     context.animate()
       .onBefore((t)->
         t *= -

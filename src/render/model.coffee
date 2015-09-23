@@ -87,9 +87,9 @@ class seen.RenderModel
 # surfaces with the supplied `Light`.
 class seen.LightRenderModel
   constructor: (@light, transform) ->
-    @colorIntensity = light.color.copy().scale(light.intensity)
-    @type           = light.type
-    @intensity      = light.intensity
-    @point          = light.point.copy().transform(transform)
+    @colorIntensity = @light.color.copy().scale(@light.intensity)
+    @type           = @light.type
+    @intensity      = @light.intensity
+    @point          = @light.point.copy().transform(transform)
     origin          = seen.Points.ZERO().transform(transform)
-    @normal         = light.normal.copy().transform(transform).subtract(origin).normalize()
+    @normal         = @light.normal.copy().transform(transform).subtract(origin).normalize()

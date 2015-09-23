@@ -15,6 +15,7 @@ DISTS = {
   'seen.js' : [
     'src/namespace.coffee'
     'src/util.coffee'
+    'src/ext/simplex.coffee'
     'src/events.coffee'
     'src/matrix.coffee'
     'src/transformable.coffee'
