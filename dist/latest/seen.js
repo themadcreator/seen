@@ -1,10 +1,10 @@
-/** seen.js v0.2.3 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
+/** seen.js v0.2.4 | themadcreator.github.io/seen | (c) Bill Dwyer | @license: Apache 2.0 */
 (function() {
-  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DEFAULT_FRAME_DELAY, DEFAULT_NORMAL, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, EYE_NORMAL, Flat, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PYRAMID_COORDINATE_MAP, Phong, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, requestAnimationFrame, seen, _ref, _ref1, _ref2, _svg,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __slice = [].slice,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var ARRAY_POOL, Ambient, CUBE_COORDINATE_MAP, DEFAULT_FRAME_DELAY, DEFAULT_NORMAL, DiffusePhong, EQUILATERAL_TRIANGLE_ALTITUDE, EYE_NORMAL, F3, Flat, G3, ICOSAHEDRON_COORDINATE_MAP, ICOSAHEDRON_POINTS, ICOS_X, ICOS_Z, IDENTITY, NEXT_UNIQUE_ID, POINT_POOL, PYRAMID_COORDINATE_MAP, Phong, SIMPLEX_PERMUTATIONS_TABLE, TETRAHEDRON_COORDINATE_MAP, TRANSPOSE_INDICES, _svg, grad3, ref, ref1, ref2, requestAnimationFrame, seen,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    slice = [].slice,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
   seen = {};
 
@@ -20,28 +20,28 @@
 
   seen.Util = {
     defaults: function(obj, opts, defaults) {
-      var prop, _results;
+      var prop, results;
       for (prop in opts) {
         if (obj[prop] == null) {
           obj[prop] = opts[prop];
         }
       }
-      _results = [];
+      results = [];
       for (prop in defaults) {
         if (obj[prop] == null) {
-          _results.push(obj[prop] = defaults[prop]);
+          results.push(obj[prop] = defaults[prop]);
         } else {
-          _results.push(void 0);
+          results.push(void 0);
         }
       }
-      return _results;
+      return results;
     },
     arraysEqual: function(a, b) {
-      var i, val, _i, _len;
+      var i, len1, o, val;
       if (!a.length === b.length) {
         return false;
       }
-      for (i = _i = 0, _len = a.length; _i < _len; i = ++_i) {
+      for (i = o = 0, len1 = a.length; o < len1; i = ++o) {
         val = a[i];
         if (!(val === b[i])) {
           return false;
@@ -64,12 +64,176 @@
     }
   };
 
+  seen.Grad = (function() {
+    function Grad(x4, y4, z4) {
+      this.x = x4;
+      this.y = y4;
+      this.z = z4;
+    }
+
+    Grad.prototype.dot = function(x, y, z) {
+      return this.x * x + this.y * y + this.z * z;
+    };
+
+    return Grad;
+
+  })();
+
+  grad3 = [new seen.Grad(1, 1, 0), new seen.Grad(-1, 1, 0), new seen.Grad(1, -1, 0), new seen.Grad(-1, -1, 0), new seen.Grad(1, 0, 1), new seen.Grad(-1, 0, 1), new seen.Grad(1, 0, -1), new seen.Grad(-1, 0, -1), new seen.Grad(0, 1, 1), new seen.Grad(0, -1, 1), new seen.Grad(0, 1, -1), new seen.Grad(0, -1, -1)];
+
+  SIMPLEX_PERMUTATIONS_TABLE = [151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123, 5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180];
+
+  F3 = 1 / 3;
+
+  G3 = 1 / 6;
+
+  seen.Simplex3D = (function() {
+    function Simplex3D(seed) {
+      if (seed == null) {
+        seed = 0;
+      }
+      this.perm = new Array(512);
+      this.gradP = new Array(512);
+      this.seed(seed);
+    }
+
+    Simplex3D.prototype.seed = function(seed) {
+      var i, o, results, v;
+      if (seed > 0 && seed < 1) {
+        seed *= 65536;
+      }
+      seed = Math.floor(seed);
+      if (seed < 256) {
+        seed |= seed << 8;
+      }
+      results = [];
+      for (i = o = 0; o < 256; i = ++o) {
+        v = 0;
+        if (i & 1) {
+          v = SIMPLEX_PERMUTATIONS_TABLE[i] ^ (seed & 255);
+        } else {
+          v = SIMPLEX_PERMUTATIONS_TABLE[i] ^ ((seed >> 8) & 255);
+        }
+        this.perm[i] = this.perm[i + 256] = v;
+        results.push(this.gradP[i] = this.gradP[i + 256] = grad3[v % 12]);
+      }
+      return results;
+    };
+
+    Simplex3D.prototype.noise = function(x, y, z) {
+      var gi0, gi1, gi2, gi3, i, i1, i2, j, j1, j2, k, k1, k2, n0, n1, n2, n3, s, t, t0, t1, t2, t3, x0, x1, x2, x3, y0, y1, y2, y3, z0, z1, z2, z3;
+      s = (x + y + z) * F3;
+      i = Math.floor(x + s);
+      j = Math.floor(y + s);
+      k = Math.floor(z + s);
+      t = (i + j + k) * G3;
+      x0 = x - i + t;
+      y0 = y - j + t;
+      z0 = z - k + t;
+      if (x0 >= y0) {
+        if (y0 >= z0) {
+          i1 = 1;
+          j1 = 0;
+          k1 = 0;
+          i2 = 1;
+          j2 = 1;
+          k2 = 0;
+        } else if (x0 >= z0) {
+          i1 = 1;
+          j1 = 0;
+          k1 = 0;
+          i2 = 1;
+          j2 = 0;
+          k2 = 1;
+        } else {
+          i1 = 0;
+          j1 = 0;
+          k1 = 1;
+          i2 = 1;
+          j2 = 0;
+          k2 = 1;
+        }
+      } else {
+        if (y0 < z0) {
+          i1 = 0;
+          j1 = 0;
+          k1 = 1;
+          i2 = 0;
+          j2 = 1;
+          k2 = 1;
+        } else if (x0 < z0) {
+          i1 = 0;
+          j1 = 1;
+          k1 = 0;
+          i2 = 0;
+          j2 = 1;
+          k2 = 1;
+        } else {
+          i1 = 0;
+          j1 = 1;
+          k1 = 0;
+          i2 = 1;
+          j2 = 1;
+          k2 = 0;
+        }
+      }
+      x1 = x0 - i1 + G3;
+      y1 = y0 - j1 + G3;
+      z1 = z0 - k1 + G3;
+      x2 = x0 - i2 + 2 * G3;
+      y2 = y0 - j2 + 2 * G3;
+      z2 = z0 - k2 + 2 * G3;
+      x3 = x0 - 1 + 3 * G3;
+      y3 = y0 - 1 + 3 * G3;
+      z3 = z0 - 1 + 3 * G3;
+      i &= 0xFF;
+      j &= 0xFF;
+      k &= 0xFF;
+      gi0 = this.gradP[i + this.perm[j + this.perm[k]]];
+      gi1 = this.gradP[i + i1 + this.perm[j + j1 + this.perm[k + k1]]];
+      gi2 = this.gradP[i + i2 + this.perm[j + j2 + this.perm[k + k2]]];
+      gi3 = this.gradP[i + 1 + this.perm[j + 1 + this.perm[k + 1]]];
+      t0 = 0.5 - x0 * x0 - y0 * y0 - z0 * z0;
+      if (t0 < 0) {
+        n0 = 0;
+      } else {
+        t0 *= t0;
+        n0 = t0 * t0 * gi0.dot(x0, y0, z0);
+      }
+      t1 = 0.5 - x1 * x1 - y1 * y1 - z1 * z1;
+      if (t1 < 0) {
+        n1 = 0;
+      } else {
+        t1 *= t1;
+        n1 = t1 * t1 * gi1.dot(x1, y1, z1);
+      }
+      t2 = 0.5 - x2 * x2 - y2 * y2 - z2 * z2;
+      if (t2 < 0) {
+        n2 = 0;
+      } else {
+        t2 *= t2;
+        n2 = t2 * t2 * gi2.dot(x2, y2, z2);
+      }
+      t3 = 0.5 - x3 * x3 - y3 * y3 - z3 * z3;
+      if (t3 < 0) {
+        n3 = 0;
+      } else {
+        t3 *= t3;
+        n3 = t3 * t3 * gi3.dot(x3, y3, z3);
+      }
+      return 32 * (n0 + n1 + n2 + n3);
+    };
+
+    return Simplex3D;
+
+  })();
+
   seen.Events = {
     dispatch: function() {
-      var arg, dispatch, _i, _len;
+      var arg, dispatch, len1, o;
       dispatch = new seen.Events.Dispatcher();
-      for (_i = 0, _len = arguments.length; _i < _len; _i++) {
-        arg = arguments[_i];
+      for (o = 0, len1 = arguments.length; o < len1; o++) {
+        arg = arguments[o];
         dispatch[arg] = seen.Events.Event();
       }
       return dispatch;
@@ -78,7 +242,7 @@
 
   seen.Events.Dispatcher = (function() {
     function Dispatcher() {
-      this.on = __bind(this.on, this);
+      this.on = bind(this.on, this);
     }
 
     Dispatcher.prototype.on = function(type, listener) {
@@ -102,18 +266,18 @@
   seen.Events.Event = function() {
     var event;
     event = function() {
-      var l, name, _ref, _results;
-      _ref = event.listenerMap;
-      _results = [];
-      for (name in _ref) {
-        l = _ref[name];
+      var l, name, ref, results;
+      ref = event.listenerMap;
+      results = [];
+      for (name in ref) {
+        l = ref[name];
         if (l != null) {
-          _results.push(l.apply(this, arguments));
+          results.push(l.apply(this, arguments));
         } else {
-          _results.push(void 0);
+          results.push(void 0);
         }
       }
-      return _results;
+      return results;
     };
     event.listenerMap = {};
     event.on = function(name, listener) {
@@ -132,8 +296,8 @@
   TRANSPOSE_INDICES = [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15];
 
   seen.Matrix = (function() {
-    function Matrix(m) {
-      this.m = m != null ? m : null;
+    function Matrix(m1) {
+      this.m = m1 != null ? m1 : null;
       if (this.m == null) {
         this.m = IDENTITY.slice();
       }
@@ -145,10 +309,10 @@
     };
 
     Matrix.prototype.matrix = function(m) {
-      var c, i, j, _i, _j;
+      var c, i, j, o, u;
       c = ARRAY_POOL;
-      for (j = _i = 0; _i < 4; j = ++_i) {
-        for (i = _j = 0; _j < 16; i = _j += 4) {
+      for (j = o = 0; o < 4; j = ++o) {
+        for (i = u = 0; u < 16; i = u += 4) {
           c[i + j] = m[i] * this.m[j] + m[i + 1] * this.m[4 + j] + m[i + 2] * this.m[8 + j] + m[i + 3] * this.m[12 + j];
         }
       }
@@ -172,9 +336,9 @@
     };
 
     Matrix.prototype.transpose = function() {
-      var c, i, ti, _i, _len;
+      var c, i, len1, o, ti;
       c = ARRAY_POOL;
-      for (i = _i = 0, _len = TRANSPOSE_INDICES.length; _i < _len; i = ++_i) {
+      for (i = o = 0, len1 = TRANSPOSE_INDICES.length; o < len1; i = ++o) {
         ti = TRANSPOSE_INDICES[i];
         c[i] = this.m[ti];
       }
@@ -262,22 +426,22 @@
 
   seen.Transformable = (function() {
     function Transformable() {
-      var method, _fn, _i, _len, _ref;
+      var fn, len1, method, o, ref;
       this.m = new seen.Matrix();
       this.baked = IDENTITY;
-      _ref = ['scale', 'translate', 'rotx', 'roty', 'rotz', 'matrix', 'reset', 'bake'];
-      _fn = (function(_this) {
+      ref = ['scale', 'translate', 'rotx', 'roty', 'rotz', 'matrix', 'reset', 'bake'];
+      fn = (function(_this) {
         return function(method) {
           return _this[method] = function() {
-            var _ref1;
-            (_ref1 = this.m[method]).call.apply(_ref1, [this.m].concat(__slice.call(arguments)));
+            var ref1;
+            (ref1 = this.m[method]).call.apply(ref1, [this.m].concat(slice.call(arguments)));
             return this;
           };
         };
       })(this);
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        method = _ref[_i];
-        _fn(method);
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        method = ref[o];
+        fn(method);
       }
     }
 
@@ -291,11 +455,11 @@
   })();
 
   seen.Point = (function() {
-    function Point(x, y, z, w) {
-      this.x = x != null ? x : 0;
-      this.y = y != null ? y : 0;
-      this.z = z != null ? z : 0;
-      this.w = w != null ? w : 1;
+    function Point(x4, y4, z4, w1) {
+      this.x = x4 != null ? x4 : 0;
+      this.y = y4 != null ? y4 : 0;
+      this.z = z4 != null ? z4 : 0;
+      this.w = w1 != null ? w1 : 1;
     }
 
     Point.prototype.copy = function() {
@@ -489,10 +653,10 @@
 
   seen.Bounds = (function() {
     Bounds.points = function(points) {
-      var box, p, _i, _len;
+      var box, len1, o, p;
       box = new seen.Bounds();
-      for (_i = 0, _len = points.length; _i < _len; _i++) {
-        p = points[_i];
+      for (o = 0, len1 = points.length; o < len1; o++) {
+        p = points[o];
         box.add(p);
       }
       return box;
@@ -511,24 +675,24 @@
     };
 
     function Bounds() {
-      this.maxZ = __bind(this.maxZ, this);
-      this.maxY = __bind(this.maxY, this);
-      this.maxX = __bind(this.maxX, this);
-      this.minZ = __bind(this.minZ, this);
-      this.minY = __bind(this.minY, this);
-      this.minX = __bind(this.minX, this);
-      this.depth = __bind(this.depth, this);
-      this.height = __bind(this.height, this);
-      this.width = __bind(this.width, this);
+      this.maxZ = bind(this.maxZ, this);
+      this.maxY = bind(this.maxY, this);
+      this.maxX = bind(this.maxX, this);
+      this.minZ = bind(this.minZ, this);
+      this.minY = bind(this.minY, this);
+      this.minX = bind(this.minX, this);
+      this.depth = bind(this.depth, this);
+      this.height = bind(this.height, this);
+      this.width = bind(this.width, this);
       this.min = null;
       this.max = null;
     }
 
     Bounds.prototype.copy = function() {
-      var box, _ref, _ref1;
+      var box, ref, ref1;
       box = new seen.Bounds();
-      box.min = (_ref = this.min) != null ? _ref.copy() : void 0;
-      box.max = (_ref1 = this.max) != null ? _ref1.copy() : void 0;
+      box.min = (ref = this.min) != null ? ref.copy() : void 0;
+      box.max = (ref1 = this.max) != null ? ref1.copy() : void 0;
       return box;
     };
 
@@ -619,33 +783,33 @@
     };
 
     Bounds.prototype.minX = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.min) != null ? _ref1.x : void 0) != null ? _ref : 0;
+      var ref, ref1;
+      return (ref = (ref1 = this.min) != null ? ref1.x : void 0) != null ? ref : 0;
     };
 
     Bounds.prototype.minY = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.min) != null ? _ref1.y : void 0) != null ? _ref : 0;
+      var ref, ref1;
+      return (ref = (ref1 = this.min) != null ? ref1.y : void 0) != null ? ref : 0;
     };
 
     Bounds.prototype.minZ = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.min) != null ? _ref1.z : void 0) != null ? _ref : 0;
+      var ref, ref1;
+      return (ref = (ref1 = this.min) != null ? ref1.z : void 0) != null ? ref : 0;
     };
 
     Bounds.prototype.maxX = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.max) != null ? _ref1.x : void 0) != null ? _ref : 0;
+      var ref, ref1;
+      return (ref = (ref1 = this.max) != null ? ref1.x : void 0) != null ? ref : 0;
     };
 
     Bounds.prototype.maxY = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.max) != null ? _ref1.y : void 0) != null ? _ref : 0;
+      var ref, ref1;
+      return (ref = (ref1 = this.max) != null ? ref1.y : void 0) != null ? ref : 0;
     };
 
     Bounds.prototype.maxZ = function() {
-      var _ref, _ref1;
-      return (_ref = (_ref1 = this.max) != null ? _ref1.z : void 0) != null ? _ref : 0;
+      var ref, ref1;
+      return (ref = (ref1 = this.max) != null ? ref1.z : void 0) != null ? ref : 0;
     };
 
     return Bounds;
@@ -653,11 +817,11 @@
   })();
 
   seen.Color = (function() {
-    function Color(r, g, b, a) {
-      this.r = r != null ? r : 0;
-      this.g = g != null ? g : 0;
-      this.b = b != null ? b : 0;
-      this.a = a != null ? a : 0xFF;
+    function Color(r1, g1, b1, a1) {
+      this.r = r1 != null ? r1 : 0;
+      this.g = g1 != null ? g1 : 0;
+      this.b = b1 != null ? b1 : 0;
+      this.a = a1 != null ? a1 : 0xFF;
     }
 
     Color.prototype.copy = function() {
@@ -792,23 +956,23 @@
       return new seen.Color(r * 255, g * 255, b * 255, a * 255);
     },
     randomSurfaces: function(shape, sat, lit) {
-      var surface, _i, _len, _ref, _results;
+      var len1, o, ref, results, surface;
       if (sat == null) {
         sat = 0.5;
       }
       if (lit == null) {
         lit = 0.4;
       }
-      _ref = shape.surfaces;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        surface = _ref[_i];
-        _results.push(surface.fill(seen.Colors.hsl(Math.random(), sat, lit)));
+      ref = shape.surfaces;
+      results = [];
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        surface = ref[o];
+        results.push(surface.fill(seen.Colors.hsl(Math.random(), sat, lit)));
       }
-      return _results;
+      return results;
     },
     randomSurfaces2: function(shape, drift, sat, lit) {
-      var hue, surface, _i, _len, _ref, _results;
+      var hue, len1, o, ref, results, surface;
       if (drift == null) {
         drift = 0.03;
       }
@@ -819,10 +983,10 @@
         lit = 0.4;
       }
       hue = Math.random();
-      _ref = shape.surfaces;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        surface = _ref[_i];
+      ref = shape.surfaces;
+      results = [];
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        surface = ref[o];
         hue += (Math.random() - 0.5) * drift;
         while (hue < 0) {
           hue += 1;
@@ -830,9 +994,9 @@
         while (hue > 1) {
           hue -= 1;
         }
-        _results.push(surface.fill(seen.Colors.hsl(hue, 0.5, 0.4)));
+        results.push(surface.fill(seen.Colors.hsl(hue, 0.5, 0.4)));
       }
-      return _results;
+      return results;
     },
     randomShape: function(shape, sat, lit) {
       if (sat == null) {
@@ -879,8 +1043,8 @@
       shader: null
     };
 
-    function Material(color, options) {
-      this.color = color;
+    function Material(color1, options) {
+      this.color = color1;
       if (options == null) {
         options = {};
       }
@@ -888,8 +1052,8 @@
     }
 
     Material.prototype.render = function(lights, shader, renderData) {
-      var color, renderShader, _ref;
-      renderShader = (_ref = this.shader) != null ? _ref : shader;
+      var color, ref, renderShader;
+      renderShader = (ref = this.shader) != null ? ref : shader;
       color = renderShader.shade(lights, renderData, this);
       color.a = this.color.a;
       return color;
@@ -899,8 +1063,8 @@
 
   })();
 
-  seen.Light = (function(_super) {
-    __extends(Light, _super);
+  seen.Light = (function(superClass) {
+    extend(Light, superClass);
 
     Light.prototype.defaults = {
       point: seen.P(),
@@ -910,8 +1074,8 @@
       enabled: true
     };
 
-    function Light(type, options) {
-      this.type = type;
+    function Light(type1, options) {
+      this.type = type1;
       Light.__super__.constructor.apply(this, arguments);
       seen.Util.defaults(this, options, this.defaults);
       this.id = seen.Util.uniqueId('l');
@@ -972,18 +1136,18 @@
 
   })();
 
-  Phong = (function(_super) {
-    __extends(Phong, _super);
+  Phong = (function(superClass) {
+    extend(Phong, superClass);
 
     function Phong() {
       return Phong.__super__.constructor.apply(this, arguments);
     }
 
     Phong.prototype.shade = function(lights, renderModel, material) {
-      var c, light, lightNormal, _i, _len;
+      var c, len1, light, lightNormal, o;
       c = new seen.Color();
-      for (_i = 0, _len = lights.length; _i < _len; _i++) {
-        light = lights[_i];
+      for (o = 0, len1 = lights.length; o < len1; o++) {
+        light = lights[o];
         switch (light.type) {
           case 'point':
             lightNormal = light.point.copy().subtract(renderModel.barycenter).normalize();
@@ -1008,18 +1172,18 @@
 
   })(seen.Shader);
 
-  DiffusePhong = (function(_super) {
-    __extends(DiffusePhong, _super);
+  DiffusePhong = (function(superClass) {
+    extend(DiffusePhong, superClass);
 
     function DiffusePhong() {
       return DiffusePhong.__super__.constructor.apply(this, arguments);
     }
 
     DiffusePhong.prototype.shade = function(lights, renderModel, material) {
-      var c, light, lightNormal, _i, _len;
+      var c, len1, light, lightNormal, o;
       c = new seen.Color();
-      for (_i = 0, _len = lights.length; _i < _len; _i++) {
-        light = lights[_i];
+      for (o = 0, len1 = lights.length; o < len1; o++) {
+        light = lights[o];
         switch (light.type) {
           case 'point':
             lightNormal = light.point.copy().subtract(renderModel.barycenter).normalize();
@@ -1040,18 +1204,18 @@
 
   })(seen.Shader);
 
-  Ambient = (function(_super) {
-    __extends(Ambient, _super);
+  Ambient = (function(superClass) {
+    extend(Ambient, superClass);
 
     function Ambient() {
       return Ambient.__super__.constructor.apply(this, arguments);
     }
 
     Ambient.prototype.shade = function(lights, renderModel, material) {
-      var c, light, _i, _len;
+      var c, len1, light, o;
       c = new seen.Color();
-      for (_i = 0, _len = lights.length; _i < _len; _i++) {
-        light = lights[_i];
+      for (o = 0, len1 = lights.length; o < len1; o++) {
+        light = lights[o];
         switch (light.type) {
           case 'ambient':
             seen.ShaderUtils.applyAmbient(c, light);
@@ -1065,8 +1229,8 @@
 
   })(seen.Shader);
 
-  Flat = (function(_super) {
-    __extends(Flat, _super);
+  Flat = (function(superClass) {
+    extend(Flat, superClass);
 
     function Flat() {
       return Flat.__super__.constructor.apply(this, arguments);
@@ -1101,14 +1265,14 @@
     },
     INITIAL_STATE_MATRIX: [[20, 0, 1, 0, 0, 0], [0, 20, 1, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 20, 0, 1], [0, 0, 0, 0, 20, 1], [0, 0, 0, 0, 0, 1]],
     solveForAffineTransform: function(points) {
-      var A, b, i, j, n, x, _i, _j, _ref, _ref1;
+      var A, b, i, j, n, o, ref, ref1, ref2, u, x;
       A = seen.Affine.INITIAL_STATE_MATRIX;
       b = [points[1].x, points[2].x, points[0].x, points[1].y, points[2].y, points[0].y];
       x = new Array(6);
       n = A.length;
-      for (i = _i = _ref = n - 1; _i >= 0; i = _i += -1) {
+      for (i = o = ref = n - 1; o >= 0; i = o += -1) {
         x[i] = b[i];
-        for (j = _j = _ref1 = i + 1; _ref1 <= n ? _j < n : _j > n; j = _ref1 <= n ? ++_j : --_j) {
+        for (j = u = ref1 = i + 1, ref2 = n; ref1 <= ref2 ? u < ref2 : u > ref2; j = ref1 <= ref2 ? ++u : --u) {
           x[i] -= A[i][j] * x[j];
         }
         x[i] /= A[i][i];
@@ -1119,16 +1283,16 @@
 
   seen.RenderContext = (function() {
     function RenderContext() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       this.layers = [];
     }
 
     RenderContext.prototype.render = function() {
-      var layer, _i, _len, _ref;
+      var layer, len1, o, ref;
       this.reset();
-      _ref = this.layers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        layer = _ref[_i];
+      ref = this.layers;
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        layer = ref[o];
         layer.context.reset();
         layer.layer.render(layer.context);
         layer.context.cleanup();
@@ -1182,11 +1346,11 @@
   })();
 
   seen.Context = function(elementId, scene) {
-    var context, tag, _ref;
+    var context, ref, tag;
     if (scene == null) {
       scene = null;
     }
-    tag = (_ref = seen.Util.element(elementId)) != null ? _ref.tagName.toUpperCase() : void 0;
+    tag = (ref = seen.Util.element(elementId)) != null ? ref.tagName.toUpperCase() : void 0;
     context = (function() {
       switch (tag) {
         case 'SVG':
@@ -1211,27 +1375,27 @@
 
   })();
 
-  seen.PathPainter = (function(_super) {
-    __extends(PathPainter, _super);
+  seen.PathPainter = (function(superClass) {
+    extend(PathPainter, superClass);
 
     function PathPainter() {
       return PathPainter.__super__.constructor.apply(this, arguments);
     }
 
     PathPainter.prototype.paint = function(renderModel, context) {
-      var painter, _ref, _ref1;
+      var painter, ref, ref1;
       painter = context.path().path(renderModel.projected.points);
       if (renderModel.fill != null) {
         painter.fill({
           fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
-          'fill-opacity': ((_ref = renderModel.fill) != null ? _ref.a : void 0) == null ? 1.0 : renderModel.fill.a / 255.0
+          'fill-opacity': ((ref = renderModel.fill) != null ? ref.a : void 0) == null ? 1.0 : renderModel.fill.a / 255.0
         });
       }
       if (renderModel.stroke != null) {
         return painter.draw({
           fill: 'none',
           stroke: renderModel.stroke == null ? 'none' : renderModel.stroke.hex(),
-          'stroke-width': (_ref1 = renderModel.surface['stroke-width']) != null ? _ref1 : 1
+          'stroke-width': (ref1 = renderModel.surface['stroke-width']) != null ? ref1 : 1
         });
       }
     };
@@ -1240,19 +1404,19 @@
 
   })(seen.Painter);
 
-  seen.TextPainter = (function(_super) {
-    __extends(TextPainter, _super);
+  seen.TextPainter = (function(superClass) {
+    extend(TextPainter, superClass);
 
     function TextPainter() {
       return TextPainter.__super__.constructor.apply(this, arguments);
     }
 
     TextPainter.prototype.paint = function(renderModel, context) {
-      var style, xform, _ref;
+      var ref, style, xform;
       style = {
         fill: renderModel.fill == null ? 'none' : renderModel.fill.hex(),
         font: renderModel.surface.font,
-        'text-anchor': (_ref = renderModel.surface.anchor) != null ? _ref : 'middle'
+        'text-anchor': (ref = renderModel.surface.anchor) != null ? ref : 'middle'
       };
       xform = seen.Affine.solveForAffineTransform(renderModel.projected.points);
       return context.text().fillText(xform, renderModel.surface.text, style);
@@ -1270,11 +1434,11 @@
   DEFAULT_NORMAL = seen.Points.Z();
 
   seen.RenderModel = (function() {
-    function RenderModel(surface, transform, projection, viewport) {
-      this.surface = surface;
-      this.transform = transform;
-      this.projection = projection;
-      this.viewport = viewport;
+    function RenderModel(surface1, transform1, projection1, viewport1) {
+      this.surface = surface1;
+      this.transform = transform1;
+      this.projection = projection1;
+      this.viewport = viewport1;
       this.points = this.surface.points;
       this.transformed = this._initRenderData();
       this.projected = this._initRenderData();
@@ -1306,9 +1470,9 @@
     };
 
     RenderModel.prototype._checkFrustrum = function(points) {
-      var p, _i, _len;
-      for (_i = 0, _len = points.length; _i < _len; _i++) {
-        p = points[_i];
+      var len1, o, p;
+      for (o = 0, len1 = points.length; o < len1; o++) {
+        p = points[o];
         if (p.z <= -2) {
           return false;
         }
@@ -1320,14 +1484,14 @@
       var p;
       return {
         points: (function() {
-          var _i, _len, _ref, _results;
-          _ref = this.points;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            p = _ref[_i];
-            _results.push(p.copy());
+          var len1, o, ref, results;
+          ref = this.points;
+          results = [];
+          for (o = 0, len1 = ref.length; o < len1; o++) {
+            p = ref[o];
+            results.push(p.copy());
           }
-          return _results;
+          return results;
         }).call(this),
         bounds: new seen.Bounds(),
         barycenter: seen.P(),
@@ -1338,11 +1502,11 @@
     };
 
     RenderModel.prototype._math = function(set, points, transform, applyClip) {
-      var i, p, sp, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+      var aa, i, len1, len2, len3, o, p, ref, ref1, sp, u;
       if (applyClip == null) {
         applyClip = false;
       }
-      for (i = _i = 0, _len = points.length; _i < _len; i = ++_i) {
+      for (i = o = 0, len1 = points.length; o < len1; i = ++o) {
         p = points[i];
         sp = set.points[i];
         sp.set(p).transform(transform);
@@ -1351,16 +1515,16 @@
         }
       }
       set.barycenter.multiply(0);
-      _ref = set.points;
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        p = _ref[_j];
+      ref = set.points;
+      for (u = 0, len2 = ref.length; u < len2; u++) {
+        p = ref[u];
         set.barycenter.add(p);
       }
       set.barycenter.divide(set.points.length);
       set.bounds.reset();
-      _ref1 = set.points;
-      for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
-        p = _ref1[_k];
+      ref1 = set.points;
+      for (aa = 0, len3 = ref1.length; aa < len3; aa++) {
+        p = ref1[aa];
         set.bounds.add(p);
       }
       if (set.points.length < 2) {
@@ -1379,15 +1543,15 @@
   })();
 
   seen.LightRenderModel = (function() {
-    function LightRenderModel(light, transform) {
+    function LightRenderModel(light1, transform) {
       var origin;
-      this.light = light;
-      this.colorIntensity = light.color.copy().scale(light.intensity);
-      this.type = light.type;
-      this.intensity = light.intensity;
-      this.point = light.point.copy().transform(transform);
+      this.light = light1;
+      this.colorIntensity = this.light.color.copy().scale(this.light.intensity);
+      this.type = this.light.type;
+      this.intensity = this.light.intensity;
+      this.point = this.light.point.copy().transform(transform);
       origin = seen.Points.ZERO().transform(transform);
-      this.normal = light.normal.copy().transform(transform).subtract(origin).normalize();
+      this.normal = this.light.normal.copy().transform(transform).subtract(origin).normalize();
     }
 
     return LightRenderModel;
@@ -1396,7 +1560,7 @@
 
   seen.RenderLayer = (function() {
     function RenderLayer() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
     }
 
     RenderLayer.prototype.render = function(context) {};
@@ -1405,37 +1569,37 @@
 
   })();
 
-  seen.SceneLayer = (function(_super) {
-    __extends(SceneLayer, _super);
+  seen.SceneLayer = (function(superClass) {
+    extend(SceneLayer, superClass);
 
-    function SceneLayer(scene) {
-      this.scene = scene;
-      this.render = __bind(this.render, this);
+    function SceneLayer(scene1) {
+      this.scene = scene1;
+      this.render = bind(this.render, this);
     }
 
     SceneLayer.prototype.render = function(context) {
-      var renderModel, _i, _len, _ref, _results;
-      _ref = this.scene.render();
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        renderModel = _ref[_i];
-        _results.push(renderModel.surface.painter.paint(renderModel, context));
+      var len1, o, ref, renderModel, results;
+      ref = this.scene.render();
+      results = [];
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        renderModel = ref[o];
+        results.push(renderModel.surface.painter.paint(renderModel, context));
       }
-      return _results;
+      return results;
     };
 
     return SceneLayer;
 
   })(seen.RenderLayer);
 
-  seen.FillLayer = (function(_super) {
-    __extends(FillLayer, _super);
+  seen.FillLayer = (function(superClass) {
+    extend(FillLayer, superClass);
 
-    function FillLayer(width, height, fill) {
-      this.width = width != null ? width : 500;
-      this.height = height != null ? height : 500;
-      this.fill = fill != null ? fill : '#EEE';
-      this.render = __bind(this.render, this);
+    function FillLayer(width1, height1, fill1) {
+      this.width = width1 != null ? width1 : 500;
+      this.height = height1 != null ? height1 : 500;
+      this.fill = fill1 != null ? fill1 : '#EEE';
+      this.render = bind(this.render, this);
     }
 
     FillLayer.prototype.render = function(context) {
@@ -1483,17 +1647,17 @@
     };
 
     SvgStyler.prototype._paint = function(style) {
-      var el, key, str, value, _ref;
+      var el, key, ref, str, value;
       el = this.elementFactory(this._svgTag);
       str = '';
       for (key in style) {
         value = style[key];
-        str += "" + key + ":" + value + ";";
+        str += key + ":" + value + ";";
       }
       el.setAttribute('style', str);
-      _ref = this._attributes;
-      for (key in _ref) {
-        value = _ref[key];
+      ref = this._attributes;
+      for (key in ref) {
+        value = ref[key];
         el.setAttribute(key, value);
       }
       return el;
@@ -1503,8 +1667,8 @@
 
   })();
 
-  seen.SvgPathPainter = (function(_super) {
-    __extends(SvgPathPainter, _super);
+  seen.SvgPathPainter = (function(superClass) {
+    extend(SvgPathPainter, superClass);
 
     function SvgPathPainter() {
       return SvgPathPainter.__super__.constructor.apply(this, arguments);
@@ -1514,7 +1678,7 @@
 
     SvgPathPainter.prototype.path = function(points) {
       this._attributes.d = 'M' + points.map(function(p) {
-        return "" + p.x + " " + p.y;
+        return p.x + " " + p.y;
       }).join('L');
       return this;
     };
@@ -1541,7 +1705,7 @@
       for (key in style) {
         value = style[key];
         if (value != null) {
-          str += "" + key + ":" + value + ";";
+          str += key + ":" + value + ";";
         }
       }
       el.setAttribute('style', str);
@@ -1552,8 +1716,8 @@
 
   })();
 
-  seen.SvgRectPainter = (function(_super) {
-    __extends(SvgRectPainter, _super);
+  seen.SvgRectPainter = (function(superClass) {
+    extend(SvgRectPainter, superClass);
 
     function SvgRectPainter() {
       return SvgRectPainter.__super__.constructor.apply(this, arguments);
@@ -1571,8 +1735,8 @@
 
   })(seen.SvgStyler);
 
-  seen.SvgCirclePainter = (function(_super) {
-    __extends(SvgCirclePainter, _super);
+  seen.SvgCirclePainter = (function(superClass) {
+    extend(SvgCirclePainter, superClass);
 
     function SvgCirclePainter() {
       return SvgCirclePainter.__super__.constructor.apply(this, arguments);
@@ -1591,12 +1755,12 @@
 
   })(seen.SvgStyler);
 
-  seen.SvgLayerRenderContext = (function(_super) {
-    __extends(SvgLayerRenderContext, _super);
+  seen.SvgLayerRenderContext = (function(superClass) {
+    extend(SvgLayerRenderContext, superClass);
 
-    function SvgLayerRenderContext(group) {
-      this.group = group;
-      this._elementFactory = __bind(this._elementFactory, this);
+    function SvgLayerRenderContext(group1) {
+      this.group = group1;
+      this._elementFactory = bind(this._elementFactory, this);
       this.pathPainter = new seen.SvgPathPainter(this._elementFactory);
       this.textPainter = new seen.SvgTextPainter(this._elementFactory);
       this.circlePainter = new seen.SvgCirclePainter(this._elementFactory);
@@ -1625,14 +1789,14 @@
     };
 
     SvgLayerRenderContext.prototype.cleanup = function() {
-      var children, _results;
+      var children, results;
       children = this.group.childNodes;
-      _results = [];
+      results = [];
       while (this._i < children.length) {
         children[this._i].setAttribute('style', 'display: none;');
-        _results.push(this._i++);
+        results.push(this._i++);
       }
-      return _results;
+      return results;
     };
 
     SvgLayerRenderContext.prototype._elementFactory = function(type) {
@@ -1660,8 +1824,8 @@
 
   })(seen.RenderLayerContext);
 
-  seen.SvgRenderContext = (function(_super) {
-    __extends(SvgRenderContext, _super);
+  seen.SvgRenderContext = (function(superClass) {
+    extend(SvgRenderContext, superClass);
 
     function SvgRenderContext(svg) {
       this.svg = svg;
@@ -1735,17 +1899,17 @@
 
   })();
 
-  seen.CanvasPathPainter = (function(_super) {
-    __extends(CanvasPathPainter, _super);
+  seen.CanvasPathPainter = (function(superClass) {
+    extend(CanvasPathPainter, superClass);
 
     function CanvasPathPainter() {
       return CanvasPathPainter.__super__.constructor.apply(this, arguments);
     }
 
     CanvasPathPainter.prototype.path = function(points) {
-      var i, p, _i, _len;
+      var i, len1, o, p;
       this.ctx.beginPath();
-      for (i = _i = 0, _len = points.length; _i < _len; i = ++_i) {
+      for (i = o = 0, len1 = points.length; o < len1; i = ++o) {
         p = points[i];
         if (i === 0) {
           this.ctx.moveTo(p.x, p.y);
@@ -1761,8 +1925,8 @@
 
   })(seen.CanvasStyler);
 
-  seen.CanvasRectPainter = (function(_super) {
-    __extends(CanvasRectPainter, _super);
+  seen.CanvasRectPainter = (function(superClass) {
+    extend(CanvasRectPainter, superClass);
 
     function CanvasRectPainter() {
       return CanvasRectPainter.__super__.constructor.apply(this, arguments);
@@ -1777,8 +1941,8 @@
 
   })(seen.CanvasStyler);
 
-  seen.CanvasCirclePainter = (function(_super) {
-    __extends(CanvasCirclePainter, _super);
+  seen.CanvasCirclePainter = (function(superClass) {
+    extend(CanvasCirclePainter, superClass);
 
     function CanvasCirclePainter() {
       return CanvasCirclePainter.__super__.constructor.apply(this, arguments);
@@ -1830,8 +1994,8 @@
 
   })();
 
-  seen.CanvasLayerRenderContext = (function(_super) {
-    __extends(CanvasLayerRenderContext, _super);
+  seen.CanvasLayerRenderContext = (function(superClass) {
+    extend(CanvasLayerRenderContext, superClass);
 
     function CanvasLayerRenderContext(ctx) {
       this.ctx = ctx;
@@ -1861,11 +2025,11 @@
 
   })(seen.RenderLayerContext);
 
-  seen.CanvasRenderContext = (function(_super) {
-    __extends(CanvasRenderContext, _super);
+  seen.CanvasRenderContext = (function(superClass) {
+    extend(CanvasRenderContext, superClass);
 
-    function CanvasRenderContext(el) {
-      this.el = el;
+    function CanvasRenderContext(el1) {
+      this.el = el1;
       CanvasRenderContext.__super__.constructor.call(this);
       this.el = seen.Util.element(this.el);
       this.ctx = this.el.getContext('2d');
@@ -1915,12 +2079,12 @@
   })();
 
   seen.MouseEvents = (function() {
-    function MouseEvents(el, options) {
-      this.el = el;
-      this._onMouseWheel = __bind(this._onMouseWheel, this);
-      this._onMouseUp = __bind(this._onMouseUp, this);
-      this._onMouseDown = __bind(this._onMouseDown, this);
-      this._onMouseMove = __bind(this._onMouseMove, this);
+    function MouseEvents(el1, options) {
+      this.el = el1;
+      this._onMouseWheel = bind(this._onMouseWheel, this);
+      this._onMouseUp = bind(this._onMouseUp, this);
+      this._onMouseDown = bind(this._onMouseDown, this);
+      this._onMouseMove = bind(this._onMouseMove, this);
       seen.Util.defaults(this, options, this.defaults);
       this.el = seen.Util.element(this.el);
       this._uid = seen.Util.uniqueId('mouser-');
@@ -2035,16 +2199,16 @@
       inertia: false
     };
 
-    function Drag(el, options) {
+    function Drag(el1, options) {
       var mouser;
-      this.el = el;
-      this._stopInertia = __bind(this._stopInertia, this);
-      this._startInertia = __bind(this._startInertia, this);
-      this._onInertia = __bind(this._onInertia, this);
-      this._onDrag = __bind(this._onDrag, this);
-      this._onDragEnd = __bind(this._onDragEnd, this);
-      this._onDragStart = __bind(this._onDragStart, this);
-      this._getPageCoords = __bind(this._getPageCoords, this);
+      this.el = el1;
+      this._stopInertia = bind(this._stopInertia, this);
+      this._startInertia = bind(this._startInertia, this);
+      this._onInertia = bind(this._onInertia, this);
+      this._onDrag = bind(this._onDrag, this);
+      this._onDragEnd = bind(this._onDragEnd, this);
+      this._onDragStart = bind(this._onDragStart, this);
+      this._getPageCoords = bind(this._getPageCoords, this);
       seen.Util.defaults(this, options, this.defaults);
       this.el = seen.Util.element(this.el);
       this._uid = seen.Util.uniqueId('dragger-');
@@ -2064,10 +2228,10 @@
     }
 
     Drag.prototype._getPageCoords = function(e) {
-      var _ref, _ref1;
-      if (((_ref = e.touches) != null ? _ref.length : void 0) > 0) {
+      var ref, ref1;
+      if (((ref = e.touches) != null ? ref.length : void 0) > 0) {
         return [e.touches[0].pageX, e.touches[0].pageY];
-      } else if (((_ref1 = e.changedTouches) != null ? _ref1.length : void 0) > 0) {
+      } else if (((ref1 = e.changedTouches) != null ? ref1.length : void 0) > 0) {
         return [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
       } else {
         return [e.pageX, e.pageY];
@@ -2149,10 +2313,10 @@
       speed: 0.25
     };
 
-    function Zoom(el, options) {
+    function Zoom(el1, options) {
       var mouser;
-      this.el = el;
-      this._onMouseWheel = __bind(this._onMouseWheel, this);
+      this.el = el1;
+      this._onMouseWheel = bind(this._onMouseWheel, this);
       seen.Util.defaults(this, options, this.defaults);
       this.el = seen.Util.element(this.el);
       this._uid = seen.Util.uniqueId('zoomer-');
@@ -2184,9 +2348,9 @@
 
     Surface.prototype.strokeMaterial = null;
 
-    function Surface(points, painter) {
-      this.points = points;
-      this.painter = painter != null ? painter : seen.Painters.path;
+    function Surface(points1, painter1) {
+      this.points = points1;
+      this.painter = painter1 != null ? painter1 : seen.Painters.path;
       this.id = 's' + seen.Util.uniqueId();
     }
 
@@ -2204,12 +2368,12 @@
 
   })();
 
-  seen.Shape = (function(_super) {
-    __extends(Shape, _super);
+  seen.Shape = (function(superClass) {
+    extend(Shape, superClass);
 
-    function Shape(type, surfaces) {
-      this.type = type;
-      this.surfaces = surfaces;
+    function Shape(type1, surfaces1) {
+      this.type = type1;
+      this.surfaces = surfaces1;
       Shape.__super__.constructor.call(this);
     }
 
@@ -2236,8 +2400,8 @@
 
   })(seen.Transformable);
 
-  seen.Model = (function(_super) {
-    __extends(Model, _super);
+  seen.Model = (function(superClass) {
+    extend(Model, superClass);
 
     function Model() {
       Model.__super__.constructor.call(this);
@@ -2246,10 +2410,10 @@
     }
 
     Model.prototype.add = function() {
-      var child, childs, _i, _len;
-      childs = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      for (_i = 0, _len = childs.length; _i < _len; _i++) {
-        child = childs[_i];
+      var child, childs, len1, o;
+      childs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      for (o = 0, len1 = childs.length; o < len1; o++) {
+        child = childs[o];
         if (child instanceof seen.Shape || child instanceof seen.Model) {
           this.children.push(child);
         } else if (child instanceof seen.Light) {
@@ -2260,24 +2424,24 @@
     };
 
     Model.prototype.remove = function() {
-      var child, childs, i, _i, _len, _results;
-      childs = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      _results = [];
-      for (_i = 0, _len = childs.length; _i < _len; _i++) {
-        child = childs[_i];
+      var child, childs, i, len1, o, results;
+      childs = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      results = [];
+      for (o = 0, len1 = childs.length; o < len1; o++) {
+        child = childs[o];
         while ((i = this.children.indexOf(child)) >= 0) {
           this.children.splice(i, 1);
         }
-        _results.push((function() {
-          var _results1;
-          _results1 = [];
+        results.push((function() {
+          var results1;
+          results1 = [];
           while ((i = this.lights.indexOf(child)) >= 0) {
-            _results1.push(this.lights.splice(i, 1));
+            results1.push(this.lights.splice(i, 1));
           }
-          return _results1;
+          return results1;
         }).call(this));
       }
-      return _results;
+      return results;
     };
 
     Model.prototype.append = function() {
@@ -2288,21 +2452,21 @@
     };
 
     Model.prototype.eachShape = function(f) {
-      var child, _i, _len, _ref, _results;
-      _ref = this.children;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        child = _ref[_i];
+      var child, len1, o, ref, results;
+      ref = this.children;
+      results = [];
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        child = ref[o];
         if (child instanceof seen.Shape) {
           f.call(this, child);
         }
         if (child instanceof seen.Model) {
-          _results.push(child.eachShape(f));
+          results.push(child.eachShape(f));
         } else {
-          _results.push(void 0);
+          results.push(void 0);
         }
       }
-      return _results;
+      return results;
     };
 
     Model.prototype.eachRenderable = function(lightFn, shapeFn) {
@@ -2310,32 +2474,32 @@
     };
 
     Model.prototype._eachRenderable = function(lightFn, shapeFn, lightModels, transform) {
-      var child, light, _i, _j, _len, _len1, _ref, _ref1, _results;
+      var child, len1, len2, light, o, ref, ref1, results, u;
       if (this.lights.length > 0) {
         lightModels = lightModels.slice();
       }
-      _ref = this.lights;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        light = _ref[_i];
+      ref = this.lights;
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        light = ref[o];
         if (!light.enabled) {
           continue;
         }
         lightModels.push(lightFn.call(this, light, light.m.copy().multiply(transform)));
       }
-      _ref1 = this.children;
-      _results = [];
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        child = _ref1[_j];
+      ref1 = this.children;
+      results = [];
+      for (u = 0, len2 = ref1.length; u < len2; u++) {
+        child = ref1[u];
         if (child instanceof seen.Shape) {
           shapeFn.call(this, child, lightModels, child.m.copy().multiply(transform));
         }
         if (child instanceof seen.Model) {
-          _results.push(child._eachRenderable(lightFn, shapeFn, lightModels, child.m.copy().multiply(transform)));
+          results.push(child._eachRenderable(lightFn, shapeFn, lightModels, child.m.copy().multiply(transform)));
         } else {
-          _results.push(void 0);
+          results.push(void 0);
         }
       }
-      return _results;
+      return results;
     };
 
     return Model;
@@ -2421,7 +2585,7 @@
       return new seen.Shape('icosahedron', seen.Shapes.mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
     },
     sphere: function(subdivisions) {
-      var i, triangles, _i;
+      var i, o, ref, triangles;
       if (subdivisions == null) {
         subdivisions = 2;
       }
@@ -2430,7 +2594,7 @@
           return ICOSAHEDRON_POINTS[c];
         });
       });
-      for (i = _i = 0; 0 <= subdivisions ? _i < subdivisions : _i > subdivisions; i = 0 <= subdivisions ? ++_i : --_i) {
+      for (i = o = 0, ref = subdivisions; 0 <= ref ? o < ref : o > ref; i = 0 <= ref ? ++o : --o) {
         triangles = seen.Shapes._subdivideTriangles(triangles);
       }
       return new seen.Shape('sphere', triangles.map(function(triangle) {
@@ -2440,7 +2604,7 @@
       }));
     },
     patch: function(nx, ny) {
-      var column, p, pts, pts0, pts1, surfaces, x, y, _i, _j, _k, _l, _len, _len1, _len2, _m, _ref, _ref1;
+      var aa, ab, ac, column, len1, len2, len3, o, p, pts, pts0, pts1, ref, ref1, ref2, ref3, surfaces, u, x, y;
       if (nx == null) {
         nx = 20;
       }
@@ -2450,16 +2614,16 @@
       nx = Math.round(nx);
       ny = Math.round(ny);
       surfaces = [];
-      for (x = _i = 0; 0 <= nx ? _i < nx : _i > nx; x = 0 <= nx ? ++_i : --_i) {
+      for (x = o = 0, ref = nx; 0 <= ref ? o < ref : o > ref; x = 0 <= ref ? ++o : --o) {
         column = [];
-        for (y = _j = 0; 0 <= ny ? _j < ny : _j > ny; y = 0 <= ny ? ++_j : --_j) {
+        for (y = u = 0, ref1 = ny; 0 <= ref1 ? u < ref1 : u > ref1; y = 0 <= ref1 ? ++u : --u) {
           pts0 = [seen.P(x, y), seen.P(x + 1, y - 0.5), seen.P(x + 1, y + 0.5)];
           pts1 = [seen.P(x, y), seen.P(x + 1, y + 0.5), seen.P(x, y + 1)];
-          _ref = [pts0, pts1];
-          for (_k = 0, _len = _ref.length; _k < _len; _k++) {
-            pts = _ref[_k];
-            for (_l = 0, _len1 = pts.length; _l < _len1; _l++) {
-              p = pts[_l];
+          ref2 = [pts0, pts1];
+          for (aa = 0, len1 = ref2.length; aa < len1; aa++) {
+            pts = ref2[aa];
+            for (ab = 0, len2 = pts.length; ab < len2; ab++) {
+              p = pts[ab];
               p.x *= EQUILATERAL_TRIANGLE_ALTITUDE;
               p.y += x % 2 === 0 ? 0.5 : 0;
             }
@@ -2467,9 +2631,9 @@
           }
         }
         if (x % 2 !== 0) {
-          _ref1 = column[0];
-          for (_m = 0, _len2 = _ref1.length; _m < _len2; _m++) {
-            p = _ref1[_m];
+          ref3 = column[0];
+          for (ac = 0, len3 = ref3.length; ac < len3; ac++) {
+            p = ref3[ac];
             p.y += ny;
           }
           column.push(column.shift());
@@ -2494,27 +2658,27 @@
       return new seen.Shape('text', [surface]);
     },
     extrude: function(points, offset) {
-      var back, front, i, len, p, surfaces, _i, _ref;
+      var back, front, i, len, o, p, ref, surfaces;
       surfaces = [];
       front = new seen.Surface((function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = points.length; _i < _len; _i++) {
-          p = points[_i];
-          _results.push(p.copy());
+        var len1, o, results;
+        results = [];
+        for (o = 0, len1 = points.length; o < len1; o++) {
+          p = points[o];
+          results.push(p.copy());
         }
-        return _results;
+        return results;
       })());
       back = new seen.Surface((function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = points.length; _i < _len; _i++) {
-          p = points[_i];
-          _results.push(p.add(offset));
+        var len1, o, results;
+        results = [];
+        for (o = 0, len1 = points.length; o < len1; o++) {
+          p = points[o];
+          results.push(p.add(offset));
         }
-        return _results;
+        return results;
       })());
-      for (i = _i = 1, _ref = points.length; 1 <= _ref ? _i < _ref : _i > _ref; i = 1 <= _ref ? ++_i : --_i) {
+      for (i = o = 1, ref = points.length; 1 <= ref ? o < ref : o > ref; i = 1 <= ref ? ++o : --o) {
         surfaces.push(new seen.Surface([front.points[i - 1].copy(), back.points[i - 1].copy(), back.points[i].copy(), front.points[i].copy()]));
       }
       len = points.length;
@@ -2549,46 +2713,46 @@
       return new seen.Shape('path', [new seen.Surface(points)]);
     },
     custom: function(s) {
-      var f, p, surfaces, _i, _len, _ref;
+      var f, len1, o, p, ref, surfaces;
       surfaces = [];
-      _ref = s.surfaces;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        f = _ref[_i];
+      ref = s.surfaces;
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        f = ref[o];
         surfaces.push(new seen.Surface((function() {
-          var _j, _len1, _results;
-          _results = [];
-          for (_j = 0, _len1 = f.length; _j < _len1; _j++) {
-            p = f[_j];
-            _results.push(seen.P.apply(seen, p));
+          var len2, results, u;
+          results = [];
+          for (u = 0, len2 = f.length; u < len2; u++) {
+            p = f[u];
+            results.push(seen.P.apply(seen, p));
           }
-          return _results;
+          return results;
         })()));
       }
       return new seen.Shape('custom', surfaces);
     },
     mapPointsToSurfaces: function(points, coordinateMap) {
-      var c, coords, spts, surfaces, _i, _len;
+      var c, coords, len1, o, spts, surfaces;
       surfaces = [];
-      for (_i = 0, _len = coordinateMap.length; _i < _len; _i++) {
-        coords = coordinateMap[_i];
+      for (o = 0, len1 = coordinateMap.length; o < len1; o++) {
+        coords = coordinateMap[o];
         spts = (function() {
-          var _j, _len1, _results;
-          _results = [];
-          for (_j = 0, _len1 = coords.length; _j < _len1; _j++) {
-            c = coords[_j];
-            _results.push(points[c].copy());
+          var len2, results, u;
+          results = [];
+          for (u = 0, len2 = coords.length; u < len2; u++) {
+            c = coords[u];
+            results.push(points[c].copy());
           }
-          return _results;
+          return results;
         })();
         surfaces.push(new seen.Surface(spts));
       }
       return surfaces;
     },
     _subdivideTriangles: function(triangles) {
-      var newTriangles, tri, v01, v12, v20, _i, _len;
+      var len1, newTriangles, o, tri, v01, v12, v20;
       newTriangles = [];
-      for (_i = 0, _len = triangles.length; _i < _len; _i++) {
-        tri = triangles[_i];
+      for (o = 0, len1 = triangles.length; o < len1; o++) {
+        tri = triangles[o];
         v01 = tri[0].copy().add(tri[1]).normalize();
         v12 = tri[1].copy().add(tri[2]).normalize();
         v20 = tri[2].copy().add(tri[0]).normalize();
@@ -2624,11 +2788,11 @@
     }
 
     ObjParser.prototype.parse = function(contents) {
-      var command, data, line, _i, _len, _ref, _results;
-      _ref = contents.split(/[\r\n]+/);
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        line = _ref[_i];
+      var command, data, len1, line, o, ref, results;
+      ref = contents.split(/[\r\n]+/);
+      results = [];
+      for (o = 0, len1 = ref.length; o < len1; o++) {
+        line = ref[o];
         data = line.trim().split(/[ ]+/);
         if (data.length < 2) {
           continue;
@@ -2642,9 +2806,9 @@
           console.log("OBJ Parser: Skipping unknown command '" + command + "'");
           continue;
         }
-        _results.push(this.commands[command](data));
+        results.push(this.commands[command](data));
       }
-      return _results;
+      return results;
     };
 
     ObjParser.prototype.mapFacePoints = function(faceMap) {
@@ -2679,14 +2843,14 @@
   };
 
   if (typeof window !== "undefined" && window !== null) {
-    requestAnimationFrame = (_ref = (_ref1 = (_ref2 = window.requestAnimationFrame) != null ? _ref2 : window.mozRequestAnimationFrame) != null ? _ref1 : window.webkitRequestAnimationFrame) != null ? _ref : window.msRequestAnimationFrame;
+    requestAnimationFrame = (ref = (ref1 = (ref2 = window.requestAnimationFrame) != null ? ref2 : window.mozRequestAnimationFrame) != null ? ref1 : window.webkitRequestAnimationFrame) != null ? ref : window.msRequestAnimationFrame;
   }
 
   DEFAULT_FRAME_DELAY = 30;
 
   seen.Animator = (function() {
     function Animator() {
-      this.frame = __bind(this.frame, this);
+      this.frame = bind(this.frame, this);
       this.dispatch = seen.Events.dispatch('beforeFrame', 'afterFrame', 'frame');
       this.on = this.dispatch.on;
       this.timestamp = 0;
@@ -2717,11 +2881,11 @@
     };
 
     Animator.prototype.frame = function(t) {
-      var deltaTimestamp, _ref3;
+      var deltaTimestamp, ref3;
       if (!this._running) {
         return;
       }
-      this._timestamp = t != null ? t : this._timestamp + ((_ref3 = this._msecDelay) != null ? _ref3 : DEFAULT_FRAME_DELAY);
+      this._timestamp = t != null ? t : this._timestamp + ((ref3 = this._msecDelay) != null ? ref3 : DEFAULT_FRAME_DELAY);
       deltaTimestamp = this._lastTimestamp != null ? this._timestamp - this._lastTimestamp : this._timestamp;
       this.dispatch.beforeFrame(this._timestamp, deltaTimestamp);
       this.dispatch.frame(this._timestamp, deltaTimestamp);
@@ -2750,8 +2914,8 @@
 
   })();
 
-  seen.RenderAnimator = (function(_super) {
-    __extends(RenderAnimator, _super);
+  seen.RenderAnimator = (function(superClass) {
+    extend(RenderAnimator, superClass);
 
     function RenderAnimator(context) {
       RenderAnimator.__super__.constructor.apply(this, arguments);
@@ -2799,11 +2963,11 @@
 
   })();
 
-  seen.TransitionAnimator = (function(_super) {
-    __extends(TransitionAnimator, _super);
+  seen.TransitionAnimator = (function(superClass) {
+    extend(TransitionAnimator, superClass);
 
     function TransitionAnimator() {
-      this.update = __bind(this.update, this);
+      this.update = bind(this.update, this);
       TransitionAnimator.__super__.constructor.apply(this, arguments);
       this.queue = [];
       this.transitions = [];
@@ -2982,8 +3146,8 @@
     }
   };
 
-  seen.Camera = (function(_super) {
-    __extends(Camera, _super);
+  seen.Camera = (function(superClass) {
+    extend(Camera, superClass);
 
     Camera.prototype.defaults = {
       projection: seen.Projections.perspective()
@@ -3012,8 +3176,8 @@
     };
 
     function Scene(options) {
-      this.flushCache = __bind(this.flushCache, this);
-      this.render = __bind(this.render, this);
+      this.flushCache = bind(this.flushCache, this);
+      this.render = bind(this.render, this);
       seen.Util.defaults(this, options, this.defaults());
       this._renderModelCache = {};
     }
@@ -3027,28 +3191,28 @@
         return new seen.LightRenderModel(light, transform);
       }, (function(_this) {
         return function(shape, lights, transform) {
-          var p, renderModel, surface, _i, _j, _len, _len1, _ref3, _ref4, _ref5, _ref6, _results;
-          _ref3 = shape.surfaces;
-          _results = [];
-          for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-            surface = _ref3[_i];
+          var len1, len2, o, p, ref3, ref4, ref5, ref6, renderModel, results, surface, u;
+          ref3 = shape.surfaces;
+          results = [];
+          for (o = 0, len1 = ref3.length; o < len1; o++) {
+            surface = ref3[o];
             renderModel = _this._renderSurface(surface, transform, projection, viewport);
             if ((!_this.cullBackfaces || !surface.cullBackfaces || renderModel.projected.normal.z < 0) && renderModel.inFrustrum) {
-              renderModel.fill = (_ref4 = surface.fillMaterial) != null ? _ref4.render(lights, _this.shader, renderModel.transformed) : void 0;
-              renderModel.stroke = (_ref5 = surface.strokeMaterial) != null ? _ref5.render(lights, _this.shader, renderModel.transformed) : void 0;
+              renderModel.fill = (ref4 = surface.fillMaterial) != null ? ref4.render(lights, _this.shader, renderModel.transformed) : void 0;
+              renderModel.stroke = (ref5 = surface.strokeMaterial) != null ? ref5.render(lights, _this.shader, renderModel.transformed) : void 0;
               if (_this.fractionalPoints !== true) {
-                _ref6 = renderModel.projected.points;
-                for (_j = 0, _len1 = _ref6.length; _j < _len1; _j++) {
-                  p = _ref6[_j];
+                ref6 = renderModel.projected.points;
+                for (u = 0, len2 = ref6.length; u < len2; u++) {
+                  p = ref6[u];
                   p.round();
                 }
               }
-              _results.push(renderModels.push(renderModel));
+              results.push(renderModels.push(renderModel));
             } else {
-              _results.push(void 0);
+              results.push(void 0);
             }
           }
-          return _results;
+          return results;
         };
       })(this));
       renderModels.sort(function(a, b) {
