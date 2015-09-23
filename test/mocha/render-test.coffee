@@ -29,7 +29,7 @@ RENDERS = [
   'shapes-icosahedron-2'
   'shapes-icosahedron-3'
   'shapes-icosahedron-4'
-  'shapes-text-0'
+  #'shapes-text-0'
   'shapes-patch'
   'shapes-tetrahedon'
 ]
