@@ -3,18 +3,18 @@ require 'coffee-script/register'
 fs           = require 'fs'
 _            = require 'lodash'
 path         = require 'path'
-exec         = require 'exec-sync'
 UglifyJS     = require 'uglify-js'
 CoffeeScript = require 'coffee-script'
 packageJson  = require './package.json'
 
-unsafeExec = exec
-exec       = (cmd) -> unsafeExec(cmd, (err) -> throw err if err)
+{execSync} = require 'child_process'
+exec       = (cmd) -> execSync(cmd, (err) -> throw err if err)
 
 DISTS = {
   'seen.js' : [
     'src/namespace.coffee'
     'src/util.coffee'
+    'src/ext/simplex.coffee'
     'src/events.coffee'
     'src/matrix.coffee'
     'src/transformable.coffee'
@@ -150,10 +150,3 @@ task 'site', 'Build seen website', (options) ->
   # Index page
   renderPage 'index', 'index', {demos}
   console.log '  Rendered index'
-
-
-
-
-
-
-
