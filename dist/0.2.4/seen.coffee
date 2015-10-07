@@ -514,6 +514,13 @@ class seen.Point
       @divide(n)
     return @
 
+  # Returns a new point that is perpendicular to this point
+  perpendicular : () ->
+    n = @copy().cross(seen.Points.Z())
+    mag = n.magnitude()
+    if mag isnt 0 then return n.divide(mag)
+    return @copy().cross(seen.Points.X()).normalize()
+
   # Apply a transformation from the supplied `Matrix`.
   transform : (matrix) ->
     r = POINT_POOL
@@ -2055,7 +2062,7 @@ seen.Models = {
 }
  
 
-# ## Shapes
+   # ## Shapes
 # #### Shape primitives and shape-making methods
 # ------------------
 
@@ -2219,6 +2226,19 @@ seen.Shapes = {
     for i in [0...subdivisions]
       triangles = seen.Shapes._subdivideTriangles(triangles)
     return new seen.Shape('sphere', triangles.map (triangle) -> new seen.Surface(triangle.map (v) -> v.copy()))
+
+  # Returns a cylinder whose main axis is aligned from point1 to point2
+  pipe : (point1, point2, offset = 1, segments = 3) ->
+    axis  = point2.copy().subtract(point1)
+    perp1 = axis.perpendicular()
+    perp2 = axis.copy().cross(perp1).normalize()
+    pts = [
+      point1.copy().add(perp1).subtract(perp2)
+      point1.copy().add(perp1).add(perp2)
+      point1.copy().subtract(perp1).add(perp2)
+      point1.copy().subtract(perp1).subtract(perp2)
+    ]
+    return seen.Shapes.extrude(pts, axis)
 
   # Returns a planar triangular patch. The supplied arguments determine the
   # number of triangle in the patch.

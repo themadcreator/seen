@@ -527,6 +527,16 @@
       return this;
     };
 
+    Point.prototype.perpendicular = function() {
+      var mag, n;
+      n = this.copy().cross(seen.Points.Z());
+      mag = n.magnitude();
+      if (mag !== 0) {
+        return n.divide(mag);
+      }
+      return this.copy().cross(seen.Points.X()).normalize();
+    };
+
     Point.prototype.transform = function(matrix) {
       var r;
       r = POINT_POOL;
@@ -2602,6 +2612,20 @@
           return v.copy();
         }));
       }));
+    },
+    pipe: function(point1, point2, offset, segments) {
+      var axis, perp1, perp2, pts;
+      if (offset == null) {
+        offset = 1;
+      }
+      if (segments == null) {
+        segments = 3;
+      }
+      axis = point2.copy().subtract(point1);
+      perp1 = axis.perpendicular();
+      perp2 = axis.copy().cross(perp1).normalize();
+      pts = [point1.copy().add(perp1).subtract(perp2), point1.copy().add(perp1).add(perp2), point1.copy().subtract(perp1).add(perp2), point1.copy().subtract(perp1).subtract(perp2)];
+      return seen.Shapes.extrude(pts, axis);
     },
     patch: function(nx, ny) {
       var aa, ab, ac, column, len1, len2, len3, o, p, pts, pts0, pts1, ref, ref1, ref2, ref3, surfaces, u, x, y;

@@ -69,6 +69,13 @@ class seen.Point
       @divide(n)
     return @
 
+  # Returns a new point that is perpendicular to this point
+  perpendicular : () ->
+    n = @copy().cross(seen.Points.Z())
+    mag = n.magnitude()
+    if mag isnt 0 then return n.divide(mag)
+    return @copy().cross(seen.Points.X()).normalize()
+
   # Apply a transformation from the supplied `Matrix`.
   transform : (matrix) ->
     r = POINT_POOL

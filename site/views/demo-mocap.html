@@ -20,58 +20,75 @@
 
   seenModel = scene.model.append()
 
+  createChannelAction = (channel) ->
+    return switch channel
+      when 'Xposition' then (m, v) -> m.translate(v, 0, 0)
+      when 'Yposition' then (m, v) -> m.translate(0, v, 0)
+      when 'Zposition' then (m, v) -> m.translate(0, 0, v)
+      when 'Xrotation' then (m, v) -> m.rotx(v * Math.PI / 180.0)
+      when 'Yrotation' then (m, v) -> m.roty(v * Math.PI / 180.0)
+      when 'Zrotation' then (m, v) -> m.rotz(v * Math.PI / 180.0)
+
   attachJoint = (base, joint, channels) ->
     # Joint geometry
-    base.add(shape = seen.Shapes.unitcube().scale(5))
-    base.channels = {}
+    # base.add(shape = seen.Shapes.unitcube().scale(5))
+    base.offset = joint.offset ? {}
+    base.translate(base.offset.x, base.offset.y, base.offset.z)
 
-    switch joint.id
-      when 'head'  then shape.fill('#FF0000')
-      when 'lHand' then shape.fill('#00FF00')
-      when 'rHand' then shape.fill('#00FF00')
-      when 'lFoot' then shape.fill('#0000FF')
-      when 'rFoot' then shape.fill('#0000FF')
-
-
-    # Apply initial offset
-    if (p = joint.offset)?
-      base.translate(p.x, p.y, p.z).bake()
+    ###
+    # Colorize for debugging
+    ###
 
     # Create channel actions
     if joint.channels?
-      for channel in joint.channels
-        channels.push switch channel
-          when 'Xposition' then (v) -> base.channels.tx = v
-          when 'Yposition' then (v) -> base.channels.ty = v
-          when 'Zposition' then (v) -> base.channels.tz = v
-          when 'Xrotation' then (v) -> base.channels.rx = v * Math.PI / 180.0
-          when 'Yrotation' then (v) -> base.channels.ry = v * Math.PI / 180.0
-          when 'Zrotation' then (v) -> base.channels.rz = v * Math.PI / 180.0
+      channels.push {
+        shape   : base
+        actions : joint.channels.map(createChannelAction)
+      }
 
     # Recurse
     if joint.joints?
       children = base.append()
       for child in joint.joints
+
+
+        p = seen.P(child.offset?.x, child.offset?.y, child.offset?.z)
+        base.add(shape = seen.Shapes.pipe(seen.P(), p))
+        switch true
+          when /head/ig.test(joint.id) then shape.fill('#FF0000')
+          when /hand/ig.test(joint.id) then shape.fill('#00FF00')
+          when /foot/ig.test(joint.id) then shape.fill('#0000FF')
+          when /shin/ig.test(joint.id) then shape.fill('#00FFFF')
+          when /hip/ig.test(joint.id) then shape.fill('#FF00FF')
+
+
         if child.type is 'JOINT' then attachJoint(children, child, channels)
     return
 
-  applyChannels = (shape) ->
-    return unless shape instanceof seen.Model
-    return unless shape.channels?
+  applyFrameToChannels = (channels, frame) ->
+    fi = 0
+    for channel in channels
+      # Apply channel actions in reverse order
+      m  = seen.M()
+      ai = channel.actions.length
+      while ai > 0
+        ai -= 1
+        channel.actions[ai](m, frame[fi + ai])
+      fi += channel.actions.length
 
-    shape.reset()
-    shape.translate(shape.channels.tx, shape.channels.ty, shape.channels.tz)
-    if shape.channels.ry? then shape.roty(shape.channels.ry)
-    if shape.channels.rx? then shape.rotx(shape.channels.rx)
-    if shape.channels.rz? then shape.rotz(shape.channels.rz)
+      channel.shape
+        .reset()
+        .transform(m)
+        .translate(
+          channel.shape.offset.x
+          channel.shape.offset.y
+          channel.shape.offset.z
+        )
+    return
 
-    for child in shape.children
-      applyChannels(child)
-
-
+  #$.get 'assets/05_11.bvh', {}, (contents) ->
   $.get 'assets/01_06.bvh', {}, (contents) ->
     bvh = bvhParser.parse(contents)
-    console.log bvh, bvh.motion.frames.length
     seenModel.add(shape = new seen.Model())
     channels = []
     attachJoint(shape, bvh.root, channels)
@@ -79,12 +96,8 @@
 
     i = 0
     animateChannels = ->
-
       frame = bvh.motion.frames[i]
-      for value, vi in frame
-        channels[vi](value)
-      applyChannels(shape)
-
+      applyFrameToChannels(channels, frame)
       i = (i + 1) % bvh.motion.frames.length
       setTimeout(animateChannels, delay)
     animateChannels()
