@@ -29,15 +29,19 @@
       when 'Yrotation' then (m, v) -> m.roty(v * Math.PI / 180.0)
       when 'Zrotation' then (m, v) -> m.rotz(v * Math.PI / 180.0)
 
+  colorize = (id, shape) ->
+    switch true
+      when /head/ig.test(id) then shape.fill('#FF0000')
+      when /hand/ig.test(id) then shape.fill('#00FF00')
+      when /foot/ig.test(id) then shape.fill('#0000FF')
+      when /shin/ig.test(id) then shape.fill('#00FFFF')
+      when /hip/ig.test(id) then shape.fill('#FF00FF')
+    return
+
   attachJoint = (base, joint, channels) ->
     # Joint geometry
-    # base.add(shape = seen.Shapes.unitcube().scale(5))
     base.offset = joint.offset ? {}
     base.translate(base.offset.x, base.offset.y, base.offset.z)
-
-    ###
-    # Colorize for debugging
-    ###
 
     # Create channel actions
     if joint.channels?
@@ -48,21 +52,13 @@
 
     # Recurse
     if joint.joints?
-      children = base.append()
       for child in joint.joints
-
-
+        children = base.append()
         p = seen.P(child.offset?.x, child.offset?.y, child.offset?.z)
-        base.add(shape = seen.Shapes.pipe(seen.P(), p))
-        switch true
-          when /head/ig.test(joint.id) then shape.fill('#FF0000')
-          when /hand/ig.test(joint.id) then shape.fill('#00FF00')
-          when /foot/ig.test(joint.id) then shape.fill('#0000FF')
-          when /shin/ig.test(joint.id) then shape.fill('#00FFFF')
-          when /hip/ig.test(joint.id) then shape.fill('#FF00FF')
+        children.add(shape = seen.Shapes.pipe(seen.P(), p))
+        colorize(joint.id, shape)
 
-
-        if child.type is 'JOINT' then attachJoint(children, child, channels)
+        if child.type is 'JOINT' then attachJoint(children.append(), child, channels)
     return
 
   applyFrameToChannels = (channels, frame) ->
@@ -76,6 +72,7 @@
         channel.actions[ai](m, frame[fi + ai])
       fi += channel.actions.length
 
+      # Re-apply offset translation after channel transforms
       channel.shape
         .reset()
         .transform(m)
@@ -86,8 +83,7 @@
         )
     return
 
-  #$.get 'assets/05_11.bvh', {}, (contents) ->
-  $.get 'assets/01_06.bvh', {}, (contents) ->
+  $.get 'assets/05_11.bvh', {}, (contents) ->
     bvh = bvhParser.parse(contents)
     seenModel.add(shape = new seen.Model())
     channels = []
