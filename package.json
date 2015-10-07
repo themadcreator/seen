@@ -3,7 +3,7 @@
   "description" : "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
   "version"     : "0.2.4",
   "author"      : "Bill Dwyer",
-  "license"     : "Apache 2.0",
+  "license"     : "Apache-2.0",
   "url"         : "http://seenjs.io",
   "repository"  : {
     "type" : "git",

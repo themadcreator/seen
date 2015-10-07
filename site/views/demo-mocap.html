@@ -1,0 +1,113 @@
+{% extends 'demo-template.html' %}
+
+{% block caption %}
+<p>Drag to rotate. Mousewheel to zoom.</p>
+{% endblock %}
+
+{% block demo %}
+<script src="{{cdns.lodash.script}}"></script>
+<script src="{{cdns.jquery.script}}"></script>
+<script type="text/javascript" src="lib/bvh-parser.js"></script>
+<script type="text/coffeescript" id="code">
+  width  = {{width}}
+  height = {{height}}
+
+  scene = new seen.Scene
+    cullBackfaces    : false
+    fractionalPoints : true
+    model            : seen.Models.default()
+    viewport         : seen.Viewports.center(width, height)
+
+  seenModel = scene.model.append()
+
+  attachJoint = (base, joint, channels) ->
+    # Joint geometry
+    base.add(shape = seen.Shapes.unitcube().scale(5))
+    base.channels = {}
+
+    switch joint.id
+      when 'head'  then shape.fill('#FF0000')
+      when 'lHand' then shape.fill('#00FF00')
+      when 'rHand' then shape.fill('#00FF00')
+      when 'lFoot' then shape.fill('#0000FF')
+      when 'rFoot' then shape.fill('#0000FF')
+
+
+    # Apply initial offset
+    if (p = joint.offset)?
+      base.translate(p.x, p.y, p.z).bake()
+
+    # Create channel actions
+    if joint.channels?
+      for channel in joint.channels
+        channels.push switch channel
+          when 'Xposition' then (v) -> base.channels.tx = v
+          when 'Yposition' then (v) -> base.channels.ty = v
+          when 'Zposition' then (v) -> base.channels.tz = v
+          when 'Xrotation' then (v) -> base.channels.rx = v * Math.PI / 180.0
+          when 'Yrotation' then (v) -> base.channels.ry = v * Math.PI / 180.0
+          when 'Zrotation' then (v) -> base.channels.rz = v * Math.PI / 180.0
+
+    # Recurse
+    if joint.joints?
+      children = base.append()
+      for child in joint.joints
+        if child.type is 'JOINT' then attachJoint(children, child, channels)
+    return
+
+  applyChannels = (shape) ->
+    return unless shape instanceof seen.Model
+    return unless shape.channels?
+
+    shape.reset()
+    shape.translate(shape.channels.tx, shape.channels.ty, shape.channels.tz)
+    if shape.channels.ry? then shape.roty(shape.channels.ry)
+    if shape.channels.rx? then shape.rotx(shape.channels.rx)
+    if shape.channels.rz? then shape.rotz(shape.channels.rz)
+
+    for child in shape.children
+      applyChannels(child)
+
+
+  $.get 'assets/01_06.bvh', {}, (contents) ->
+    bvh = bvhParser.parse(contents)
+    console.log bvh, bvh.motion.frames.length
+    seenModel.add(shape = new seen.Model())
+    channels = []
+    attachJoint(shape, bvh.root, channels)
+    delay = Math.round(bvh.motion.frameTime * 1000)
+
+    i = 0
+    animateChannels = ->
+
+      frame = bvh.motion.frames[i]
+      for value, vi in frame
+        channels[vi](value)
+      applyChannels(shape)
+
+      i = (i + 1) % bvh.motion.frames.length
+      setTimeout(animateChannels, delay)
+    animateChannels()
+
+  # Add mouse-rotate
+  dragger = new seen.Drag('seen-canvas', {inertia : true})
+  dragger.on('drag.rotate', (e) ->
+    xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
+    seenModel.transform(xform)
+  )
+
+  # Add mousewheel-zoom
+  zoomer = new seen.Zoom('seen-canvas', {smooth : false})
+  zoomer.on('zoom.scale', (e) ->
+    xform = seen.M().scale(e.zoom)
+    seenModel.transform(xform)
+  )
+
+  # Create a context with a black fill layer and the scene layer
+  context = seen.Context('seen-canvas')
+  context.layer(new seen.FillLayer(width, height, '#000'))
+  context.sceneLayer(scene)
+  context.animate().start()
+
+</script>
+{% endblock %}
