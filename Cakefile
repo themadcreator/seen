@@ -76,14 +76,21 @@ task 'build', 'Build and uglify seen', () ->
     console.log '  Joined.'
 
     # Compile to javascript
-    jsCode = CoffeeScript.compile coffeeCode
+    jsCode = CoffeeScript.compile coffeeCode, {bare : true}
     otherJsCode = _.chain(sources)
       .filter((source) -> /\.js$/.test(source))
       .map((source) -> fs.readFileSync(source, 'utf-8'))
       .map((source) -> source.replace(/(?:\/\*(?:[\s\S]*?)\*\/)/gm, '')) # strip comments
       .join('\n\n')
       .value()
-    fs.writeFileSync path.join(DIST, javascript), MIN_LICENSE + jsCode + otherJsCode, {flags: 'w'}
+    code = """
+      #{MIN_LICENSE}
+      (function(){
+        #{jsCode}
+        #{otherJsCode}
+      })(this);
+    """
+    fs.writeFileSync path.join(DIST, javascript), code, {flags: 'w'}
     console.log '  Compiled.'
 
     # Uglify
