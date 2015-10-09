@@ -80,6 +80,7 @@
     <input type="radio" id="shape-sphere" name="shape-radio" value="sphere" checked="checked"><label for="shape-sphere">Sphere</label>
     <input type="radio" id="shape-tetra"  name="shape-radio" value="tetrahedron"><label for="shape-tetra">Tetrahedron</label>
     <input type="radio" id="shape-cube"   name="shape-radio" value="cube"><label for="shape-cube">Cube</label>
+    <input type="radio" id="shape-pipe"  name="shape-radio" value="pipe"><label for="shape-pipe">Pipe</label>
     <input type="radio" id="shape-patch"  name="shape-radio" value="patch"><label for="shape-patch">Patch</label>
   </div>
 
@@ -140,6 +141,7 @@
     tetrahedron : -> seen.Shapes.tetrahedron()
     cube        : -> seen.Shapes.cube()
     patch       : -> seen.Shapes.patch(4, 4).translate(-1, -1).scale(0.5)
+    pipe        : -> seen.Shapes.pipe(seen.P(-1, -1, -1), seen.P(1, 1, 1), 0.2).scale(0.5)
 
   # =============================================
   #
