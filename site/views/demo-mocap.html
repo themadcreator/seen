@@ -7,11 +7,11 @@
 {% block demo %}
 <script src="{{cdns.lodash.script}}"></script>
 <script src="{{cdns.jquery.script}}"></script>
-<script type="text/javascript" src="lib/bvh-parser.js"></script>
 <script type="text/coffeescript" id="code">
   width  = {{width}}
   height = {{height}}
 
+  # Create empty scene
   scene = new seen.Scene
     cullBackfaces    : false
     fractionalPoints : true
@@ -19,84 +19,6 @@
     viewport         : seen.Viewports.center(width, height)
 
   seenModel = scene.model.append()
-
-  createChannelAction = (channel) ->
-    return switch channel
-      when 'Xposition' then (m, v) -> m.translate(v, 0, 0)
-      when 'Yposition' then (m, v) -> m.translate(0, v, 0)
-      when 'Zposition' then (m, v) -> m.translate(0, 0, v)
-      when 'Xrotation' then (m, v) -> m.rotx(v * Math.PI / 180.0)
-      when 'Yrotation' then (m, v) -> m.roty(v * Math.PI / 180.0)
-      when 'Zrotation' then (m, v) -> m.rotz(v * Math.PI / 180.0)
-
-  colorize = (id, shape) ->
-    switch true
-      when /head/ig.test(id) then shape.fill('#FF0000')
-      when /hand/ig.test(id) then shape.fill('#00FF00')
-      when /foot/ig.test(id) then shape.fill('#0000FF')
-      when /shin/ig.test(id) then shape.fill('#00FFFF')
-      when /hip/ig.test(id) then shape.fill('#FF00FF')
-    return
-
-  attachJoint = (base, joint, channels) ->
-    # Joint geometry
-    base.offset = joint.offset ? {}
-    base.translate(base.offset.x, base.offset.y, base.offset.z)
-
-    # Create channel actions
-    if joint.channels?
-      channels.push {
-        shape   : base
-        actions : joint.channels.map(createChannelAction)
-      }
-
-    # Recurse
-    if joint.joints?
-      for child in joint.joints
-        children = base.append()
-        p = seen.P(child.offset?.x, child.offset?.y, child.offset?.z)
-        children.add(shape = seen.Shapes.pipe(seen.P(), p))
-        colorize(joint.id, shape)
-
-        if child.type is 'JOINT' then attachJoint(children.append(), child, channels)
-    return
-
-  applyFrameToChannels = (channels, frame) ->
-    fi = 0
-    for channel in channels
-      # Apply channel actions in reverse order
-      m  = seen.M()
-      ai = channel.actions.length
-      while ai > 0
-        ai -= 1
-        channel.actions[ai](m, frame[fi + ai])
-      fi += channel.actions.length
-
-      # Re-apply offset translation after channel transforms
-      channel.shape
-        .reset()
-        .transform(m)
-        .translate(
-          channel.shape.offset.x
-          channel.shape.offset.y
-          channel.shape.offset.z
-        )
-    return
-
-  $.get 'assets/05_11.bvh', {}, (contents) ->
-    bvh = bvhParser.parse(contents)
-    seenModel.add(shape = new seen.Model())
-    channels = []
-    attachJoint(shape, bvh.root, channels)
-    delay = Math.round(bvh.motion.frameTime * 1000)
-
-    i = 0
-    animateChannels = ->
-      frame = bvh.motion.frames[i]
-      applyFrameToChannels(channels, frame)
-      i = (i + 1) % bvh.motion.frames.length
-      setTimeout(animateChannels, delay)
-    animateChannels()
 
   # Add mouse-rotate
   dragger = new seen.Drag('seen-canvas', {inertia : true})
@@ -112,11 +34,39 @@
     seenModel.transform(xform)
   )
 
-  # Create a context with a black fill layer and the scene layer
+  # Create a context with a dark fill layer and the scene layer
   context = seen.Context('seen-canvas')
-  context.layer(new seen.FillLayer(width, height, '#000'))
+  context.layer(new seen.FillLayer(width, height, '#444'))
   context.sceneLayer(scene)
-  context.animate().start()
+  context.render()
+
+  # Define a 'Shape Factory' for creating the shapes in our mocap model
+  shapeFactory = (joint, endpoint) ->
+    radius = switch true
+      when /thumb|index|mid|ring|pinky/ig.test(joint.id) then 0.4
+      when /hand/ig.test(joint.id) then 1
+      when /abdomen|chest/ig.test(joint.id) then 6
+      when /hip/ig.test(joint.id) then 4
+      else 2
+
+    color = switch true
+      when /foot|hip|abdomen|chest/ig.test(joint.id) then '#FF88FF'
+      when /shin/ig.test(joint.id) then '#FFFFFF'
+      else '#FFD2A6'
+
+    return seen.Shapes.pipe(seen.P(), endpoint, radius, 8).fill(color)
+
+  $.get 'assets/05_11.bvh', {}, (contents) ->
+    # Parse the file and generate the shapes and transforms
+    mocap = seen.Mocap.parse(contents).createMocapModel(shapeFactory)
+
+    # Add the shapes to our scene
+    seenModel.append().translate(0,-50,0).add(mocap.model)
+
+    # Animate the frame from the file
+    animator = new seen.MocapAnimator(mocap)
+    animator.onFrame(context.render)
+    animator.start()
 
 </script>
 {% endblock %}

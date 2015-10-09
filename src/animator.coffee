@@ -15,15 +15,20 @@ DEFAULT_FRAME_DELAY = 30 # msec
 # and post events for apply animation changes between frames.
 class seen.Animator
   constructor : () ->
-    @dispatch  = seen.Events.dispatch('beforeFrame', 'afterFrame', 'frame')
-    @on        = @dispatch.on
-    @timestamp = 0
-    @_running  = false
+    @dispatch   = seen.Events.dispatch('beforeFrame', 'afterFrame', 'frame')
+    @on         = @dispatch.on
+    @timestamp  = 0
+    @_running   = false
+    @frameDelay = null
 
-  # Start the animation loop. The delay between frames can be supplied as an argument.
-  start: (msecDelay) ->
+  # Start the animation loop.
+  start : ->
     @_running   = true
-    @_msecDelay = msecDelay
+
+    if @frameDelay?
+      @_lastTime = new Date().valueOf()
+      @_delayCompensation = 0
+
     @animateFrame()
     return @
 
@@ -32,16 +37,24 @@ class seen.Animator
     @_running = false
     return @
 
-  # Use requestAnimationFrame if available
+  # Use requestAnimationFrame if available and we have no explicit frameDelay.
+  # Otherwise, use a delay-compensated timeout.
   animateFrame : ->
-    if requestAnimationFrame? and not @_msecDelay?
+    if requestAnimationFrame? and not @frameDelay?
       requestAnimationFrame(@frame)
     else
-      @_msecDelay ?= DEFAULT_FRAME_DELAY
-      setTimeout(@frame, @_msecDelay)
+      # Perform frame delay compensation to make sure each frame is rendered at
+      # the right time. This makes some animations more consistent
+      delta = new Date().valueOf() - @_lastTime
+      @_lastTime += delta
+      @_delayCompensation += delta
+
+      frameDelay = @frameDelay ? DEFAULT_FRAME_DELAY
+      setTimeout(@frame, frameDelay - @_delayCompensation)
+    return @
 
   # The main animation frame method
-  frame: (t) =>
+  frame : (t) =>
     return unless @_running
 
     # create timestamp param even if requestAnimationFrame isn't available
@@ -53,6 +66,7 @@ class seen.Animator
     @dispatch.afterFrame(@_timestamp, deltaTimestamp)
 
     @_lastTimestamp = @_timestamp
+
     @animateFrame()
     return @
 

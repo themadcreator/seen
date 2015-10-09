@@ -14,7 +14,6 @@ DISTS = {
   'seen.js' : [
     'src/namespace.coffee'
     'src/util.coffee'
-    'src/ext/simplex.coffee'
     'src/events.coffee'
     'src/matrix.coffee'
     'src/transformable.coffee'
@@ -35,11 +34,15 @@ DISTS = {
     'src/interaction.coffee'
     'src/surface.coffee'
     'src/model.coffee'
-    'src/shapes/primitives.coffee'
-    'src/shapes/obj.coffee'
     'src/animator.coffee'
+    'src/shapes/primitives.coffee'
+    'src/shapes/mocap.coffee'
+    'src/shapes/obj.coffee'
     'src/camera.coffee'
     'src/scene.coffee'
+    # Extensions
+    'src/ext/simplex.coffee'
+    'src/ext/bvh-parser.js'
   ]
 }
 
@@ -65,14 +68,22 @@ task 'build', 'Build and uglify seen', () ->
     console.log  "Building #{javascript}..."
 
     # Concat all coffeescript together for Docco
-    coffeeCode = sources.map((source) -> fs.readFileSync(source, 'utf-8')).join('\n\n')
+    coffeeCode = sources
+      .filter((source) -> /\.coffee$/.test(source))
+      .map((source) -> fs.readFileSync(source, 'utf-8')).join('\n\n')
     coffeeCode = "\n\n# #{license}\n\n" + coffeeCode
     fs.writeFileSync path.join(DIST, javascript.replace(/\.js$/, '.coffee')), coffeeCode, {flags: 'w'}
     console.log '  Joined.'
 
     # Compile to javascript
     jsCode = CoffeeScript.compile coffeeCode
-    fs.writeFileSync path.join(DIST, javascript), MIN_LICENSE + jsCode, {flags: 'w'}
+    otherJsCode = _.chain(sources)
+      .filter((source) -> /\.js$/.test(source))
+      .map((source) -> fs.readFileSync(source, 'utf-8'))
+      .map((source) -> source.replace(/(?:\/\*(?:[\s\S]*?)\*\/)/gm, '')) # strip comments
+      .join('\n\n')
+      .value()
+    fs.writeFileSync path.join(DIST, javascript), MIN_LICENSE + jsCode + otherJsCode, {flags: 'w'}
     console.log '  Compiled.'
 
     # Uglify

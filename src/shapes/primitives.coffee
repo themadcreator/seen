@@ -164,17 +164,22 @@ seen.Shapes = {
     return new seen.Shape('sphere', triangles.map (triangle) -> new seen.Surface(triangle.map (v) -> v.copy()))
 
   # Returns a cylinder whose main axis is aligned from point1 to point2
-  pipe : (point1, point2, offset = 1, segments = 3) ->
+  pipe : (point1, point2, radius = 1, segments = 8) ->
+
+    # Compute a normal perpendicular to the axis point1->point2 and define the
+    # rotations about the axis as a quaternion
     axis  = point2.copy().subtract(point1)
-    perp1 = axis.perpendicular()
-    perp2 = axis.copy().cross(perp1).normalize()
-    pts = [
-      point1.copy().add(perp1).subtract(perp2)
-      point1.copy().add(perp1).add(perp2)
-      point1.copy().subtract(perp1).add(perp2)
-      point1.copy().subtract(perp1).subtract(perp2)
-    ]
-    return seen.Shapes.extrude(pts, axis)
+    perp  = axis.perpendicular().multiply(radius)
+    theta = -Math.PI * 2.0 / segments
+    quat  = seen.Quaternion.pointAngle(axis.copy().normalize(), theta).toMatrix()
+
+    # Apply the quaternion rotations to create one face
+    points = [0...segments].map (i) ->
+      p = point1.copy().add(perp)
+      perp.transform(quat)
+      return p
+
+    return seen.Shapes.extrude(points, axis)
 
   # Returns a planar triangular patch. The supplied arguments determine the
   # number of triangle in the patch.

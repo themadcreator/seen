@@ -1,7 +1,7 @@
 {
   "name"        : "seen",
   "description" : "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
-  "version"     : "0.2.4",
+  "version"     : "0.2.5",
   "author"      : "Bill Dwyer",
   "license"     : "Apache-2.0",
   "url"         : "http://seenjs.io",
@@ -21,7 +21,7 @@
     "publish-site"     : "./publish-site.sh",
     "test-render"      : "phantomjs ./test/phantom/render-scenes.coffee",
     "test"             : "mocha ./test/mocha/*.coffee",
-    "semantic-release" : "semantic-release pre && npm publish && semantic-release post"
+    "build-bvh-parser" : "pegjs --export-var 'seen.BvhParser' src/ext/bvh.pegjs src/ext/bvh-parser.js"
   },
   "devDependencies": {
     "chai"             : ">=1.9.1",
