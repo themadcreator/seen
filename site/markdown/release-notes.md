@@ -1,3 +1,19 @@
+### v0.2.5
+
+*Oct 8, 2015*
+
++ Add "pipe" shape.
+
++ Add Biovision BVH mocap file parser and mocap animator.
+
++ Add mocap skeleton demo.
+
+### v0.2.4
+
+*Sep 23, 2015*
+
++ Integrate Simplex3D noise generator into library.
+
 ### v0.2.3
 
 *Mar 17, 2015*
