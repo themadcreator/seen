@@ -1,44 +1,50 @@
 {
-  "name"        : "seen",
-  "description" : "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
-  "version"     : "0.2.5",
-  "author"      : "Bill Dwyer",
-  "license"     : "Apache-2.0",
-  "url"         : "http://seenjs.io",
-  "repository"  : {
-    "type" : "git",
-    "url"  : "https://github.com/themadcreator/seen"
+  "name": "seen",
+  "description": "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
+  "version": "0.2.5",
+  "author": "Bill Dwyer",
+  "license": "Apache-2.0",
+  "url": "http://seenjs.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/themadcreator/seen"
   },
-  "main"     : "dist/latest/seen.min.js",
-  "keywords" : [
+  "main": "lib/seen.min.js",
+  "keywords": [
     "3d",
     "svg",
     "canvas"
   ],
   "scripts": {
-    "build"            : "cake build",
-    "site"             : "nodemon --ext coffee,html,md,css --watch src --watch site --exec ./run-site.sh .",
-    "publish-site"     : "./publish-site.sh",
-    "test-render"      : "phantomjs ./test/phantom/render-scenes.coffee",
-    "test"             : "cake build && mocha ./test/mocha/*.coffee",
-    "build-bvh-parser" : "pegjs --export-var 'seen.BvhParser' src/ext/bvh.pegjs src/ext/bvh-parser.js"
+    "build": "cake build && webpack && WEBPACK_ENV=build webpack",
+    "site": "nodemon --ext coffee,html,md,css --watch src --watch site --exec ./run-site.sh .",
+    "publish-site": "./publish-site.sh",
+    "test-render": "phantomjs ./test/phantom/render-scenes.coffee",
+    "test": "cake build && mocha ./test/mocha/*.coffee",
+    "build-bvh-parser": "pegjs --export-var 'seen.BvhParser' src/ext/bvh.pegjs src/ext/bvh-parser.js"
   },
   "devDependencies": {
-    "chai"             : ">=1.9.1",
-    "coffee-script"    : ">=1.9.x",
-    "docco"            : ">=0.7.0",
-    "express"          : ">=3.5.0",
-    "highlight.js"     : ">=8.0.0",
-    "lodash"           : ">=2.4.1",
-    "marked"           : ">=0.3.2",
-    "mocha"            : ">=1.18.2",
-    "nodemon"          : ">=1.0.17",
-    "path"             : ">=0.4.9",
-    "phantomjs"        : ">=1.9.7-1",
-    "pngjs"            : ">=0.4.0",
-    "q"                : ">=1.0.1",
-    "semantic-release" : ">=4.3.5",
-    "swig"             : ">=1.3.2",
-    "uglify-js"        : ">=2.4.13"
+    "babel-core": "^6.8.0",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.6.0",
+    "chai": ">=1.9.1",
+    "coffee-script": ">=1.9.x",
+    "docco": ">=0.7.0",
+    "eslint": "^2.9.0",
+    "eslint-loader": "^1.3.0",
+    "express": ">=3.5.0",
+    "highlight.js": ">=8.0.0",
+    "lodash": ">=2.4.1",
+    "marked": ">=0.3.2",
+    "mocha": ">=1.18.2",
+    "nodemon": ">=1.0.17",
+    "path": "^0.12.7",
+    "phantomjs": ">=1.9.7-1",
+    "pngjs": ">=0.4.0",
+    "q": ">=1.0.1",
+    "semantic-release": ">=4.3.5",
+    "swig": ">=1.3.2",
+    "uglify-js": ">=2.4.13",
+    "webpack": "^1.13.0"
   }
 }
