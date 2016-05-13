@@ -103,7 +103,7 @@ task 'build', 'Build and uglify seen', () ->
     console.log '  Minified.'
 
     latest = path.join(__dirname, 'dist', 'latest')
-    exec("rm #{latest}; cp -r #{DIST} #{latest}")
+    exec("rm -rf #{latest}; cp -r #{DIST} #{latest}")
     console.log '  Copied to Latest.'
 
 task 'site', 'Build seen website', (options) ->
