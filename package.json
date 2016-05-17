@@ -1,5 +1,5 @@
 {
-  "name"        : "seen-js",
+  "name"        : "seen",
   "description" : "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
   "version"     : "0.2.7",
   "author"      : "Bill Dwyer",

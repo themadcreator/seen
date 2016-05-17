@@ -8,5 +8,5 @@ Downloads, documentation, and demos on the website: http://seenjs.io
 ### Installation
 
 ```
-npm install seen-js
+npm install seen
 ```
