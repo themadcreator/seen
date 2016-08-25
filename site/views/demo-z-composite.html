@@ -1,0 +1,188 @@
+{% extends 'demo-template.html' %}
+
+{% block canvases %}
+  <table callpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td><canvas width="450" height="400" id="seen-canvas-0"></canvas></td>
+      <td><canvas width="450" height="400" id="seen-canvas-1"></canvas></td>
+    </tr>
+  </table>
+{% endblock %}
+
+{% block caption %}
+<p>Left: Default painters algorithm. Right: Z-buffer compositing</p>
+{% endblock %}
+
+{% block demo %}
+<script src="lib/StackBlur.js"></script>
+<script type="text/coffeescript" id="code">
+  width  = 450
+  height = 400
+
+  class CanvasBuffer
+    @create: -> new CanvasBuffer(document.createElement('canvas'))
+
+    constructor: (@canvas) ->
+      @context = new seen.CanvasLayerRenderContext(@canvas.getContext('2d'))
+
+    clear: ->
+      @context.ctx.clearRect(0, 0, @canvas.width, @canvas.height)
+
+    matchSize: (canvas) ->
+      @canvas.width = canvas.clientWidth
+      @canvas.height = canvas.clientHeight
+
+    copyTo: (ctx) ->
+      ctx.drawImage(
+        @canvas,
+        0, 0, @canvas.width, @canvas.height,
+        0, 0, @canvas.width, @canvas.height
+      )
+
+  class ZBufferedCanvasLayer extends seen.RenderLayer
+    constructor : (@scene) ->
+      @zBuffer = CanvasBuffer.create()
+      @colorBuffer = CanvasBuffer.create()
+      @zComposite = CanvasBuffer.create()
+
+    paint : (delegate, renderModel, context) ->
+      @resetBuffers(context)
+
+      # paint z-buffer
+      @zBuffer.context
+        .path()
+        .path(renderModel.projected.points)
+        .fill({fill : @getZGradient(renderModel, @zBuffer.context.ctx)})
+
+      # paint color buffer
+      delegate.paint(renderModel, @colorBuffer.context)
+
+      # composite color using z-buffer
+      @composite(context)
+
+    resetBuffers: (context) ->
+      for b in [@zBuffer, @colorBuffer]
+        b.matchSize(context.ctx.canvas)
+        b.clear()
+
+    zToColor : (pz) ->
+      z = (800 - pz) / 800.0 - 0.5
+
+      # console.log pz, z
+
+      if z <= 0 then return "green"
+      if z >= 1 then return "red"
+      z = Math.floor(z * 255)
+      return "rgb(#{z}, #{z}, #{z})"
+
+    getZGradient: (renderModel, ctx) ->
+      if Math.abs(renderModel.projected.normal.z) > 0.99
+        return @zToColor(renderModel.projected.barycenter.z)
+
+      to2d = (p) -> seen.P(p.x, p.y)
+      points = renderModel.projected.points.map to2d
+      normal = to2d(renderModel.projected.normal).normalize()
+      center = to2d(renderModel.projected.barycenter)
+
+      # project surface points to normal line
+      projections = points.map (p, i) ->
+        dist = p.copy().subtract(center).dot(normal)
+        return {
+          dist,
+          original: renderModel.projected.points[i]
+          proj: normal.copy().multiply(dist).add(center)
+        }
+
+      # get to the two farthest points
+      projections.sort((a, b) -> a.dist - b.dist)
+      p0 = projections[0]
+      p1 = projections[projections.length - 1]
+
+      # compute gradient stops. alternatively, find black point and white point
+      gradient = ctx.createLinearGradient(p0.proj.x, p0.proj.y, p1.proj.x, p1.proj.y)
+      gradient.addColorStop(0, @zToColor(p0.original.z))
+      gradient.addColorStop(1, @zToColor(p1.original.z))
+      return gradient
+
+    render : (context) =>
+      # clear zcomposite
+      @zComposite.matchSize(context.ctx.canvas)
+      @zComposite.context.ctx.fillStyle = "black"
+      @zComposite.context.ctx.fillRect(0, 0, @zComposite.canvas.width, @zComposite.canvas.height)
+
+      for renderModel in @scene.render()
+        @paint(renderModel.surface.painter, renderModel, context)
+
+    composite: (colorComposite) ->
+      contexts = [
+        colorComposite
+        @zComposite.context
+        @colorBuffer.context
+        @zBuffer.context
+      ]
+
+      w = @zBuffer.canvas.width
+      h = @zBuffer.canvas.height
+
+      ctxs = contexts.map (cvs) -> cvs.ctx
+      pxls = ctxs.map (ctx) -> ctx.getImageData(0, 0, w, h)
+
+      i = 0
+      channelCount = w * h * 4
+      while i < channelCount
+        # z comparison from r-channel
+        # add an alpha channel check because we can't disable anti-aliasing on the canvas =(
+        if pxls[3].data[i] > pxls[1].data[i] and pxls[3].data[i + 3] > 110
+          pxls[1].data[i] = pxls[3].data[i]
+
+          # copy r,g,b,a
+          pxls[0].data[i]     = pxls[2].data[i]
+          pxls[0].data[i + 1] = pxls[2].data[i + 1]
+          pxls[0].data[i + 2] = pxls[2].data[i + 2]
+          pxls[0].data[i + 3] = pxls[2].data[i + 3]
+        i += 4
+
+      ctxs[0].putImageData(pxls[0], 0, 0)
+      ctxs[1].putImageData(pxls[1], 0, 0)
+
+
+  # Generate shapes for the scene
+  generateShape = ->
+    shape = seen.Shapes.sphere().scale(80).bake()
+    shape.fill new seen.Material seen.Colors.white()
+    return shape
+
+  model = seen.Models.default()
+  model.add(seen.Shapes.tetrahedron().scale(90).bake())
+  group = model.append()
+  group.add(generateShape())
+
+  # Create scene and add shape to model
+  scene = new seen.Scene
+    cullBackfaces    : true
+    fractionalPoints : true
+    model            : model
+    viewport         : seen.Viewports.center(width, height)
+
+  # Create render context from canvas
+  contexts = [
+    seen.Context('seen-canvas-0')
+      .layer(new seen.FillLayer(width, height, '#DDD'))
+      .sceneLayer(scene)
+      .render()
+    seen.Context('seen-canvas-1')
+      .layer(new seen.FillLayer(width, height, '#000'))
+      .layer(new ZBufferedCanvasLayer(scene))
+      .render()
+  ]
+
+  # Drag to rotate. Disable DoF while rotating
+  rotator = (e) ->
+    xform = seen.Quaternion.xyToTransform(e.offsetRelative...)
+    group.transform(xform)
+    c.render() for c in contexts
+  new seen.Drag('seen-canvas-0', {inertia : true}).on('drag.rotate', rotator)
+  new seen.Drag('seen-canvas-1', {inertia : true}).on('drag.rotate', rotator)
+
+</script>
+{% endblock %}

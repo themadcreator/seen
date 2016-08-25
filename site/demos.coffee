@@ -40,6 +40,11 @@ Demos = [
   width  : 900
   height : 500
 ,
+  title  : 'Z-Buffer Compositing'
+  view   : 'demo-z-composite'
+  width  : 900
+  height : 500
+,
   title  : 'Audio Equalizer'
   view   : 'demo-equalizer'
 ,
