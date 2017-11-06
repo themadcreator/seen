@@ -33,14 +33,30 @@ class seen.RenderModel
     # Project into camera space
     cameraSpace = @transformed.points.map (p) => p.copy().transform(@projection)
     @inFrustrum = @_checkFrustrum(cameraSpace)
+
     # Project into screen space
     @_math(@projected, cameraSpace, @viewport, true)
     @surface.dirty = false
 
+
+    # toPointString = (p) ->
+    #   p = p.copy().fix(2)
+    #   "P(#{p.x}, #{p.y}, #{p.z})"
+
+    # console.log 'Transformed'
+    # console.log @transformed.points.map(toPointString).join('\n')
+    # console.log 'Camera'
+    # console.log cameraSpace.map(toPointString).join('\n')
+    # console.log 'Projected'
+    # console.log @projected.points.map(toPointString).join('\n')
+    # console.log ''
+
   _checkFrustrum : (points) ->
-    for p in points
-      return false if (p.z <= -2)
+    # TODO figure out frustrum calculation!!!
     return true
+    for p in points
+       return true if (p.z > -2)
+    return false
 
   _initRenderData: ->
     return {

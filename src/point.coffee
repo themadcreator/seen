@@ -60,6 +60,13 @@ class seen.Point
     @z = Math.round(@z)
     return @
 
+  # Truncates decimal each coordinate to the nearest integer. Excludes `@w`.
+  fix : (digits = 2) ->
+    @x = parseFloat(@x.toFixed(digits))
+    @y = parseFloat(@y.toFixed(digits))
+    @z = parseFloat(@z.toFixed(digits))
+    return @
+
   # Divides this `Point` by its magnitude. If the point is (0,0,0) we return (0,0,1).
   normalize : () ->
     n = @magnitude()

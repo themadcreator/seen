@@ -353,6 +353,16 @@ seen.Point = (function() {
     return this;
   };
 
+  Point.prototype.fix = function(digits) {
+    if (digits == null) {
+      digits = 2;
+    }
+    this.x = parseFloat(this.x.toFixed(digits));
+    this.y = parseFloat(this.y.toFixed(digits));
+    this.z = parseFloat(this.z.toFixed(digits));
+    return this;
+  };
+
   Point.prototype.normalize = function() {
     var n;
     n = this.magnitude();
@@ -1318,13 +1328,14 @@ seen.RenderModel = (function() {
 
   RenderModel.prototype._checkFrustrum = function(points) {
     var len1, o, p;
+    return true;
     for (o = 0, len1 = points.length; o < len1; o++) {
       p = points[o];
-      if (p.z <= -2) {
-        return false;
+      if (p.z > -2) {
+        return true;
       }
     }
-    return true;
+    return false;
   };
 
   RenderModel.prototype._initRenderData = function() {
@@ -3054,7 +3065,7 @@ seen.Projections = {
       near = 1;
     }
     if (far == null) {
-      far = 100;
+      far = 2;
     }
     near2 = 2 * near;
     dx = right - left;
@@ -3097,7 +3108,7 @@ seen.Projections = {
       near = 1;
     }
     if (far == null) {
-      far = 100;
+      far = 2;
     }
     near2 = 2 * near;
     dx = right - left;
@@ -3139,8 +3150,8 @@ seen.Viewports = {
     if (y == null) {
       y = 0;
     }
-    prescale = seen.M().translate(-x, -y, -height).scale(1 / width, 1 / height, 1 / height);
-    postscale = seen.M().scale(width, -height, height).translate(x + width / 2, y + height / 2, height);
+    prescale = seen.M().translate(-x, -y, height).scale(1 / width, 1 / height, -1 / height);
+    postscale = seen.M().scale(width, -height, -height).translate(x + width / 2, y + height / 2, -height);
     return {
       prescale: prescale,
       postscale: postscale
@@ -3160,8 +3171,8 @@ seen.Viewports = {
     if (y == null) {
       y = 0;
     }
-    prescale = seen.M().translate(-x, -y, -1).scale(1 / width, 1 / height, 1 / height);
-    postscale = seen.M().scale(width, -height, height).translate(x, y);
+    prescale = seen.M().translate(-x, -y, -height).scale(1 / width, 1 / height, 1 / height);
+    postscale = seen.M().scale(width, -height, 1).translate(x, y, 1);
     return {
       prescale: prescale,
       postscale: postscale

@@ -345,6 +345,13 @@ class seen.Point
     @z = Math.round(@z)
     return @
 
+  # Truncates decimal each coordinate to the nearest integer. Excludes `@w`.
+  fix : (digits = 2) ->
+    @x = parseFloat(@x.toFixed(digits))
+    @y = parseFloat(@y.toFixed(digits))
+    @z = parseFloat(@z.toFixed(digits))
+    return @
+
   # Divides this `Point` by its magnitude. If the point is (0,0,0) we return (0,0,1).
   normalize : () ->
     n = @magnitude()
@@ -1174,14 +1181,30 @@ class seen.RenderModel
     # Project into camera space
     cameraSpace = @transformed.points.map (p) => p.copy().transform(@projection)
     @inFrustrum = @_checkFrustrum(cameraSpace)
+
     # Project into screen space
     @_math(@projected, cameraSpace, @viewport, true)
     @surface.dirty = false
 
+
+    # toPointString = (p) ->
+    #   p = p.copy().fix(2)
+    #   "P(#{p.x}, #{p.y}, #{p.z})"
+
+    # console.log 'Transformed'
+    # console.log @transformed.points.map(toPointString).join('\n')
+    # console.log 'Camera'
+    # console.log cameraSpace.map(toPointString).join('\n')
+    # console.log 'Projected'
+    # console.log @projected.points.map(toPointString).join('\n')
+    # console.log ''
+
   _checkFrustrum : (points) ->
-    for p in points
-      return false if (p.z <= -2)
+    # TODO figure out frustrum calculation!!!
     return true
+    for p in points
+       return true if (p.z > -2)
+    return false
 
   _initRenderData: ->
     return {
@@ -2520,7 +2543,7 @@ seen.Projections = {
     return seen.Projections.perspective(-tan, tan, -tan, tan, front, 2*front)
 
   # Creates a perspective projection matrix with the supplied frustrum
-  perspective : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
+  perspective : (left=-1, right=1, bottom=-1, top=1, near=1, far=2) ->
     near2 = 2 * near
     dx    = right - left
     dy    = top - bottom
@@ -2549,7 +2572,7 @@ seen.Projections = {
     return seen.M(m)
 
   # Creates a orthographic projection matrix with the supplied frustrum
-  ortho : (left=-1, right=1, bottom=-1, top=1, near=1, far=100) ->
+  ortho : (left=-1, right=1, bottom=-1, top=1, near=1, far=2) ->
     near2 = 2 * near
     dx    = right - left
     dy    = top - bottom
@@ -2582,23 +2605,23 @@ seen.Viewports = {
   # Create a viewport where the scene's origin is centered in the view
   center : (width = 500, height = 500, x = 0, y = 0) ->
     prescale = seen.M()
-      .translate(-x, -y, -height)
-      .scale(1/width, 1/height, 1/height)
+      .translate(-x, -y, height)
+      .scale(1/width, 1/height, -1/height)
 
     postscale = seen.M()
-      .scale(width, -height, height)
-      .translate(x + width/2, y + height/2, height)
+      .scale(width, -height, -height)
+      .translate(x + width/2, y + height/2, -height)
     return {prescale, postscale}
 
   # Create a view port where the scene's origin is aligned with the origin ([0, 0]) of the view
   origin : (width = 500, height = 500, x = 0, y = 0) ->
     prescale = seen.M()
-      .translate(-x, -y, -1)
+      .translate(-x, -y, -height)
       .scale(1/width, 1/height, 1/height)
 
     postscale = seen.M()
-      .scale(width, -height, height)
-      .translate(x, y)
+      .scale(width, -height, 1)
+      .translate(x, y, 1)
     return {prescale, postscale}
 }
 

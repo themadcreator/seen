@@ -21,7 +21,8 @@
     "publish-site"     : "./publish-site.sh",
     "test-render"      : "phantomjs ./test/phantom/render-scenes.coffee",
     "test"             : "cake build && mocha ./test/mocha/*.coffee",
-    "build-bvh-parser" : "pegjs --export-var 'seen.BvhParser' src/ext/bvh.pegjs src/ext/bvh-parser.js"
+    "build-bvh-parser" : "pegjs --export-var 'seen.BvhParser' src/ext/bvh.pegjs src/ext/bvh-parser.js",
+    "watch"            : "nodemon --ext coffee,html,md,css --watch src --exec cake build"
   },
   "devDependencies": {
     "chai"             : ">=1.9.1",
