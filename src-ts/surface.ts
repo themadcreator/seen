@@ -22,6 +22,7 @@ export class Surface {
   public strokeMaterial  = null;
   public dirty = false;
 
+  public text: string;
   private id: string;
 
   constructor(

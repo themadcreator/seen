@@ -1,12 +1,10 @@
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS202: Simplify dynamic range loops
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-   // ## Shapes
+import { Point } from "../geometry/point";
+import { Quaternion } from "../geometry/quaternion";
+import { Surface, Shape } from "../surface";
+import { Affine } from "../geometry/affine";
+import { Painters } from "../render/painters";
+
+// ## Shapes
 // #### Shape primitives and shape-making methods
 // ------------------
 
@@ -44,18 +42,18 @@ const EQUILATERAL_TRIANGLE_ALTITUDE = Math.sqrt(3.0) / 2.0;
 const ICOS_X = 0.525731112119133606;
 const ICOS_Z = 0.850650808352039932;
 const ICOSAHEDRON_POINTS = [
-  seen.P(-ICOS_X, 0.0,     -ICOS_Z),
-  seen.P(ICOS_X,  0.0,     -ICOS_Z),
-  seen.P(-ICOS_X, 0.0,     ICOS_Z),
-  seen.P(ICOS_X,  0.0,     ICOS_Z),
-  seen.P(0.0,     ICOS_Z,  -ICOS_X),
-  seen.P(0.0,     ICOS_Z,  ICOS_X),
-  seen.P(0.0,     -ICOS_Z, -ICOS_X),
-  seen.P(0.0,     -ICOS_Z, ICOS_X),
-  seen.P(ICOS_Z,  ICOS_X,  0.0),
-  seen.P(-ICOS_Z, ICOS_X,  0.0),
-  seen.P(ICOS_Z,  -ICOS_X, 0.0),
-  seen.P(-ICOS_Z, -ICOS_X, 0.0)
+  new Point(-ICOS_X, 0.0,     -ICOS_Z),
+  new Point(ICOS_X,  0.0,     -ICOS_Z),
+  new Point(-ICOS_X, 0.0,     ICOS_Z),
+  new Point(ICOS_X,  0.0,     ICOS_Z),
+  new Point(0.0,     ICOS_Z,  -ICOS_X),
+  new Point(0.0,     ICOS_Z,  ICOS_X),
+  new Point(0.0,     -ICOS_Z, -ICOS_X),
+  new Point(0.0,     -ICOS_Z, ICOS_X),
+  new Point(ICOS_Z,  ICOS_X,  0.0),
+  new Point(-ICOS_Z, ICOS_X,  0.0),
+  new Point(ICOS_Z,  -ICOS_X, 0.0),
+  new Point(-ICOS_Z, -ICOS_X, 0.0)
 ];
 
 // Map to points in the surfaces of an icosahedron
@@ -82,44 +80,44 @@ const ICOSAHEDRON_COORDINATE_MAP = [
   [7, 2, 11]
 ];
 
-seen.Shapes = {
+export const Shapes = {
   // Returns a 2x2x2 cube, centered on the origin.
   cube: () => {
     const points = [
-      seen.P(-1, -1, -1),
-      seen.P(-1, -1,  1),
-      seen.P(-1,  1, -1),
-      seen.P(-1,  1,  1),
-      seen.P( 1, -1, -1),
-      seen.P( 1, -1,  1),
-      seen.P( 1,  1, -1),
-      seen.P( 1,  1,  1)
+      new Point(-1, -1, -1),
+      new Point(-1, -1,  1),
+      new Point(-1,  1, -1),
+      new Point(-1,  1,  1),
+      new Point( 1, -1, -1),
+      new Point( 1, -1,  1),
+      new Point( 1,  1, -1),
+      new Point( 1,  1,  1)
     ];
 
-    return new seen.Shape('cube', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
+    return new Shape('cube', Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
   },
 
   // Returns a 1x1x1 cube from the origin to [1, 1, 1].
   unitcube: () => {
     const points = [
-      seen.P(0, 0, 0),
-      seen.P(0, 0, 1),
-      seen.P(0, 1, 0),
-      seen.P(0, 1, 1),
-      seen.P(1, 0, 0),
-      seen.P(1, 0, 1),
-      seen.P(1, 1, 0),
-      seen.P(1, 1, 1)
+      new Point(0, 0, 0),
+      new Point(0, 0, 1),
+      new Point(0, 1, 0),
+      new Point(0, 1, 1),
+      new Point(1, 0, 0),
+      new Point(1, 0, 1),
+      new Point(1, 1, 0),
+      new Point(1, 1, 1)
     ];
 
-    return new seen.Shape('unitcube', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
+    return new Shape('unitcube', Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
   },
 
   // Returns an axis-aligned 3D rectangle whose boundaries are defined by the
   // two supplied points.
   rectangle : (point1, point2) => {
     const compose = (x, y, z) =>
-      seen.P(
+      new Point(
         x(point1.x, point2.x),
         y(point1.y, point2.y),
         z(point1.z, point2.z)
@@ -137,61 +135,58 @@ seen.Shapes = {
       compose(Math.max, Math.max, Math.max)
     ];
 
-    return new seen.Shape('rect', seen.Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
+    return new Shape('rect', Shapes.mapPointsToSurfaces(points, CUBE_COORDINATE_MAP));
   },
 
   // Returns a square pyramid inside a unit cube
   pyramid : () => {
     const points = [
-      seen.P(0, 0, 0),
-      seen.P(0, 0, 1),
-      seen.P(1, 0, 0),
-      seen.P(1, 0, 1),
-      seen.P(0.5, 1, 0.5)
+      new Point(0, 0, 0),
+      new Point(0, 0, 1),
+      new Point(1, 0, 0),
+      new Point(1, 0, 1),
+      new Point(0.5, 1, 0.5)
     ];
 
-    return new seen.Shape('pyramid', seen.Shapes.mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP));
+    return new Shape('pyramid', Shapes.mapPointsToSurfaces(points, PYRAMID_COORDINATE_MAP));
   },
 
   // Returns a tetrahedron that fits inside a 2x2x2 cube.
   tetrahedron: () => {
     const points = [
-      seen.P( 1,  1,  1),
-      seen.P(-1, -1,  1),
-      seen.P(-1,  1, -1),
-      seen.P( 1, -1, -1)];
+      new Point( 1,  1,  1),
+      new Point(-1, -1,  1),
+      new Point(-1,  1, -1),
+      new Point( 1, -1, -1)];
 
-    return new seen.Shape('tetrahedron', seen.Shapes.mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP));
+    return new Shape('tetrahedron', Shapes.mapPointsToSurfaces(points, TETRAHEDRON_COORDINATE_MAP));
   },
 
   // Returns an icosahedron that fits within a 2x2x2 cube, centered on the
   // origin.
   icosahedron() {
-    return new seen.Shape('icosahedron', seen.Shapes.mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
+    return new Shape('icosahedron', Shapes.mapPointsToSurfaces(ICOSAHEDRON_POINTS, ICOSAHEDRON_COORDINATE_MAP));
   },
 
   // Returns a sub-divided icosahedron, which approximates a sphere with
   // triangles of equal size.
-  sphere(subdivisions) {
-    if (subdivisions == null) { subdivisions = 2; }
+  sphere(subdivisions = 2) {
     let triangles = ICOSAHEDRON_COORDINATE_MAP.map(coords => coords.map(c => ICOSAHEDRON_POINTS[c]));
-    for (let i = 0, end = subdivisions, asc = 0 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-      triangles = seen.Shapes._subdivideTriangles(triangles);
+    for (let i = 0; i < subdivisions; i--) {
+      triangles = Shapes._subdivideTriangles(triangles);
     }
-    return new seen.Shape('sphere', triangles.map(triangle => new seen.Surface(triangle.map(v => v.copy()))));
+    return new Shape('sphere', triangles.map(triangle => new Surface(triangle.map(v => v.copy()))));
   },
 
   // Returns a cylinder whose main axis is aligned from point1 to point2
-  pipe(point1, point2, radius, segments) {
+  pipe(point1: Point, point2: Point, radius = 1, segments = 8) {
 
     // Compute a normal perpendicular to the axis point1->point2 and define the
     // rotations about the axis as a quaternion
-    if (radius == null) { radius = 1; }
-    if (segments == null) { segments = 8; }
     const axis  = point2.copy().subtract(point1);
     const perp  = axis.perpendicular().multiply(radius);
     const theta = (-Math.PI * 2.0) / segments;
-    const quat  = seen.Quaternion.pointAngle(axis.copy().normalize(), theta).toMatrix();
+    const quat  = Quaternion.pointAngle(axis.copy().normalize(), theta).toMatrix();
 
     // Apply the quaternion rotations to create one face
     const points = __range__(0, segments, false).map(function(i) {
@@ -200,35 +195,33 @@ seen.Shapes = {
       return p;
     });
 
-    return seen.Shapes.extrude(points, axis);
+    return Shapes.extrude(points, axis);
   },
 
   // Returns a planar triangular patch. The supplied arguments determine the
   // number of triangle in the patch.
-  patch(nx, ny) {
-    if (nx == null) { nx = 20; }
-    if (ny == null) { ny = 20; }
+  patch(nx = 20, ny = 20) {
     nx = Math.round(nx);
     ny = Math.round(ny);
     let surfaces = [];
-    for (let x = 0, end = nx, asc = 0 <= end; asc ? x < end : x > end; asc ? x++ : x--) {
+    for (let x = 0; x < nx; x++) {
       var p, y;
       var asc1, end1;
       const column = [];
-      for (y = 0, end1 = ny, asc1 = 0 <= end1; asc1 ? y < end1 : y > end1; asc1 ? y++ : y--) {
+      for (y = 0; y < ny; y++) {
         const pts0 = [
-          seen.P(x, y),
-          seen.P(x + 1, y - 0.5),
-          seen.P(x + 1, y + 0.5)
+          new Point(x, y),
+          new Point(x + 1, y - 0.5),
+          new Point(x + 1, y + 0.5)
         ];
         const pts1 = [
-          seen.P(x, y),
-          seen.P(x + 1, y + 0.5),
-          seen.P(x, y + 1)
+          new Point(x, y),
+          new Point(x + 1, y + 0.5),
+          new Point(x, y + 1)
         ];
 
         for (let pts of [pts0, pts1]) {
-          for (p of Array.from(pts)) {
+          for (p of pts) {
             p.x *= EQUILATERAL_TRIANGLE_ALTITUDE;
             p.y += (x % 2) === 0 ? 0.5 : 0;
           }
@@ -237,7 +230,7 @@ seen.Shapes = {
       }
 
       if ((x % 2) !== 0) {
-        for (p of Array.from(column[0])) {
+        for (p of column[0]) {
           p.y += ny;
         }
         column.push(column.shift());
@@ -245,40 +238,28 @@ seen.Shapes = {
       surfaces = surfaces.concat(column);
     }
 
-    return new seen.Shape('patch', surfaces.map(s => new seen.Surface(s)));
+    return new Shape('patch', surfaces.map(s => new Surface(s)));
   },
 
   // Return a text surface that can render 3D text using an affine transform estimate of the projection
-  text(text, surfaceOptions) {
-    if (surfaceOptions == null) { surfaceOptions = {}; }
-    const surface = new seen.Surface(seen.Affine.ORTHONORMAL_BASIS(), seen.Painters.text);
+  text(text: string, surfaceOptions = {}) {
+    const surface = new Surface(Affine.ORTHONORMAL_BASIS(), Painters.text);
     surface.text = text;
     for (let key in surfaceOptions) {
       const val = surfaceOptions[key];
       surface[key] = val;
     }
-    return new seen.Shape('text', [surface]);
+    return new Shape('text', [surface]);
   },
 
   // Returns a shape that is an extrusion of the supplied points into the z axis.
-  extrude(points, offset) {
-    let p;
+  extrude(points: Point[], offset: Point) {
     const surfaces = [];
-    const front = new seen.Surface(((() => {
-      const result = [];
-      for (p of Array.from(points)) {         result.push(p.copy());
-      }
-      return result;
-    })()));
-    const back  = new seen.Surface(((() => {
-      const result1 = [];
-      for (p of Array.from(points)) {         result1.push(p.add(offset));
-      }
-      return result1;
-    })()));
+    const front = new Surface(points.map(p => p.copy()));
+    const back  = new Surface(points.map(p => p.copy().add(offset)));
 
-    for (let i = 1, end = points.length, asc = 1 <= end; asc ? i < end : i > end; asc ? i++ : i--) {
-      surfaces.push(new seen.Surface([
+    for (let i = 1; i < points.length; i++) {
+      surfaces.push(new Surface([
         front.points[i - 1].copy(),
         back.points[i - 1].copy(),
         back.points[i].copy(),
@@ -287,7 +268,7 @@ seen.Shapes = {
     }
 
     const len = points.length;
-    surfaces.push(new seen.Surface([
+    surfaces.push(new Surface([
       front.points[len - 1].copy(),
       back.points[len - 1].copy(),
       back.points[0].copy(),
@@ -297,7 +278,7 @@ seen.Shapes = {
     back.points.reverse();
     surfaces.push(front);
     surfaces.push(back);
-    return new seen.Shape('extrusion', surfaces);
+    return new Shape('extrusion', surfaces);
   },
 
   // Returns an extruded block arrow shape.
@@ -309,48 +290,48 @@ seen.Shapes = {
     if (headPointiness == null) { headPointiness = 0; }
     const htw = tailWidth/2;
     const points = [
-      seen.P(0, 0, 0),
-      seen.P(headLength + headPointiness, 1, 0),
-      seen.P(headLength, htw, 0),
-      seen.P(headLength + tailLength, htw, 0),
-      seen.P(headLength + tailLength, -htw, 0),
-      seen.P(headLength, -htw, 0),
-      seen.P(headLength + headPointiness, -1, 0)
+      new Point(0, 0, 0),
+      new Point(headLength + headPointiness, 1, 0),
+      new Point(headLength, htw, 0),
+      new Point(headLength + tailLength, htw, 0),
+      new Point(headLength + tailLength, -htw, 0),
+      new Point(headLength, -htw, 0),
+      new Point(headLength + headPointiness, -1, 0)
     ];
-    return seen.Shapes.extrude(points, seen.P(0,0,thickness));
+    return Shapes.extrude(points, new Point(0,0,thickness));
   },
 
   // Returns a shape with a single surface using the supplied points array
   path(points) {
-    return new seen.Shape('path', [new seen.Surface(points)]);
+    return new Shape('path', [new Surface(points)]);
   },
 
   // Accepts a 2-dimensional array of tuples, returns a shape where the tuples
   // represent points of a planar surface.
   custom(s) {
     const surfaces = [];
-    for (let f of Array.from(s.surfaces)) {
-      surfaces.push(new seen.Surface((Array.from(f).map((p) => seen.P(...Array.from(p || []))))));
+    for (let f of s.surfaces) {
+      surfaces.push(new Surface(f.map((p) => new Point(...(p || [])))));
     }
-    return new seen.Shape('custom', surfaces);
+    return new Shape('custom', surfaces);
   },
 
   // Joins the points into surfaces using the coordinate map, which is an
   // 2-dimensional array of index integers.
-  mapPointsToSurfaces(points, coordinateMap) {
+  mapPointsToSurfaces(points: Point[], coordinateMap: number[][]) {
     const surfaces = [];
-    for (let coords of Array.from(coordinateMap)) {
-      const spts = (Array.from(coords).map((c) => points[c].copy()));
-      surfaces.push(new seen.Surface(spts));
+    for (let coords of coordinateMap) {
+      const spts = coords.map((c) => points[c].copy());
+      surfaces.push(new Surface(spts));
     }
     return surfaces;
   },
 
   // Accepts an array of 3-tuples and returns an array of 3-tuples representing
   // the triangular subdivision of the surface.
-  _subdivideTriangles(triangles) {
+  _subdivideTriangles(triangles: Point[][]) {
     const newTriangles = [];
-    for (let tri of Array.from(triangles)) {
+    for (let tri of triangles) {
       const v01 = tri[0].copy().add(tri[1]).normalize();
       const v12 = tri[1].copy().add(tri[2]).normalize();
       const v20 = tri[2].copy().add(tri[0]).normalize();

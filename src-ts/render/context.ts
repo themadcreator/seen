@@ -4,6 +4,7 @@ import { Util } from "../util";
 import { RenderAnimator } from "../animator";
 import { SvgRenderContext } from "./svg";
 import { CanvasRenderContext } from "./canvas";
+import { IPathPainter, IRectPainter, ITextPainter, ICirclePainter } from "./painters";
 
 // ## Render Contexts
 // ------------------
@@ -59,10 +60,10 @@ export abstract class RenderContext  {
 
 // The `RenderLayerContext` defines the interface for producing painters that can paint various things into the current layer.
 export interface IRenderLayerContext {
-  path: () => void; // Return a path painter
-  rect: () => void; // Return a rect painter
-  circle: () => void; // Return a circle painter
-  text: () => void; // Return a text painter
+  path: () => IPathPainter; // Return a path painter
+  rect: () => IRectPainter; // Return a rect painter
+  circle: () => ICirclePainter; // Return a circle painter
+  text: () => ITextPainter; // Return a text painter
   reset: () => void;
   cleanup: () => void;
 };

@@ -138,6 +138,11 @@ class EventEmitter<T extends EventCallback> {
 
 type EmitterMap<T> = Partial<Record<keyof T, EventEmitter<EventCallback>>>;
 
+export interface EventRegistrar<T> {
+    on: <E extends keyof T, C extends T[E] & EventCallback>(eventName: E, callback: C) => Events<T>;
+    off: <E extends keyof T, C extends T[E] & EventCallback>(eventName: E, callback?: C) => Events<T>;
+}
+
 /**
  * A typed event object that typechecks event callbacks and emitter invocations.
  *
@@ -174,7 +179,7 @@ type EmitterMap<T> = Partial<Record<keyof T, EventEmitter<EventCallback>>>;
  *
  * ```
  */
-export class Events<T> {
+export class Events<T> implements EventRegistrar<T> {
     private emitters: EmitterMap<T> = {};
 
     /**

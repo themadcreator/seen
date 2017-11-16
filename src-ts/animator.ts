@@ -3,6 +3,8 @@
 // ------------------
 
 import { Events } from "./events";
+import { Util } from "./util";
+import { RenderContext } from "./render/context";
 
 const DEFAULT_FRAME_DELAY = 30; // msec
 
@@ -104,25 +106,25 @@ export class Animator {
 // A seen.Animator for rendering the seen.Context
 export class RenderAnimator extends Animator {
   constructor(context: RenderContext) {
+    super();
     this.onFrame(context.render);
   }
 };
 
+export interface ITransitionOptions {
+  duration: number;
+}
+
  // A transition object to manage to animation of shapes
-export abstract class Transition {
+export abstract class Transition implements ITransitionOptions {
   private t: number;
   private startT: number;
   private tFrac: number;
 
-  static initClass() {
-    this.prototype.defaults  =
-      {duration : 100};
-     // The duration of this transition in msec
-  }
+  public duration = 100;
 
-  constructor(options) {
-    if (options == null) { options = {}; }
-    seen.Util.defaults(this, options, this.defaults);
+  constructor(options: Partial<ITransitionOptions> = {}) {
+    Util.defaults<ITransitionOptions>(this, options);
   }
 
   public update(t: number) {
@@ -149,28 +151,29 @@ export abstract class Transition {
   abstract firstFrame()
   abstract frame()
   abstract lastFrame()
-});
-Cls.initClass();
+}
 
 // A seen.Animator for updating seen.Transtions. We include keyframing to make
 // sure we wait for one transition to finish before starting the next one.
 export class TransitionAnimator extends Animator {
+  private queue: Array<Transition[]> = [];
+  private transitions: Transition[] = [];
+
   constructor() {
-    this.queue       = [];
-    this.transitions = [];
+    super();
     this.onFrame(this.update);
   }
 
   // Adds a transition object to the current set of transitions. Note that
   // transitions will not start until they have been enqueued by invoking
   // `keyframe()` on this object.
-  add(txn) {
+  public add(txn) {
     return this.transitions.push(txn);
   }
 
   // Enqueues the current set of transitions into the keyframe queue and sets
   // up a new set of transitions.
-  keyframe() {
+  public keyframe() {
     this.queue.push(this.transitions);
     return this.transitions = [];
   }
@@ -180,7 +183,7 @@ export class TransitionAnimator extends Animator {
   // not done, we re-enqueue them at the front. If all transitions are
   // complete, we will start animating the next set of transitions from the
   // keyframe queue on the next update.
-  update(t) {
+  public update(t) {
     if (!this.queue.length) { return; }
     let transitions = this.queue.shift();
     transitions = transitions.filter(transition => transition.update(t));

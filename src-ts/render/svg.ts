@@ -3,6 +3,7 @@ import { Point } from "../geometry/point";
 import { Util } from "../util";
 import { RenderLayer } from "./layers";
 import { Scene } from "../scene";
+import { IPathPainter, IRectPainter, ITextPainter, ICirclePainter, ITextStyle, IFillStyle, IStrokeStyle } from "./painters";
 
 // ## SVG Context
 // ------------------
@@ -26,19 +27,17 @@ export class SvgStyler {
     return this;
   }
 
-  public fill(style) {
-    if (style == null) { style = {}; }
+  public fill(style: IFillStyle = {}) {
     this._paint(style);
     return this;
   }
 
-  public draw(style) {
-    if (style == null) { style = {}; }
+  public draw(style: IStrokeStyle = {}) {
     this._paint(style);
     return this;
   }
 
-  private _paint(style) {
+  private _paint(style: IFillStyle | IStrokeStyle) {
     let value;
     const el = this.elementFactory(this._svgTag);
 
@@ -57,7 +56,7 @@ export class SvgStyler {
   }
 }
 
-export class SvgPathPainter extends SvgStyler {
+export class SvgPathPainter extends SvgStyler implements IPathPainter {
   public _svgTag = 'path';
   public path(points: Point[]) {
     this._attributes.d = `M${points.map(p => `${p.x} ${p.y}`).join('L')}`;
@@ -65,11 +64,10 @@ export class SvgPathPainter extends SvgStyler {
   }
 }
 
-export class SvgTextPainter extends SvgStyler  {
+export class SvgTextPainter extends SvgStyler implements ITextPainter {
   public _svgTag = 'text';
 
-
-  public fillText(m, text, style) {
+  public fillText(m: number[], text: string, style: ITextStyle) {
     if (style == null) { style = {}; }
     const el = this.elementFactory(this._svgTag);
     el.setAttribute('transform', `matrix(${m[0]} ${m[3]} ${-m[1]} ${-m[4]} ${m[2]} ${m[5]})`);
@@ -80,29 +78,30 @@ export class SvgTextPainter extends SvgStyler  {
       if (value != null) { str += `${key}:${value};`; }
     }
     el.setAttribute('style', str);
-
-    return el.textContent = text;
+    el.textContent = text;
+    return this;
   }
 }
 
-export class SvgRectPainter extends SvgStyler {
+
+export class SvgRectPainter extends SvgStyler implements IRectPainter {
   static initClass() {
     this.prototype._svgTag  = 'rect';
   }
 
-  rect(width, height) {
+  public rect(width: number, height: number) {
     this._attributes.width  = width;
     this._attributes.height = height;
     return this;
   }
 }
 
-export class SvgCirclePainter extends SvgStyler {
+export class SvgCirclePainter extends SvgStyler implements ICirclePainter {
   static initClass() {
     this.prototype._svgTag  = 'circle';
   }
 
-  circle(center, radius) {
+  public circle(center: Point, radius: number) {
     this._attributes.cx = center.x;
     this._attributes.cy = center.y;
     this._attributes.r  = radius;

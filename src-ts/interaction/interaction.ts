@@ -1,149 +1,146 @@
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS206: Consider reworking classes to avoid initClass
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
+import { Events, EventRegistrar } from "../events";
+import { Util } from "../util";
+
 // ## Interaction
 // #### Mouse drag and zoom
 // ------------------
 
+export interface IWindowEvents {
+  mouseMove: (e: MouseEvent) => void;
+  mouseDown: (e: MouseEvent) => void;
+  mouseUp: (e: MouseEvent) => void;
+  touchStart: (e: TouchEvent) => void;
+  touchMove: (e: TouchEvent) => void;
+  touchEnd: (e: TouchEvent) => void;
+  touchCancel: (e: TouchEvent) => void;
+}
+
 // A global window event dispatcher. Attaches listeners only if window is defined.
-seen.WindowEvents = (function() {
-  const dispatch = seen.Events.dispatch(
-    'mouseMove',
-    'mouseDown',
-    'mouseUp',
-    'touchStart',
-    'touchMove',
-    'touchEnd',
-    'touchCancel'
-  );
+export const WindowEvents = (() => {
+  const events = new Events<IWindowEvents>();
 
   if (typeof window !== 'undefined' && window !== null) {
-    window.addEventListener('mouseup', dispatch.mouseUp, true);
-    window.addEventListener('mousedown', dispatch.mouseDown, true);
-    window.addEventListener('mousemove', dispatch.mouseMove, true);
-    window.addEventListener('touchstart', dispatch.touchStart, true);
-    window.addEventListener('touchmove', dispatch.touchMove, true);
-    window.addEventListener('touchend', dispatch.touchEnd, true);
-    window.addEventListener('touchcancel', dispatch.touchCancel, true);
+    window.addEventListener('mouseup', events.emitter("mouseUp"), true);
+    window.addEventListener('mousedown', events.emitter("mouseDown"), true);
+    window.addEventListener('mousemove', events.emitter("mouseMove"), true);
+    window.addEventListener('touchstart', events.emitter("touchStart"), true);
+    window.addEventListener('touchmove', events.emitter("touchMove"), true);
+    window.addEventListener('touchend', events.emitter("touchEnd"), true);
+    window.addEventListener('touchcancel', events.emitter("touchCancel"), true);
   }
-  return {on : dispatch.on};
+
+  return events;
 })();
+
+export interface IMouseEvents {
+  dragStart: (e: MouseEvent | TouchEvent) => void;
+  drag: (e: MouseEvent | TouchEvent) => void;
+  dragEnd: (e: MouseEvent | TouchEvent) => void;
+  mouseMove: (e: MouseEvent | TouchEvent) => void;
+  mouseDown: (e: MouseEvent | TouchEvent) => void;
+  mouseUp: (e: MouseEvent | TouchEvent) => void;
+  mouseWheel: (e: MouseWheelEvent) => void;
+}
 
 // An event dispatcher for mouse and drag events on a single dom element. The
 // available events are `'dragStart', 'drag', 'dragEnd', 'mouseMove',
 // 'mouseDown', 'mouseUp', 'mouseWheel'`
-seen.MouseEvents = class MouseEvents {
-  constructor(el, options) {
-    this._onMouseMove = this._onMouseMove.bind(this);
-    this._onMouseDown = this._onMouseDown.bind(this);
-    this._onMouseUp = this._onMouseUp.bind(this);
-    this._onMouseWheel = this._onMouseWheel.bind(this);
-    this.el = el;
-    seen.Util.defaults(this, options, this.defaults);
+export class MouseEvents implements EventRegistrar<IMouseEvents> {
+  private el: HTMLElement;
+  private isMouseDown = false;
+  private events = new Events<IMouseEvents>();
+  public on = this.events.on;
+  public off = this.events.off;
 
-    this.el = seen.Util.element(this.el);
-
-    this._uid = seen.Util.uniqueId('mouser-');
-
-    this.dispatch = seen.Events.dispatch(
-      'dragStart',
-      'drag',
-      'dragEnd',
-      'mouseMove',
-      'mouseDown',
-      'mouseUp',
-      'mouseWheel'
-    );
-    this.on = this.dispatch.on;
-
-    this._mouseDown = false;
+  constructor(el: HTMLElement, options = {}) {
+    this.el = Util.element(this.el);
     this.attach();
   }
 
   // Attaches listeners to the element
-  attach() {
+  public attach() {
     this.el.addEventListener('touchstart', this._onMouseDown);
     this.el.addEventListener('mousedown', this._onMouseDown);
     return this.el.addEventListener('mousewheel', this._onMouseWheel);
   }
 
   // Dettaches listeners to the element
-  detach() {
+  public detach() {
     this.el.removeEventListener('touchstart', this._onMouseDown);
     this.el.removeEventListener('mousedown', this._onMouseDown);
     return this.el.removeEventListener('mousewheel', this._onMouseWheel);
   }
 
-  _onMouseMove(e) {
-    this.dispatch.mouseMove(e);
+  private _onMouseMove = (e: MouseEvent | TouchEvent) => {
+    this.events.emitter("mouseMove")(e);
     e.preventDefault();
     e.stopPropagation();
-    if (this._mouseDown) { return this.dispatch.drag(e); }
+    if (this.isMouseDown) { return this.events.emitter("drag")(e); }
   }
 
-  _onMouseDown(e) {
-    this._mouseDown = true;
-    seen.WindowEvents.on(`mouseUp.${this._uid}`, this._onMouseUp);
-    seen.WindowEvents.on(`mouseMove.${this._uid}`, this._onMouseMove);
-    seen.WindowEvents.on(`touchEnd.${this._uid}`, this._onMouseUp);
-    seen.WindowEvents.on(`touchCancel.${this._uid}`, this._onMouseUp);
-    seen.WindowEvents.on(`touchMove.${this._uid}`, this._onMouseMove);
-    this.dispatch.mouseDown(e);
-    return this.dispatch.dragStart(e);
+  private _onMouseDown = (e: MouseEvent | TouchEvent) => {
+    this.isMouseDown = true;
+    WindowEvents.on("mouseUp", this._onMouseUp);
+    WindowEvents.on("mouseMove", this._onMouseMove);
+    WindowEvents.on("touchEnd", this._onMouseUp);
+    WindowEvents.on("touchCancel", this._onMouseUp);
+    WindowEvents.on("touchMove", this._onMouseMove);
+    this.events.emitter("mouseDown")(e);
+    return this.events.emitter("dragStart")(e);
   }
 
-  _onMouseUp(e) {
-    this._mouseDown = false;
-    seen.WindowEvents.on(`mouseUp.${this._uid}`, null);
-    seen.WindowEvents.on(`mouseMove.${this._uid}`, null);
-    seen.WindowEvents.on(`touchEnd.${this._uid}`, null);
-    seen.WindowEvents.on(`touchCancel.${this._uid}`, null);
-    seen.WindowEvents.on(`touchMove.${this._uid}`, null);
-    this.dispatch.mouseUp(e);
-    return this.dispatch.dragEnd(e);
+  private _onMouseUp =  (e: MouseEvent | TouchEvent) => {
+    this.isMouseDown = false;
+    WindowEvents.off("mouseUp", this._onMouseUp);
+    WindowEvents.off("mouseMove", this._onMouseMove);
+    WindowEvents.off("touchEnd", this._onMouseUp);
+    WindowEvents.off("touchCancel", this._onMouseUp);
+    WindowEvents.off("touchMove", this._onMouseMove);
+    this.events.emitter("mouseUp")(e);
+    return this.events.emitter("dragEnd")(e);
   }
 
-  _onMouseWheel(e) {
-    return this.dispatch.mouseWheel(e);
+  private _onMouseWheel = (e: MouseWheelEvent) => {
+    return this.events.emitter("mouseWheel")(e);
   }
-};
+}
+
+export type XYTuple = [number, number];
 
 // A class for computing mouse interia for interial scrolling
-let Cls = (seen.InertialMouse = class InertialMouse {
-  static initClass() {
-    this.inertiaExtinction  = 0.1;
-    this.smoothingTimeout   = 300;
-    this.inertiaMsecDelay   = 30;
-  }
+export class InertialMouse {
+  public static inertiaExtinction  = 0.1;
+  public static smoothingTimeout   = 300;
+  public static inertiaMsecDelay   = 30;
+
+  private x: number;
+  private y: number;
+  private xy: XYTuple;
+  private lastUpdate: Date;
 
   constructor() {
     this.reset();
   }
 
-  get() {
-    const scale = 1000 / seen.InertialMouse.inertiaMsecDelay;
+  public get(): XYTuple {
+    const scale = 1000 / InertialMouse.inertiaMsecDelay;
     return [this.x * scale, this.y * scale];
   }
 
-  reset() {
+  public reset() {
     this.xy = [0, 0];
     return this;
   }
 
-  update(xy) {
+  public update(xy: XYTuple) {
     if (this.lastUpdate != null) {
       const msec = new Date().getTime() - this.lastUpdate.getTime(); // Time passed
-      xy = xy.map(x => x / Math.max(msec, 1)); // Pixels per milliseconds
-      const t = Math.min(1, msec / seen.InertialMouse.smoothingTimeout); // Interpolation based on time between measurements
+      xy = xy.map(t => t / Math.max(msec, 1)) as XYTuple; // Pixels per milliseconds
+      const t = Math.min(1, msec / InertialMouse.smoothingTimeout); // Interpolation based on time between measurements
       this.x = (t * xy[0]) + ((1.0 - t) * this.x);
       this.y = (t * xy[1]) + ((1.0 - t) * this.y);
     } else {
-     [this.x, this.y] = Array.from(xy);
+     [this.x, this.y] = xy;
    }
 
     this.lastUpdate = new Date();
@@ -151,77 +148,93 @@ let Cls = (seen.InertialMouse = class InertialMouse {
   }
 
   // Apply damping to slow the motion once the user has stopped dragging.
-  damp() {
-    this.x *= (1.0 - seen.InertialMouse.inertiaExtinction);
-    this.y *= (1.0 - seen.InertialMouse.inertiaExtinction);
+  public damp() {
+    this.x *= (1.0 - InertialMouse.inertiaExtinction);
+    this.y *= (1.0 - InertialMouse.inertiaExtinction);
     return this;
   }
-});
-Cls.initClass();
+}
+
+export interface IDragOptions {
+  inertia: boolean;
+}
+
+export interface IDragEvents {
+  dragStart: (e: MouseEvent | TouchEvent) => void;
+  drag: (e: IDragEvent) => void;
+  dragEnd: (e: MouseEvent | TouchEvent) => void;
+  dragEndInertia: () => void;
+}
+
+interface IDragEvent {
+  offset         : XYTuple,
+  offsetRelative : XYTuple,
+};
+
+interface IDragState {
+  dragging : boolean;
+  origin   : XYTuple;
+  last     : XYTuple;
+  inertia  : InertialMouse;
+}
 
 // Adds simple mouse drag eventing to a DOM element. A 'drag' event is emitted
 // as the user is dragging their mouse. This is the easiest way to add mouse-
 // look or mouse-rotate to a scene.
-Cls = (seen.Drag = class Drag {
-  static initClass() {
-    this.prototype.defaults =
-      {inertia : false};
-  }
+export class Drag implements IDragOptions{
+  public inertia = false;
+  private el: HTMLElement;
+  private _inertiaRunning: boolean;
+  private _dragState: IDragState;
+  private events = new Events<IDragEvents>();
 
-  constructor(el, options) {
-    this._getPageCoords = this._getPageCoords.bind(this);
-    this._onDragStart = this._onDragStart.bind(this);
-    this._onDragEnd = this._onDragEnd.bind(this);
-    this._onDrag = this._onDrag.bind(this);
-    this._onInertia = this._onInertia.bind(this);
-    this._startInertia = this._startInertia.bind(this);
-    this._stopInertia = this._stopInertia.bind(this);
-    this.el = el;
-    seen.Util.defaults(this, options, this.defaults);
-    this.el = seen.Util.element(this.el);
-    this._uid = seen.Util.uniqueId('dragger-');
+  constructor(el: HTMLElement, options: Partial<IDragOptions> = {}) {
+    Util.defaults<IDragOptions>(this, options);
+    this.el = Util.element(el);
 
     this._inertiaRunning = false;
     this._dragState = {
       dragging : false,
       origin   : null,
       last     : null,
-      inertia  : new seen.InertialMouse()
+      inertia  : new InertialMouse()
     };
 
-    this.dispatch = seen.Events.dispatch('drag', 'dragStart', 'dragEnd', 'dragEndInertia');
-    this.on       = this.dispatch.on;
-
-    const mouser = new seen.MouseEvents(this.el);
-    mouser.on(`dragStart.${this._uid}`, this._onDragStart);
-    mouser.on(`dragEnd.${this._uid}`, this._onDragEnd);
-    mouser.on(`drag.${this._uid}`, this._onDrag);
+    const mouser = new MouseEvents(this.el);
+    mouser.on("dragStart", this._onDragStart);
+    mouser.on("dragEnd", this._onDragEnd);
+    mouser.on("drag", this._onDrag);
   }
 
-  _getPageCoords(e) {
-    if ((e.touches != null ? e.touches.length : undefined) > 0) {
-      return [e.touches[0].pageX, e.touches[0].pageY];
-    } else if ((e.changedTouches != null ? e.changedTouches.length : undefined) > 0) {
-      return [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+  _getPageCoords(e: MouseEvent | TouchEvent): XYTuple {
+    const touch = e as TouchEvent;
+    const mouse = e as MouseEvent;
+    if (touch.touches != null && touch.touches.length > 0) {
+      const { pageX, pageY } = touch.touches[0];
+      return [ pageX, pageY ];
+    } else if (touch.changedTouches != null && touch.changedTouches.length > 0) {
+      const { pageX, pageY } = touch.changedTouches[0];
+      return [ pageX, pageY ];
     } else {
-      return [e.pageX, e.pageY];
+      const { pageX, pageY } = mouse;
+      return [ pageX, pageY ];
     }
   }
 
-  _onDragStart(e) {
+  _onDragStart(e: MouseEvent | TouchEvent) {
     this._stopInertia();
     this._dragState.dragging = true;
     this._dragState.origin   = this._getPageCoords(e);
     this._dragState.last     = this._getPageCoords(e);
-    return this.dispatch.dragStart(e);
+    return this.events.emitter("dragStart")(e);
   }
 
-  _onDragEnd(e) {
+  _onDragEnd(e: MouseEvent | TouchEvent) {
     this._dragState.dragging = false;
 
     if (this.inertia) {
       const page = this._getPageCoords(e);
-      const dragEvent = {
+      const dragEvent: IDragEvent = {
         offset         : [page[0] - this._dragState.origin[0], page[1] - this._dragState.origin[1]],
         offsetRelative : [page[0] - this._dragState.last[0], page[1] - this._dragState.last[1]]
       };
@@ -230,18 +243,18 @@ Cls = (seen.Drag = class Drag {
       this._startInertia();
     }
 
-    return this.dispatch.dragEnd(e);
+    return this.events.emitter("dragEnd")(e);
   }
 
   _onDrag(e) {
     const page = this._getPageCoords(e);
 
-    const dragEvent = {
+    const dragEvent: IDragEvent = {
       offset         : [page[0] - this._dragState.origin[0], page[1] - this._dragState.origin[1]],
       offsetRelative : [page[0] - this._dragState.last[0], page[1]- this._dragState.last[1]]
     };
 
-    this.dispatch.drag(dragEvent);
+    this.events.emitter("drag")(dragEvent);
 
     if (this.inertia) {
       this._dragState.inertia.update(dragEvent.offsetRelative);
@@ -251,18 +264,20 @@ Cls = (seen.Drag = class Drag {
   }
 
   _onInertia() {
-    if (!this._inertiaRunning) { return; }
+    if (!this._inertiaRunning) {
+      return;
+    }
 
     // Apply damping and get x,y intertia values
     const intertia = this._dragState.inertia.damp().get();
 
     if ((Math.abs(intertia[0]) < 1) && (Math.abs(intertia[1]) < 1)) {
       this._stopInertia();
-      this.dispatch.dragEndInertia();
+      this.events.emitter("dragEndInertia")();
       return;
     }
 
-    this.dispatch.drag({
+    this.events.emitter("drag")({
       offset         : [this._dragState.last[0] - this._dragState.origin[0], this._dragState.last[0] - this._dragState.origin[1]],
       offsetRelative : intertia
     });
@@ -273,38 +288,41 @@ Cls = (seen.Drag = class Drag {
 
   _startInertia() {
     this._inertiaRunning = true;
-    return setTimeout(this._onInertia, seen.InertialMouse.inertiaMsecDelay);
+    return setTimeout(this._onInertia, InertialMouse.inertiaMsecDelay);
   }
 
   _stopInertia() {
     this._dragState.inertia.reset();
     return this._inertiaRunning = false;
   }
-});
-Cls.initClass();
+}
+
+export interface IZoomOptions {
+  speed: number;
+}
+
+export interface IZoomEvents {
+  zoom: (zoom: number) => void;
+}
 
 // Adds simple mouse wheel eventing to a DOM element. A 'zoom' event is emitted
 // as the user is scrolls their mouse wheel.
-Cls = (seen.Zoom = class Zoom {
-  static initClass() {
-    this.prototype.defaults  =
-      {speed : 0.25};
+export class Zoom implements IZoomOptions, EventRegistrar<IZoomEvents> {
+
+  public speed = 0.25;
+  private el: HTMLElement;
+
+  private events =  new Events<IZoomEvents>();
+  public on = this.events.on;
+  public off = this.events.off;
+
+  constructor(el: HTMLElement, options: Partial<IZoomOptions> = {}) {
+    this.el = Util.element(el);
+    const mouser = new MouseEvents(this.el);
+    mouser.on("mouseWheel", this._onMouseWheel);
   }
 
-  constructor(el,  options) {
-    this._onMouseWheel = this._onMouseWheel.bind(this);
-    this.el = el;
-    seen.Util.defaults(this, options, this.defaults);
-    this.el       = seen.Util.element(this.el);
-    this._uid     = seen.Util.uniqueId('zoomer-');
-    this.dispatch = seen.Events.dispatch('zoom');
-    this.on       = this.dispatch.on;
-
-    const mouser    = new seen.MouseEvents(this.el);
-    mouser.on(`mouseWheel.${this._uid}`, this._onMouseWheel);
-  }
-
-  _onMouseWheel(e) {
+  _onMouseWheel(e: MouseWheelEvent) {
     // This prevents the page from scrolling when we mousewheel the element
     e.preventDefault();
 
@@ -312,7 +330,6 @@ Cls = (seen.Zoom = class Zoom {
     const zoomFactor = (Math.abs(e.wheelDelta) / 120) * this.speed;
     const zoom       = Math.pow(2, sign*zoomFactor);
 
-    return this.dispatch.zoom({zoom});
+    return this.events.emitter("zoom")(zoom);
   }
-});
-Cls.initClass();
+}

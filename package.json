@@ -1,45 +1,50 @@
 {
-  "name"        : "seen",
-  "description" : "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
-  "version"     : "0.2.7",
-  "author"      : "Bill Dwyer",
-  "license"     : "Apache-2.0",
-  "url"         : "http://seenjs.io",
-  "repository"  : {
-    "type" : "git",
-    "url"  : "https://github.com/themadcreator/seen"
+  "name": "seen",
+  "description": "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
+  "version": "0.2.7",
+  "author": "Bill Dwyer",
+  "license": "Apache-2.0",
+  "url": "http://seenjs.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/themadcreator/seen"
   },
-  "main"     : "dist/latest/seen.js",
-  "keywords" : [
+  "main": "dist/latest/seen.js",
+  "keywords": [
     "3d",
     "svg",
     "canvas"
   ],
   "scripts": {
-    "build"            : "cake build",
-    "site"             : "nodemon --ext coffee,html,md,css --watch src --watch site --exec ./run-site.sh .",
-    "publish-site"     : "./publish-site.sh",
-    "test-render"      : "phantomjs ./test/phantom/render-scenes.coffee",
-    "test"             : "cake build && mocha ./test/mocha/*.coffee",
-    "build-bvh-parser" : "pegjs --export-var 'seen.BvhParser' src/ext/bvh.pegjs src/ext/bvh-parser.js",
-    "watch"            : "nodemon --ext coffee,html,md,css --watch src --exec cake build"
+    "build": "cake build",
+    "site": "nodemon --ext coffee,html,md,css --watch src --watch site --exec ./run-site.sh .",
+    "publish-site": "./publish-site.sh",
+    "test-render": "phantomjs ./test/phantom/render-scenes.coffee",
+    "test": "cake build && mocha ./test/mocha/*.coffee",
+    "build-bvh-parser": "pegjs --export-var 'seen.BvhParser' src/ext/bvh.pegjs src/ext/bvh-parser.js",
+    "watch": "nodemon --ext coffee,html,md,css --watch src --exec cake build"
   },
   "devDependencies": {
-    "chai"             : ">=1.9.1",
-    "coffee-script"    : ">=1.9.x",
-    "docco"            : ">=0.7.0",
-    "express"          : ">=3.5.0",
-    "highlight.js"     : ">=8.0.0",
-    "lodash"           : ">=2.4.1",
-    "marked"           : ">=0.3.2",
-    "mocha"            : ">=1.18.2",
-    "nodemon"          : ">=1.0.17",
-    "path"             : ">=0.4.9",
-    "phantomjs"        : ">=1.9.7-1",
-    "pngjs"            : ">=0.4.0",
-    "q"                : ">=1.0.1",
-    "semantic-release" : ">=4.3.5",
-    "swig"             : ">=1.3.2",
-    "uglify-js"        : ">=2.4.13"
+    "chai": ">=1.9.1",
+    "coffee-script": ">=1.9.x",
+    "docco": ">=0.7.0",
+    "express": ">=3.5.0",
+    "highlight.js": ">=8.0.0",
+    "lodash": ">=2.4.1",
+    "marked": ">=0.3.2",
+    "mocha": ">=1.18.2",
+    "nodemon": ">=1.0.17",
+    "path": ">=0.4.9",
+    "phantomjs": ">=1.9.7-1",
+    "pngjs": ">=0.4.0",
+    "q": ">=1.0.1",
+    "semantic-release": ">=4.3.5",
+    "swig": ">=1.3.2",
+    "typings": "^2.1.1",
+    "uglify-js": ">=2.4.13"
+  },
+  "dependencies": {
+    "global": "^4.3.2",
+    "javascript-to-typescript": "^1.0.2"
   }
 }
