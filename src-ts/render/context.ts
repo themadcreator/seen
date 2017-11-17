@@ -2,8 +2,6 @@ import { RenderLayer, SceneLayer } from "./layers";
 import { Scene } from "../scene";
 import { Util } from "../util";
 import { RenderAnimator } from "../animator";
-import { SvgRenderContext } from "./svg";
-import { CanvasRenderContext } from "./canvas";
 import { IPathPainter, IRectPainter, ITextPainter, ICirclePainter } from "./painters";
 
 // ## Render Contexts
@@ -66,24 +64,4 @@ export interface IRenderLayerContext {
   text: () => ITextPainter; // Return a text painter
   reset: () => void;
   cleanup: () => void;
-};
-
-// Create a render context for the element with the specified `elementId`. elementId
-// should correspond to either an SVG or Canvas element.
-const Context = (elementId: string, scene: Scene) => {
-  const tag = Util.element(elementId).tagName.toUpperCase();
-
-  let context: RenderContext;
-  switch (tag) {
-    case 'SVG':
-    case 'G':
-      context = new SvgRenderContext(elementId);
-    case 'CANVAS':
-      context = new CanvasRenderContext(elementId);
-  }
-
-  if (scene != null) {
-    context.sceneLayer(scene);
-  }
-  return context;
 };
