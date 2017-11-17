@@ -15,6 +15,15 @@
     "svg",
     "canvas"
   ],
+  "jest": {
+    "moduleFileExtensions": [
+      "ts"
+    ],
+    "transform": {
+      "\\.ts$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "test-ts/.*\\.ts$"
+  },
   "scripts": {
     "build": "cake build",
     "site": "nodemon --ext coffee,html,md,css --watch src --watch site --exec ./run-site.sh .",
@@ -45,6 +54,8 @@
   },
   "dependencies": {
     "global": "^4.3.2",
-    "javascript-to-typescript": "^1.0.2"
+    "javascript-to-typescript": "^1.0.2",
+    "jest": "^21.2.1",
+    "ts-jest": "^21.2.2"
   }
 }

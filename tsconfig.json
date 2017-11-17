@@ -4,10 +4,12 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": false,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": false,
     "removeComments": false,
     "noImplicitAny": false,
-    "outDir": "build"
-  }
+    "outDir": "build-ts"
+  },
+  "include": [
+    "src-ts/**/*.ts",
+    "test-ts/**/*.ts"
+  ]
 }

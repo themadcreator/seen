@@ -1,0 +1,16 @@
+<html>
+<head>
+  <title>Dev Template | seen.js</title>
+  {% for script in scripts %}
+  <script src="{{script}}"></script>
+  {% endfor %}
+</head>
+<body>
+  <canvas width="{{width}}" height="{{height}}" id="seen-canvas"></canvas>
+  <script>
+    var width  = {{width}};
+    var height = {{height}};
+    $(document).ready({{ready|raw}});
+  </script>
+</body>
+</html>
