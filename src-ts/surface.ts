@@ -23,7 +23,10 @@ export class Surface {
   public dirty = false;
 
   public text: string;
-  private id: string;
+  public id: string;
+
+  public font: string;
+  public anchor: string;
 
   constructor(
     public points: Point[],

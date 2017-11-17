@@ -3,6 +3,7 @@ import { Bounds } from "../geometry/bounds";
 import { Matrix } from "../geometry/matrix";
 import { Surface } from "../surface";
 import { IViewport } from "../camera";
+import { Color } from "../color";
 import { Light } from "../light";
 
 // ## RenderModels
@@ -19,6 +20,7 @@ export interface IRenderData {
   v1: Point;
 }
 
+
 // The `RenderModel` object contains the transformed and projected points as
 // well as various data needed to shade and paint a `Surface`.
 //
@@ -32,6 +34,9 @@ export class RenderModel {
   public transformed: IRenderData;
   public projected: IRenderData;
   public inFrustrum: boolean;
+
+  public fill: Color;
+  public stroke: Color;
 
   constructor(
     public surface: Surface,

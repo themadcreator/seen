@@ -64,7 +64,7 @@ export class Material implements IMaterialOptions {
 
   // Apply the shader's shading to this material, with the option to override
   // the shader with the material's shader (if defined).
-  render(lights: Light[], shader: IShader, renderData: IRenderData) {
+  public render(lights: Light[], shader: IShader, renderData: IRenderData) {
     const renderShader = this.shader != null ? this.shader : shader;
     const color = renderShader.shade(lights, renderData, this);
     color.a = this.color.a;

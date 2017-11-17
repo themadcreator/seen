@@ -17,6 +17,7 @@
   ],
   "jest": {
     "moduleFileExtensions": [
+      "js",
       "ts"
     ],
     "transform": {
@@ -56,6 +57,7 @@
     "global": "^4.3.2",
     "javascript-to-typescript": "^1.0.2",
     "jest": "^21.2.1",
-    "ts-jest": "^21.2.2"
+    "ts-jest": "^21.2.2",
+    "typescript": "^2.6.1"
   }
 }

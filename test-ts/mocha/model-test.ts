@@ -3,8 +3,8 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const seen     = require('../../dist/latest/seen');
-const {assert} = require('chai');
+import * as seen from "../../src-ts";
+import { assert } from "chai";
 
 describe('model tests', function() {
   it('can create a model', function() {

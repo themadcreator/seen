@@ -123,9 +123,7 @@ export class SvgLayerRenderContext implements IRenderLayerContext {
     this.rectPainter   = new SvgRectPainter(this._elementFactory);
   }
 
-  public path() {
-    return this.pathPainter.clear();
-  }
+  public path() { return this.pathPainter.clear(); }
   public rect() { return this.rectPainter.clear(); }
   public circle() { return this.circlePainter.clear(); }
   public text() { return this.textPainter; }
@@ -149,7 +147,7 @@ export class SvgLayerRenderContext implements IRenderLayerContext {
   // and return it. If an element exists at the current index and it is the
   // same type, we return that. If the element is a different type, we create
   // one and replace it then return it.
-  _elementFactory(type: string) {
+  private _elementFactory(type: string) {
     let path;
     const children = this.group.childNodes;
     if (this._i >= children.length) {
@@ -174,6 +172,7 @@ export class SvgLayerRenderContext implements IRenderLayerContext {
 
 export class SvgRenderContext extends RenderContext {
   private svg: SVGElement;
+
   constructor(svg: HTMLElement | string) {
     super();
     this.svg = Util.element(svg) as any as SVGElement;

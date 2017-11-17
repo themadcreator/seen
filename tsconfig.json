@@ -9,7 +9,11 @@
     "outDir": "build-ts"
   },
   "include": [
-    "src-ts/**/*.ts",
-    "test-ts/**/*.ts"
+    "src-ts/**/*.ts"
+  ],
+  "exclude": [
+    "src-ts/ext",
+    "src-ts/shapes/obj.ts",
+    "src-ts/shapes/mocap.ts"
   ]
 }
