@@ -64,10 +64,10 @@ export class Matrix {
         for (let j = 0; j < 4; j++) {
             for (let i = 0; i < 16; i += 4) {
                 c[i + j] =
-                m[i] * this.m[j] +
-                m[i + 1] * this.m[4 + j] +
-                m[i + 2] * this.m[8 + j] +
-                m[i + 3] * this.m[12 + j];
+                    m[i] * this.m[j] +
+                    m[i + 1] * this.m[4 + j] +
+                    m[i + 2] * this.m[8 + j] +
+                    m[i + 3] * this.m[12 + j];
             }
         }
         ARRAY_POOL = this.m;
@@ -83,7 +83,7 @@ export class Matrix {
 
     // Sets the array that this matrix will return to when calling `.reset()`.
     // With no arguments, it uses the current matrix state.
-    public bake(m: IMatrix) {
+    public bake(m?: IMatrix) {
         this.baked = (m != null ? m : this.m).slice();
         return this;
     }

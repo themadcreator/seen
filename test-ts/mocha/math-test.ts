@@ -8,10 +8,17 @@ import { assert } from "chai";
 
 const EPS = 1e-6;
 
-describe('math tests', function() {
-  it('can translate a point', function() {
-    let matrix = seen.M();
+describe("math tests", function() {
+
+  it("matrix.translate", function() {
+    const matrix = seen.M();
     matrix.translate(0,10,0);
+    assert.closeTo(matrix.m[7],  10, EPS);
+  });
+
+  it("can translate a point", function() {
+    let matrix = seen.M();
+    matrix.translate(0, 10, 0);
 
     let point = seen.P();
     point.transform(matrix);
@@ -34,7 +41,7 @@ describe('math tests', function() {
     assert.closeTo(point.z, -1, EPS);
   });
 
-  it('can rotate a point', function() {
+  it("can rotate a point", function() {
     let matrix = seen.M();
     matrix.roty(Math.PI);
 
@@ -62,7 +69,7 @@ describe('math tests', function() {
     assert.closeTo(point.z,  0, EPS);
   });
 
-  it('can rotate a point around another point', function() {
+  it("can rotate a point around another point", function() {
     const matrix = seen.M();
     matrix.translate(0,-1,0);
     matrix.roty(Math.PI);
@@ -76,7 +83,7 @@ describe('math tests', function() {
     assert.closeTo(point.z,  0, EPS);
   });
 
-  it('can scale a point', function() {
+  it("can scale a point", function() {
     const matrix = seen.M();
     matrix.scale(1,10,0);
 
@@ -88,7 +95,7 @@ describe('math tests', function() {
     assert.closeTo(point.z,  0, EPS);
   });
 
-  it('can scale a point around another point', function() {
+  it("can scale a point around another point", function() {
     const matrix = seen.M();
     matrix.translate(0,-3,0);
     matrix.scale(10,10,10);

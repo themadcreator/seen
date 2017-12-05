@@ -6,7 +6,7 @@ import { Matrix } from "./matrix";
 // Most of the methods on `Point` are destructive, so be sure to use `.copy()`
 // when you want to preserve an object's value.
 export class Point {
-  constructor(public x = 0, public y = 0, public z = 0, public w = 0) {}
+  constructor(public x = 0, public y = 0, public z = 0, public w = 1) {}
 
   // Creates and returns a new `Point` with the same values as this object.
   public copy() {
@@ -91,7 +91,7 @@ export class Point {
   }
 
   // Returns a new point that is perpendicular to this point
-  perpendicular() {
+  public perpendicular() {
     const n = this.copy().cross(Points.Z());
     const mag = n.magnitude();
     if (mag !== 0) {
@@ -103,23 +103,27 @@ export class Point {
   }
 
   // Apply a transformation from the supplied `Matrix`.
-  transform(matrix: Matrix) {
+  public transform(matrix: Matrix) {
     const r = POINT_POOL;
+
     r.x =
       this.x * matrix.m[0] +
       this.y * matrix.m[1] +
       this.z * matrix.m[2] +
       this.w * matrix.m[3];
+
     r.y =
       this.x * matrix.m[4] +
       this.y * matrix.m[5] +
       this.z * matrix.m[6] +
       this.w * matrix.m[7];
+
     r.z =
       this.x * matrix.m[8] +
       this.y * matrix.m[9] +
       this.z * matrix.m[10] +
       this.w * matrix.m[11];
+
     r.w =
       this.x * matrix.m[12] +
       this.y * matrix.m[13] +
@@ -131,22 +135,22 @@ export class Point {
   }
 
   // Returns this `Point`s magnitude squared. Excludes `@w`.
-  magnitudeSquared() {
+  public magnitudeSquared() {
     return this.dot(this);
   }
 
   // Returns this `Point`s magnitude. Excludes `@w`.
-  magnitude() {
+  public magnitude() {
     return Math.sqrt(this.magnitudeSquared());
   }
 
   // Computes the dot product with the supplied `Point`.
-  dot(q: Point) {
+  public dot(q: Point) {
     return this.x * q.x + this.y * q.y + this.z * q.z;
   }
 
   // Computes the cross product with the supplied `Point`.
-  cross(q: Point) {
+  public cross(q: Point) {
     const r = POINT_POOL;
     r.x = this.y * q.z - this.z * q.y;
     r.y = this.z * q.x - this.x * q.z;
