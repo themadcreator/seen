@@ -1,0 +1,18 @@
+{
+    "defaultSeverity": "error",
+    "extends": ["tslint:latest", "tslint-react"],
+    "rules": {
+      "variable-name": {
+        "options": [
+          "allow-leading-underscore",
+          "allow-pascal-case",
+          "ban-keywords",
+          "check-format"
+        ]
+      },
+      "max-classes-per-file": false,
+      "no-default-export": true,
+      "prefer-conditional-expression": false,
+      "one-variable-per-declaration": false
+    }
+  }

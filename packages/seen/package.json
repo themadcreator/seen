@@ -1,0 +1,47 @@
+{
+  "name": "seen",
+  "description": "seen.js is a library for drawing simple 3D scenes in SVG and HTML5 Canvas elements.",
+  "version": "0.2.7",
+  "author": "Bill Dwyer",
+  "license": "Apache-2.0",
+  "url": "http://seenjs.io",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/themadcreator/seen"
+  },
+  "keywords": [
+    "3d",
+    "svg",
+    "canvas"
+  ],
+  "scripts": {
+    "build": "tsc --project .",
+    "watch": "tsc --project . --watch",
+    "lint": "tslint 'src/**/*.ts*'",
+    "test": "jest"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "ts"
+    ],
+    "transform": {
+      "\\.ts$": "<rootDir>/../../node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "test/.*\\.ts$"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.3",
+    "chai": "^4.1.2",
+    "jest": "^22.4.3",
+    "prettier": "^1.12.1",
+    "ts-jest": "^22.4.5",
+    "tslint": "^5.10.0",
+    "typescript": "^2.8.3"
+  }
+}

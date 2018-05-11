@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+      "target": "es5",
+      "lib": ["es5", "es6", "dom"],
+      "declaration": true,
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "removeComments": false,
+      "noImplicitAny": false,
+      "outDir": "dist"
+    },
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/ext",
+      "src/shapes/obj.ts",
+      "src/shapes/mocap.ts"
+    ]
+  }
