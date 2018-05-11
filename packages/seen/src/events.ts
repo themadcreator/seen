@@ -78,7 +78,6 @@
 //   return event;
 // };
 
-
 /*
  * Copyright 2017-present Palantir Technologies, Inc. All rights reserved.
  * Licensed under the BSD-3 License as modified (the “License”); you may obtain a copy
@@ -94,7 +93,7 @@ class EventEmitter<T extends EventCallback> {
      */
     public static noopEmitter = () => {
         return;
-    }
+    };
 
     private callbacks: T[] = [];
 
@@ -133,7 +132,7 @@ class EventEmitter<T extends EventCallback> {
         for (const callback of this.callbacks) {
             callback.apply(null, args);
         }
-    }
+    };
 }
 
 type EmitterMap<T> = Partial<Record<keyof T, EventEmitter<EventCallback>>>;
@@ -193,7 +192,7 @@ export class Events<T> implements EventRegistrar<T> {
         }
         this.emitters[eventName].add(callback);
         return this;
-    }
+    };
 
     /**
      * If `callback` is specified, it will be removed from the listener list for
@@ -209,7 +208,7 @@ export class Events<T> implements EventRegistrar<T> {
             }
         }
         return this;
-    }
+    };
 
     /**
      * Clears all listeners for all events

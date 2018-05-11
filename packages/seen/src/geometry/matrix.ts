@@ -9,6 +9,7 @@ export interface IMatrixArray {
     length: number;
 }
 
+// prettier-ignore
 export type IMatrix = IMatrixArray | [
     number, number, number, number,
     number, number, number, number,
@@ -20,6 +21,8 @@ export type IMatrix = IMatrixArray | [
 let ARRAY_POOL: IMatrix = new Array<number>(16);
 
 // Definition of identity matrix values
+
+// prettier-ignore
 export const IDENTITY: IMatrix = [
     1, 0, 0, 0,
     0, 1, 0, 0,
@@ -28,6 +31,8 @@ export const IDENTITY: IMatrix = [
 ];
 
 // Indices with which to transpose the matrix array
+
+// prettier-ignore
 const TRANSPOSE_INDICES: IMatrix = [
     0, 4, 8, 12,
     1, 5, 9, 13,
@@ -64,10 +69,7 @@ export class Matrix {
         for (let j = 0; j < 4; j++) {
             for (let i = 0; i < 16; i += 4) {
                 c[i + j] =
-                    m[i] * this.m[j] +
-                    m[i + 1] * this.m[4 + j] +
-                    m[i + 2] * this.m[8 + j] +
-                    m[i + 3] * this.m[12 + j];
+                    m[i] * this.m[j] + m[i + 1] * this.m[4 + j] + m[i + 2] * this.m[8 + j] + m[i + 3] * this.m[12 + j];
             }
         }
         ARRAY_POOL = this.m;
@@ -175,5 +177,5 @@ export const Matrices = {
     },
     flipZ() {
         return M().scale(1, 1, -1);
-    }
+    },
 };

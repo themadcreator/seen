@@ -20,7 +20,8 @@
     "build": "tsc --project .",
     "watch": "tsc --project . --watch",
     "lint": "tslint 'src/**/*.ts*'",
-    "test": "jest"
+    "test": "jest",
+    "prettier": "prettier --write 'src/**/*.ts' 'test/**/*.ts'"
   },
   "publishConfig": {
     "access": "public"

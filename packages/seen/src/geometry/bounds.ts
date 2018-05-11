@@ -63,19 +63,15 @@ export class Bounds {
             this.min = new Point(
                 Math.max(this.min.x, box.min.x),
                 Math.max(this.min.y, box.min.y),
-                Math.max(this.min.z, box.min.z)
+                Math.max(this.min.z, box.min.z),
             );
             this.max = new Point(
                 Math.min(this.max.x, box.max.x),
                 Math.min(this.max.y, box.max.y),
-                Math.min(this.max.z, box.max.z)
+                Math.min(this.max.z, box.max.z),
             );
 
-            if (
-                this.min.x > this.max.x ||
-                this.min.y > this.max.y ||
-                this.min.z > this.max.z
-            ) {
+            if (this.min.x > this.max.x || this.min.y > this.max.y || this.min.z > this.max.z) {
                 this.min = null;
                 this.max = null;
             }
