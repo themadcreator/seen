@@ -16,3 +16,5 @@ export * from "./shaders";
 export * from "./surface";
 export * from "./transformable";
 export * from "./util";
+
+export * from "./ext/simplex";

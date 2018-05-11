@@ -1,6 +1,8 @@
 
-import { SceneDemoSphere, SceneDemoTetra } from '../components/scene.tsx'
+import { SceneDemoSphere, SceneDemoTetra, SceneDemoWavePatch } from '../components/scene.tsx'
 
 <SceneDemoSphere />
 
 <SceneDemoTetra />
+
+<SceneDemoWavePatch />

@@ -1,41 +1,41 @@
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
+
 // Adapted from https://github.com/josephg/noisejs/blob/master/perlin.js
 
 // This code was placed in the public domain by its original author,
 // Stefan Gustavson. You may use it as you see fit, but
 // attribution is appreciated.
 
-seen.Grad = class Grad {
-  constructor(x, y, z) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
+class Grad {
+  constructor(
+    public readonly x: number,
+    public readonly y: number,
+    public readonly z: number
+  ) {
   }
-  dot(x, y, z) { return (this.x*x) + (this.y*y) + (this.z*z); }
+
+  public dot(x, y, z) {
+    return (this.x*x) + (this.y*y) + (this.z*z);
+  }
 };
 
+// prettier-ignore
 const grad3 = [
-  new seen.Grad( 1, 1, 0),
-  new seen.Grad(-1, 1, 0),
-  new seen.Grad( 1,-1, 0),
-  new seen.Grad(-1,-1, 0),
-  new seen.Grad( 1, 0, 1),
-  new seen.Grad(-1, 0, 1),
-  new seen.Grad( 1, 0,-1),
-  new seen.Grad(-1, 0,-1),
-  new seen.Grad( 0, 1, 1),
-  new seen.Grad( 0,-1, 1),
-  new seen.Grad( 0, 1,-1),
-  new seen.Grad( 0,-1,-1)
+  new Grad( 1, 1, 0),
+  new Grad(-1, 1, 0),
+  new Grad( 1,-1, 0),
+  new Grad(-1,-1, 0),
+  new Grad( 1, 0, 1),
+  new Grad(-1, 0, 1),
+  new Grad( 1, 0,-1),
+  new Grad(-1, 0,-1),
+  new Grad( 0, 1, 1),
+  new Grad( 0,-1, 1),
+  new Grad( 0, 1,-1),
+  new Grad( 0,-1,-1)
 ];
 
 // To remove the need for index wrapping, double the permutation table length
+// prettier-ignore
 const SIMPLEX_PERMUTATIONS_TABLE = [151,160,137,91,90,15,
   131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
   190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -53,17 +53,17 @@ const SIMPLEX_PERMUTATIONS_TABLE = [151,160,137,91,90,15,
 const F3 = 1 / 3;
 const G3 = 1 / 6;
 
-seen.Simplex3D = class Simplex3D {
-  constructor(seed) {
-    if (seed == null) { seed = 0; }
-    this.perm  = new Array(512);
-    this.gradP = new Array(512);
+export class Simplex3D {
+  private readonly perm = new Array<number>(512);
+  private readonly gradP = new Array<Grad>(512);
+
+  constructor(seed: number = 0) {
     this.seed(seed);
   }
 
   // This isn't a very good seeding function, but it works ok. It supports 2^16
   // different seed values. Write something better if you need more seeds.
-  seed(seed) {
+  private seed(seed) {
     // Scale the seed out
     if((seed > 0) && (seed < 1)) {
       seed *= 65536;
@@ -91,7 +91,7 @@ seen.Simplex3D = class Simplex3D {
     })();
   }
 
-  noise(x, y, z) {
+  public noise(x, y, z) {
     // Skew the input space to determine which simplex cell we're in
     let i1, i2, j1, j2, k1, k2, n0, n1, n2, n3;
     const s = (x + y + z)*F3; // Hairy factor for 2D

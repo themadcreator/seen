@@ -203,7 +203,7 @@ export const Shapes = {
 
     // Returns a planar triangular patch. The supplied arguments determine the
     // number of triangle in the patch.
-    patch(nx = 20, ny = 20) {
+    patch: (nx: number = 20, ny: number = 20) => {
         nx = Math.round(nx);
         ny = Math.round(ny);
         let surfaces = [];

@@ -68,8 +68,12 @@ export class Matrix {
         const c = ARRAY_POOL;
         for (let j = 0; j < 4; j++) {
             for (let i = 0; i < 16; i += 4) {
+                // prettier-ignore
                 c[i + j] =
-                    m[i] * this.m[j] + m[i + 1] * this.m[4 + j] + m[i + 2] * this.m[8 + j] + m[i + 3] * this.m[12 + j];
+                    m[i] * this.m[j] +
+                    m[i + 1] * this.m[4 + j] +
+                    m[i + 2] * this.m[8 + j] +
+                    m[i + 3] * this.m[12 + j];
             }
         }
         ARRAY_POOL = this.m;
