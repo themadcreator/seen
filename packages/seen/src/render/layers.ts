@@ -12,7 +12,10 @@ export class SceneLayer implements RenderLayer {
     constructor(private scene: Scene) {}
 
     public render(context: IRenderLayerContext) {
-        return this.scene.render().map((renderModel) => renderModel.surface.painter.paint(renderModel, context));
+        const renderModels = this.scene.render();
+        for (const renderModel of renderModels) {
+            renderModel.surface.painter.paint(renderModel, context);
+        }
     }
 }
 
@@ -20,7 +23,7 @@ export class FillLayer implements RenderLayer {
     constructor(private width: number, private height: number, private fill: string) {}
 
     public render(context: IRenderLayerContext) {
-        return context
+        context
             .rect()
             .rect(this.width, this.height)
             .fill({ fill: this.fill });

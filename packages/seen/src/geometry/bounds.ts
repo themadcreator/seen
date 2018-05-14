@@ -80,7 +80,7 @@ export class Bounds {
     }
 
     // Pads the min and max of this box using the supplied x, y, and z
-    public pad(x, y, z) {
+    public pad(x: number, y: number, z: number) {
         if (this.valid()) {
             if (y == null) {
                 y = x;
@@ -102,9 +102,36 @@ export class Bounds {
         return this;
     }
 
+    // Do everything we can to avoid copying points because object creation is
+    // slow
+    public resetTo(points: Point[]) {
+        if (points.length === 0) {
+            this.reset();
+            return;
+        }
+
+        const p0 = points[0];
+
+        if (this.min == null) {
+            this.min = p0.copy();
+        } else {
+            this.min.set(p0);
+        }
+
+        if (this.max == null) {
+            this.max = p0.copy();
+        } else {
+            this.max.set(p0);
+        }
+
+        for (let i = 1; i < points.length; i++) {
+            this.add(points[i]);
+        }
+    }
+
     // Return true iff the point p lies within this bounding box. Points on the
     // edge of the box are included.
-    public contains(p) {
+    public contains(p: Point) {
         if (!this.valid()) {
             return false;
         } else if (this.min.x > p.x || this.max.x < p.x) {

@@ -77,7 +77,7 @@ export class Scene implements ISceneOptions {
 
     // The primary method that produces the render models, which are then used
     // by the `RenderContext` to paint the scene.
-    public render() {
+    public render(): RenderModel[] {
         // Compute the projection matrix including the viewport and camera
         // transformation matrices.
         const projection = this.camera.m
@@ -86,7 +86,7 @@ export class Scene implements ISceneOptions {
             .multiply(this.camera.projection);
         const viewport = this.viewport.postscale;
 
-        const renderModels = [];
+        const renderModels: RenderModel[]  = [];
         this.model.eachRenderable(
             (light: Light, transform: Matrix) => {
                 // Compute light model data.

@@ -13,7 +13,7 @@ const DEFAULT_NORMAL = Points.Z();
 
 export interface IRenderData {
     points: Point[];
-    bounds: Bounds;
+    // bounds: Bounds;
     barycenter: Point;
     normal: Point;
     v0: Point;
@@ -64,7 +64,10 @@ export class RenderModel {
         // Apply model transforms to surface points
         this._math(this.transformed, this.points, this.transform, false);
         // Project into camera space
-        const cameraSpace = this.transformed.points.map((p) => p.copy().transform(this.projection));
+        const cameraSpace: Point[] = [];
+        for(const p of this.transformed.points) {
+            cameraSpace.push(p.copy().transform(this.projection))
+        }
         this.inFrustrum = this._checkFrustrum(cameraSpace);
 
         // Project into screen space
@@ -84,7 +87,7 @@ export class RenderModel {
     private _initRenderData(): IRenderData {
         return {
             points: this.points.map((p) => p.copy()),
-            bounds: new Bounds(),
+            // bounds: new Bounds(),
             barycenter: new Point(),
             normal: new Point(),
             v0: new Point(),
@@ -94,7 +97,6 @@ export class RenderModel {
 
     private _math(set: IRenderData, points: Point[], transform: Matrix, applyClip = false) {
         // Apply transform to points
-
         for (let i = 0; i < points.length; i++) {
             const p = points[i];
             const sp = set.points[i];
@@ -115,10 +117,8 @@ export class RenderModel {
         set.barycenter.divide(set.points.length);
 
         // Compute the bounding box of the points
-        set.bounds.reset();
-        for (const p of set.points) {
-            set.bounds.add(p);
-        }
+        // Actually, skip this because it's not used and this is the inner loop!
+        // set.bounds.resetTo(set.points);
 
         // Compute normal, which is used for backface culling (when enabled)
         if (set.points.length < 2) {

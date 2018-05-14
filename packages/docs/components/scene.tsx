@@ -65,7 +65,7 @@ export class BasicSceneDemo extends React.PureComponent<IBasicSceneDemoProps> {
 }
 
 export const SceneDemoSphere = () => {
-    const sphere = Shapes.sphere(2).scale(0.4);
+    const sphere = Shapes.sphere(3).scale(0.4);
     Colors.randomSurfaces2(sphere);
     const shapes = new Model().scale(400).add(sphere);
     const onAnimate = (t: number, dt: number) => shapes.rotx(dt * 1e-4).roty(0.7 * dt * 1e-4)
