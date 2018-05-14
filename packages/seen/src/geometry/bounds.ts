@@ -1,6 +1,8 @@
 import { Point } from "./point";
 
-// The `Bounds` object contains an axis-aligned bounding box.
+/**
+ * An axis-aligned bounding box.
+ */
 export class Bounds {
     public static points(points: Point[]) {
         const box = new Bounds();
@@ -10,11 +12,11 @@ export class Bounds {
         return box;
     }
 
-    public static xywh(x, y, w, h) {
+    public static xywh(x: number, y: number, w: number, h: number) {
         return Bounds.xyzwhd(x, y, 0, w, h, 0);
     }
 
-    public static xyzwhd(x, y, z, w, h, d) {
+    public static xyzwhd(x: number, y: number, z: number, w: number, h: number, d: number) {
         const box = new Bounds();
         box.add(new Point(x, y, z));
         box.add(new Point(x + w, y + h, z + d));
@@ -23,7 +25,9 @@ export class Bounds {
 
     public constructor(private min: Point = null, private max: Point = null) {}
 
-    // Creates a copy of this box object with the same bounds
+    /**
+     * Creates a copy of this box object with the same bounds
+     */
     public copy() {
         const box = new Bounds();
         box.min = this.min != null ? this.min.copy() : null;
@@ -31,7 +35,9 @@ export class Bounds {
         return box;
     }
 
-    // Adds this point to the bounding box, extending it if necessary
+    /**
+     * Adds this point to the bounding box, extending it if necessary
+     */
     public add(p: Point) {
         if (!(this.min != null && this.max != null)) {
             this.min = p.copy();
@@ -48,13 +54,17 @@ export class Bounds {
         return this;
     }
 
-    // Returns true of this box contains at least one point
+    /**
+     * Returns true of this box contains at least one point
+     */
     public valid() {
         return this.min != null && this.max != null;
     }
 
-    // Trims this box so that it results in the intersection of this box and the
-    // supplied box.
+    /**
+     * Trims this box so that it results in the intersection of this box and the
+     * supplied box.
+     */
     public intersect(box: Bounds) {
         if (!this.valid() || !box.valid()) {
             this.min = null;
@@ -79,7 +89,9 @@ export class Bounds {
         return this;
     }
 
-    // Pads the min and max of this box using the supplied x, y, and z
+    /**
+     * Pads the min and max of this box using the supplied x, y, and z
+     */
     public pad(x: number, y: number, z: number) {
         if (this.valid()) {
             if (y == null) {
@@ -95,7 +107,9 @@ export class Bounds {
         return this;
     }
 
-    // Returns this bounding box to an empty state
+    /**
+     * Returns this bounding box to an empty state
+     */
     public reset() {
         this.min = null;
         this.max = null;
