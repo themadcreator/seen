@@ -1,19 +1,14 @@
-export * from "./geometry";
-export * from "./interaction";
-export * from "./render";
-export * from "./shapes";
-
 export * from "./animator";
 export * from "./camera";
-export * from "./color";
 export * from "./events";
+export * from "./geometry";
 export * from "./index";
-export * from "./light";
-export * from "./materials";
+export * from "./interaction";
 export * from "./model";
+export * from "./render";
 export * from "./scene";
-export * from "./shaders";
-export * from "./surface";
+export * from "./shade";
+export * from "./shapes";
 export * from "./transformable";
 export * from "./util";
 

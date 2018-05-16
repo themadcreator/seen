@@ -1,10 +1,8 @@
-import { Light, Lights } from "./light";
+import { Colors, Light, Lights } from "./shade";
+import { Matrix, Point } from "./geometry";
 
-import { Colors } from "./color";
 import { LightRenderModel } from "./render/model";
-import { Matrix } from "./geometry/matrix";
-import { Point } from "./geometry/point";
-import { Shape } from "./surface";
+import { Shape } from "./shapes";
 import { Transformable } from "./transformable";
 
 export type IModelChild = Model | Shape | Light;

@@ -1,8 +1,8 @@
 import { Color, Colors } from "./color";
 
-import { Point } from "./geometry/point";
-import { Transformable } from "./transformable";
-import { Util } from "./util";
+import { Point } from "../geometry";
+import { Transformable } from "../transformable";
+import { Util } from "../util";
 
 export type LightType = "point" | "directional" | "ambient";
 export interface ILightOptions {

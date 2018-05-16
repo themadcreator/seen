@@ -1,9 +1,8 @@
 import { Camera, IViewport, Viewports } from "./camera";
-import { IShader, Shaders } from "./shaders";
+import { IShader, Light, Shaders } from "./shade";
 import { LightRenderModel, RenderModel } from "./render/model";
-import { Shape, Surface } from "./surface";
+import { Shape, Surface } from "./shapes";
 
-import { Light } from "./light";
 import { Matrix } from "./geometry/matrix";
 import { Model } from "./model";
 import { Util } from "./util";

@@ -1,9 +1,9 @@
 import { Color, Colors } from "./color";
 
-import { IRenderData } from "./render/model";
+import { IRenderData } from "../render/model";
 import { IShader } from "./shaders";
 import { Light } from "./light";
-import { Util } from "./util";
+import { Util } from "../util";
 
 export interface IMaterialOptions {
     /**

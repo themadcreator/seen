@@ -3,8 +3,9 @@ let NEXT_UNIQUE_ID = 1; // An auto-incremented value
 
 export const Util = {
     /**
-     * Copies default values. First, overwrite undefined attributes of `obj` from
-     * `opts`. Second, overwrite undefined attributes of `obj` from `defaults`.
+     * Copies default values. First, overwrite undefined attributes of `obj`
+     * from `opts`. Second, overwrite undefined attributes of `obj` from
+     * `defaults`.
      */
     defaults<T>(obj: T, opts: Partial<T>, defaults: Partial<T>): void {
         for (var prop in opts) {
@@ -20,8 +21,8 @@ export const Util = {
     },
 
     /**
-     * Returns `true` iff the supplied `Arrays` are the same size and contain the
-     * same values.
+     * Returns `true` iff the supplied `Arrays` are the same size and contain
+     * the same values.
      */
     arraysEqual(a: any[], b: any[]) {
         if (a.length !== b.length) {
@@ -44,8 +45,8 @@ export const Util = {
     },
 
     /**
-     * Accept a DOM element or a string. If a string is provided, we assume it is
-     * the id of an element, which we return.
+     * Accept a DOM element or a string. If a string is provided, we assume it
+     * is the id of an element, which we return.
      */
     element(elementOrString: HTMLElement | string) {
         if (typeof elementOrString === "string") {

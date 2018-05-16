@@ -1,11 +1,8 @@
-import { Point, Points } from "../geometry/point";
+import { Bounds, Matrix, Point, Points } from "../geometry";
+import { Color, Light } from "../shade";
 
-import { Bounds } from "../geometry/bounds";
-import { Color } from "../color";
 import { IViewport } from "../camera";
-import { Light } from "../light";
-import { Matrix } from "../geometry/matrix";
-import { Surface } from "../surface";
+import { Surface } from "../shapes";
 
 const DEFAULT_NORMAL = Points.Z();
 
