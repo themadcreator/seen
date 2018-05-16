@@ -1,14 +1,6 @@
-/*
- * decaffeinate suggestions:
- * DS001: Remove Babel/TypeScript constructor workaround
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 
-seen.MocapModel = class MocapModel {
-    constructor(model, frames, frameDelay) {
+export class MocapModel {
+    constructor(private model, private frames, private frameDelay) {
         this.model = model;
         this.frames = frames;
         this.frameDelay = frameDelay;
@@ -23,10 +15,12 @@ seen.MocapModel = class MocapModel {
     }
 };
 
-seen.MocapAnimator = class MocapAnimator extends seen.Animator {
+class MocapAnimator extends Animator {
     constructor(mocap) {
         {
-            // Hack: trick Babel/TypeScript into allowing this before super.
+            /**
+             * Hack: trick Babel/TypeScript into allowing this before super.
+             */
             if (false) {
                 super();
             }
@@ -49,7 +43,7 @@ seen.MocapAnimator = class MocapAnimator extends seen.Animator {
     }
 };
 
-seen.Mocap = class Mocap {
+class Mocap {
     static DEFAULT_SHAPE_FACTORY(joint, endpoint) {
         return seen.Shapes.pipe(seen.P(), endpoint);
     }
@@ -76,7 +70,9 @@ seen.Mocap = class Mocap {
     _generateFrameTransforms(frame, joints) {
         let fi = 0;
         const transforms = joints.map((joint) => {
-            // Apply channel actions in reverse order
+            /**
+             * Apply channel actions in reverse order
+             */
             const m = seen.M();
             let ai = joint.channels.length;
             while (ai > 0) {
@@ -85,7 +81,9 @@ seen.Mocap = class Mocap {
             }
             fi += joint.channels.length;
 
-            // Include offset as final tranform
+            /**
+             * Include offset as final tranform
+             */
             m.multiply(joint.offset);
 
             return {
@@ -122,7 +120,9 @@ seen.Mocap = class Mocap {
     }
 
     _attachJoint(model, joint, joints, shapeFactory) {
-        // Save joint offset
+        /**
+         * Save joint offset
+         */
         const offset = seen
             .M()
             .translate(
@@ -132,7 +132,9 @@ seen.Mocap = class Mocap {
             );
         model.transform(offset);
 
-        // Create channel actions
+        /**
+         * Create channel actions
+         */
         if (joint.channels != null) {
             joints.push({
                 shape: model,
@@ -142,11 +144,15 @@ seen.Mocap = class Mocap {
         }
 
         if (joint.joints != null) {
-            // Append a model to store the child shapes
+            /**
+             * Append a model to store the child shapes
+             */
             const childShapes = model.append();
 
             for (let child of Array.from(joint.joints)) {
-                // Generate the child shape with the supplied shape factory
+                /**
+                 * Generate the child shape with the supplied shape factory
+                 */
                 const p = seen.P(
                     child.offset != null ? child.offset.x : undefined,
                     child.offset != null ? child.offset.y : undefined,
@@ -154,7 +160,9 @@ seen.Mocap = class Mocap {
                 );
                 childShapes.add(shapeFactory(joint, p));
 
-                // Recurse with a new model for any child joints
+                /**
+                 * Recurse with a new model for any child joints
+                 */
                 if (child.type === "JOINT") {
                     this._attachJoint(childShapes.append(), child, joints, shapeFactory);
                 }

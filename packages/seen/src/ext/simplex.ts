@@ -1,9 +1,13 @@
 
-// Adapted from https://github.com/josephg/noisejs/blob/master/perlin.js
+/**
+ * Adapted from https://github.com/josephg/noisejs/blob/master/perlin.js
+ */
 
-// This code was placed in the public domain by its original author,
-// Stefan Gustavson. You may use it as you see fit, but
-// attribution is appreciated.
+/**
+ * This code was placed in the public domain by its original author,
+ * Stefan Gustavson. You may use it as you see fit, but
+ * attribution is appreciated.
+ */
 
 class Grad {
   constructor(
@@ -34,7 +38,9 @@ const grad3 = [
   new Grad( 0,-1,-1)
 ];
 
-// To remove the need for index wrapping, double the permutation table length
+/**
+ * To remove the need for index wrapping, double the permutation table length
+ */
 // prettier-ignore
 const SIMPLEX_PERMUTATIONS_TABLE = [151,160,137,91,90,15,
   131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
@@ -61,8 +67,10 @@ export class Simplex3D {
     this.seed(seed);
   }
 
-  // This isn't a very good seeding function, but it works ok. It supports 2^16
-  // different seed values. Write something better if you need more seeds.
+  /**
+   * This isn't a very good seeding function, but it works ok. It supports 2^16
+   * different seed values. Write something better if you need more seeds.
+   */
   private seed(seed) {
     // Scale the seed out
     if((seed > 0) && (seed < 1)) {
@@ -126,10 +134,10 @@ export class Simplex3D {
       }
     }
 
-    // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
-    // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
-    // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
-    // c = 1/6.
+     // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
+     // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
+     // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
+     // c = 1/6.
     const x1 = (x0 - i1) + G3; // Offsets for second corner
     const y1 = (y0 - j1) + G3;
     const z1 = (z0 - k1) + G3;
@@ -184,8 +192,8 @@ export class Simplex3D {
       n3 = t3 * t3 * gi3.dot(x3, y3, z3);
     }
 
-    // Add contributions from each corner to get the final noise value.
-    // The result is scaled to return values in the interval [-1,1].
+    // Add contributions from each corner to get the final noise value. The
+    // result is scaled to return values in the interval [-1,1].
     return 32 * (n0 + n1 + n2 + n3);
   }
 };

@@ -1,13 +1,11 @@
-import { Transformable } from "./transformable";
-import { Matrix } from "./geometry/matrix";
-import { Point } from "./geometry/point";
 import { Light, Lights } from "./light";
-import { Shape } from "./surface";
+
 import { Colors } from "./color";
 import { LightRenderModel } from "./render/model";
-
-// ## Models
-// ------------------
+import { Matrix } from "./geometry/matrix";
+import { Point } from "./geometry/point";
+import { Shape } from "./surface";
+import { Transformable } from "./transformable";
 
 export type IModelChild = Model | Shape | Light;
 
@@ -15,18 +13,22 @@ export type ILightVisitor = (light: Light, transform: Matrix) => LightRenderMode
 
 export type IShapeVisitor = (shape: Shape, lights: Light[], transform: Matrix) => void;
 
-// The object model class. It stores `Shapes`, `Lights`, and other `Models` as
-// well as a transformation matrix.
-//
-// Notably, models are hierarchical, like a tree. This means you can isolate
-// the transformation of groups of shapes in the scene, as well as create
-// chains of transformations for creating, for example, articulated skeletons.
+/**
+ * The object model class. It stores `Shapes`, `Lights`, and other `Models` as
+ * well as a transformation matrix.
+ *
+ * Notably, models are hierarchical, like a tree. This means you can isolate the
+ * transformation of groups of shapes in the scene, as well as create chains of
+ * transformations for creating, for example, articulated skeletons.
+ */
 export class Model extends Transformable {
     public children: IModelChild[] = [];
     public lights: Light[] = [];
 
-    // Add a `Shape`, `Light`, and other `Model` as a child of this `Model`
-    // Any number of children can by supplied as arguments.
+    /**
+     * Add a `Shape`, `Light`, and other `Model` as a child of this `Model`
+     * Any number of children can by supplied as arguments.
+     */
     public add(...childs: IModelChild[]) {
         for (let child of childs) {
             if (child instanceof Shape || child instanceof Model) {
@@ -38,9 +40,12 @@ export class Model extends Transformable {
         return this;
     }
 
-    // Remove a shape, model, or light from the model. NOTE: the scene may still
-    // contain a renderModel in its cache. If you are adding and removing many items,
-    // consider calling `.flush()` on the scene to flush its renderModel cache.
+    /**
+     * Remove a shape, model, or light from the model. NOTE: the scene may still
+     * contain a renderModel in its cache. If you are adding and removing many
+     * items, consider calling `.flush()` on the scene to flush its renderModel
+     * cache.
+     */
     public remove(...childs: IModelChild[]) {
         for (var child of childs) {
             let i: number;
@@ -54,14 +59,18 @@ export class Model extends Transformable {
         return this;
     }
 
-    // Create a new child model and return it.
+    /**
+     * Create a new child model and return it.
+     */
     public append() {
         const model = new Model();
         this.add(model);
         return model;
     }
 
-    // Visit each `Shape` in this `Model` and all recursive child `Model`s.
+    /**
+     * Visit each `Shape` in this `Model` and all recursive child `Model`s.
+     */
     public eachShape(visitor: (shape: Shape) => void) {
         for (let child of this.children) {
             if (child instanceof Shape) {
@@ -73,11 +82,13 @@ export class Model extends Transformable {
         }
     }
 
-    // Visit each `Light` and `Shape`, accumulating the recursive transformation
-    // matrices along the way. The light callback will be called with each light
-    // and its accumulated transform and it should return a `LightModel`. Each
-    // shape callback with be called with each shape and its accumulated
-    // transform as well as the list of light models that apply to that shape.
+    /**
+     * Visit each `Light` and `Shape`, accumulating the recursive transformation
+     * matrices along the way. The light callback will be called with each light
+     * and its accumulated transform and it should return a `LightModel`. Each
+     * shape callback with be called with each shape and its accumulated
+     * transform as well as the list of light models that apply to that shape.
+     */
     public eachRenderable(lightVisitor: ILightVisitor, shapeVisitor: IShapeVisitor) {
         return this._eachRenderable(lightVisitor, shapeVisitor, [], this.m);
     }
@@ -110,7 +121,9 @@ export class Model extends Transformable {
 }
 
 export const Models = {
-    // The default model contains standard Hollywood-style 3-part lighting
+    /**
+     * The default model contains standard Hollywood-style 3-part lighting
+     */
     default: () => {
         const model = new Model();
 

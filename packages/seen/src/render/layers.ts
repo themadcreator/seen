@@ -1,9 +1,6 @@
 import { IRenderLayerContext } from "./context";
 import { Scene } from "../scene";
 
-// ## Layers
-// ------------------
-
 export interface RenderLayer {
     render: (context: IRenderLayerContext) => void;
 }

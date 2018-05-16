@@ -13,7 +13,7 @@
       "src/**/*.ts"
     ],
     "exclude": [
-      "src/shapes/obj.ts",
-      "src/shapes/mocap.ts"
+      "src/ext/obj.ts",
+      "src/ext/mocap.ts"
     ]
   }

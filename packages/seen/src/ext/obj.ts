@@ -1,14 +1,8 @@
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+/**
+ * Parser for Wavefront .obj files
+ *
+ * Note: Wavefront .obj array indicies are 1-based.
  */
-// Parser for Wavefront .obj files
-//
-// Note: Wavefront .obj array indicies are 1-based.
 seen.ObjParser = class ObjParser {
     constructor() {
         this.vertices = [];
@@ -33,11 +27,15 @@ seen.ObjParser = class ObjParser {
                 data = data.slice(1);
 
                 if (command.charAt(0) === "#") {
-                    // Check for comments
+                    /**
+                     * Check for comments
+                     */
                     continue;
                 }
                 if (this.commands[command] == null) {
-                    // Check that we know how the handle this command
+                    /**
+                     * Check that we know how the handle this command
+                     */
                     console.log(`OBJ Parser: Skipping unknown command '${command}'`);
                     continue;
                 }
@@ -56,7 +54,9 @@ seen.ObjParser = class ObjParser {
     }
 };
 
-// This method accepts Wavefront .obj file content and returns a `Shape` object.
+/**
+ * This method accepts Wavefront .obj file content and returns a `Shape` object.
+ */
 seen.Shapes.obj = function(objContents, cullBackfaces) {
     if (cullBackfaces == null) {
         cullBackfaces = true;

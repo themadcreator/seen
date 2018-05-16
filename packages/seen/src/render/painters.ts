@@ -1,14 +1,12 @@
-import { IRenderLayerContext } from "./context";
 import { Affine } from "../geometry/affine";
+import { IRenderLayerContext } from "./context";
 import { Point } from "../geometry/point";
 import { RenderModel } from "./model";
 
-// ## Painters
-// #### Surface painters
-// ------------------
-
-// Each `Painter` overrides the paint method. It uses the supplied
-// `IRenderLayerContext`"s builders to create and style the geometry on screen.
+/**
+ * Each `Painter` overrides the paint method. It uses the supplied
+ * `IRenderLayerContext`"s builders to create and style the geometry on screen.
+ */
 export interface IPainter {
     paint: (renderModel: RenderModel, context: IRenderLayerContext) => void;
 }

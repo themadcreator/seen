@@ -116,8 +116,10 @@ export class Bounds {
         return this;
     }
 
-    // Do everything we can to avoid copying points because object creation is
-    // slow
+    /**
+     * Do everything we can to avoid copying points because object creation is
+     * slow
+     */
     public resetTo(points: Point[]) {
         if (points.length === 0) {
             this.reset();
@@ -143,8 +145,10 @@ export class Bounds {
         }
     }
 
-    // Return true iff the point p lies within this bounding box. Points on the
-    // edge of the box are included.
+    /**
+     * Return true iff the point p lies within this bounding box. Points on the
+     * edge of the box are included.
+     */
     public contains(p: Point) {
         if (!this.valid()) {
             return false;
@@ -159,7 +163,9 @@ export class Bounds {
         }
     }
 
-    // Returns the center of the box or zero if no points are in the box
+    /**
+     * Returns the center of the box or zero if no points are in the box
+     */
     public center() {
         return new Point(
             this.minX() + this.width() / 2,
@@ -168,17 +174,23 @@ export class Bounds {
         );
     }
 
-    // Returns the width (x extent) of the box
+    /**
+     * Returns the width (x extent) of the box
+     */
     public width() {
         return this.maxX() - this.minX();
     }
 
-    // Returns the height (y extent) of the box
+    /**
+     * Returns the height (y extent) of the box
+     */
     public height() {
         return this.maxY() - this.minY();
     }
 
-    // Returns the depth (z extent) of the box
+    /**
+     * Returns the depth (z extent) of the box
+     */
     public depth() {
         return this.maxZ() - this.minZ();
     }

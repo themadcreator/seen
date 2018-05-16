@@ -1,16 +1,16 @@
 import { Point, Points } from "./geometry/point";
+
 import { Color } from "./color";
+import { IRenderData } from "./render/model";
 import { Light } from "./light";
 import { Material } from "./materials";
-import { IRenderData } from "./render/model";
-
-// ## Shaders
-// ------------------
 
 const EYE_NORMAL = Points.Z();
 
-// These shading functions compute the shading for a surface. To reduce code
-// duplication, we aggregate them in a utils object.
+/**
+ * These shading functions compute the shading for a surface. To reduce code
+ * duplication, we aggregate them in a utils object.
+ */
 const ShaderUtils = {
     applyDiffuse(c: Color, light: Light, lightNormal: Point, surfaceNormal: Point, material: Material) {
         const dot = lightNormal.dot(surfaceNormal);
@@ -45,20 +45,29 @@ const ShaderUtils = {
     },
 };
 
-// The `Shader` class is the base class for all shader objects.
+/**
+ * The `Shader` class is the base class for all shader objects.
+ */
 export interface IShader {
-    // Every `Shader` implementation must override the `shade` method.
-    //
-    // `lights` is an object containing the ambient, point, and directional light sources.
-    // `renderModel` is an instance of `RenderModel` and contains the transformed and projected surface data.
-    // `material` is an instance of `Material` and contains the color and other attributes for determining how light reflects off the surface.
+    /**
+     * Every `Shader` implementation must override the `shade` method.
+     *
+     * - `lights` is an object containing the ambient, point, and directional
+     *   light sources.
+     * - `renderModel` is an instance of `RenderModel` and contains the
+     *   transformed and projected surface data.
+     * - `material` is an instance of `Material` and contains the color and
+     *   other attributes for determining how light reflects off the surface.
+     */
     shade: (lights: Light[], renderModel: IRenderData, material: Material) => Color; // Override this
 }
 
-// The `Phong` shader implements the Phong shading model with a diffuse,
-// specular, and ambient term.
-//
-// See https://en.wikipedia.org/wiki/Phong_reflection_model for more information
+/**
+ * The `Phong` shader implements the Phong shading model with a diffuse,
+ * specular, and ambient term.
+ *
+ * See https://en.wikipedia.org/wiki/Phong_reflection_model for more information
+ */
 export class Phong implements IShader {
     public shade(lights: Light[], renderModel: IRenderData, material: Material) {
         const c = new Color();
@@ -92,16 +101,18 @@ export class Phong implements IShader {
     }
 }
 
-// The `DiffusePhong` shader implements the Phong shading model with a diffuse
-// and ambient term (no specular).
+/**
+ * The `DiffusePhong` shader implements the Phong shading model with a diffuse
+ * and ambient term (no specular).
+ */
 export class DiffusePhong implements IShader {
     public shade(lights: Light[], renderModel: IRenderData, material: Material) {
         const c = new Color();
 
-        for (let light of lights) {
+        for (const light of lights) {
             switch (light.type) {
                 case "point":
-                    var lightNormal = light.point
+                    const lightNormal = light.point
                         .copy()
                         .subtract(renderModel.barycenter)
                         .normalize();
@@ -121,12 +132,14 @@ export class DiffusePhong implements IShader {
     }
 }
 
-// The `Ambient` shader colors surfaces from ambient light only.
+/**
+ * The `Ambient` shader colors surfaces from ambient light only.
+ */
 export class Ambient implements IShader {
     public shade(lights: Light[], renderModel: IRenderData, material: Material) {
         const c = new Color();
 
-        for (let light of lights) {
+        for (const light of lights) {
             switch (light.type) {
                 case "ambient":
                     ShaderUtils.applyAmbient(c, light);
@@ -139,8 +152,10 @@ export class Ambient implements IShader {
     }
 }
 
-// The `Flat` shader colors surfaces with the material color, disregarding all
-// light sources.
+/**
+ * The `Flat` shader colors surfaces with the material color, disregarding all
+ * light sources.
+ */
 export class Flat implements IShader {
     public shade(lights: Light[], renderModel: IRenderData, material: Material) {
         return material.color;

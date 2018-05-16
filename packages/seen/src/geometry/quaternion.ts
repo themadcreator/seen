@@ -1,28 +1,40 @@
-import { Matrix } from "./matrix";
 import { Point, Points } from "./point";
 
-// A Quaterionion class for computing quaterion multiplications. This creates
-// more natural mouse rotations.
-//
-// Attribution: adapted from http://glprogramming.com/codedump/godecho/quaternion.html
+import { Matrix } from "./matrix";
+
+/**
+ * A Quaterionion class for computing quaterion multiplications. This creates
+ * more natural mouse rotations.
+ *
+ * Attribution: adapted from
+ * http://glprogramming.com/codedump/godecho/quaternion.html
+ */
 export class Quaternion {
     public static pixelsPerRadian = 150;
 
-    // Convert the x and y pixel offsets into a rotation matrix
+    /**
+     * Convert the x and y pixel offsets into a rotation matrix
+     */
     public static xyToTransform(x: number, y: number) {
         const quatX = Quaternion.pointAngle(Points.Y(), x / Quaternion.pixelsPerRadian);
         const quatY = Quaternion.pointAngle(Points.X(), y / Quaternion.pixelsPerRadian);
         return quatX.multiply(quatY).toMatrix();
     }
 
-    // Create a rotation matrix from the axis defined by x, y, and z values, and the supplied angle.
+    /**
+     * Create a rotation matrix from the axis defined by x, y, and z values, and
+     * the supplied angle.
+     */
     public static axisAngle(x: number, y: number, z: number, angleRads: number) {
         const scale = Math.sin(angleRads / 2.0);
         const w = Math.cos(angleRads / 2.0);
         return new Quaternion(scale * x, scale * y, scale * z, w);
     }
 
-    // Create a rotation matrix from the axis defined by the supplied point and the supplied angle.
+    /**
+     * Create a rotation matrix from the axis defined by the supplied point and
+     * the supplied angle.
+     */
     public static pointAngle(p, angleRads) {
         const scale = Math.sin(angleRads / 2.0);
         const w = Math.cos(angleRads / 2.0);
@@ -35,7 +47,9 @@ export class Quaternion {
         this.q = new Point(x, y, z, w);
     }
 
-    // Multiply this `Quaterionion` by the `Quaternion` argument.
+    /**
+     * Multiply this `Quaterionion` by the `Quaternion` argument.
+     */
     public multiply(q) {
         const r = new Point();
 
@@ -49,7 +63,9 @@ export class Quaternion {
         return result;
     }
 
-    // Convert this `Quaterion` into a transformation matrix.
+    /**
+     * Convert this `Quaterion` into a transformation matrix.
+     */
     public toMatrix() {
         const m = new Array(16);
 

@@ -1,24 +1,24 @@
-import { RenderContext, IRenderLayerContext } from "./context";
-import { Point } from "../geometry/point";
-import { Util } from "../util";
-import { RenderLayer } from "./layers";
-import { Scene } from "../scene";
 import {
+    ICirclePainter,
+    IFillStyle,
     IPathPainter,
     IRectPainter,
-    ITextPainter,
-    ICirclePainter,
-    ITextStyle,
-    IFillStyle,
     IStrokeStyle,
+    ITextPainter,
+    ITextStyle,
 } from "./painters";
+import { IRenderLayerContext, RenderContext } from "./context";
 
-// ## SVG Context
-// ------------------
+import { Point } from "../geometry/point";
+import { RenderLayer } from "./layers";
+import { Scene } from "../scene";
+import { Util } from "../util";
 
 export type SvgElementFactory = (tag: string) => SVGElement;
 
-// Creates a new SVG element in the SVG namespace.
+/**
+ * Creates a new SVG element in the SVG namespace.
+ */
 const svg: SvgElementFactory = (tag: string) => document.createElementNS("http://www.w3.org/2000/svg", tag);
 
 export class SvgStyler {
@@ -159,13 +159,15 @@ export class SvgLayerRenderContext implements IRenderLayerContext {
         }
     }
 
-    // Returns an element with tagname `type`.
-    //
-    // This method uses an internal iterator to add new elements as they are
-    // drawn. If there is no child element at the current index, we append one
-    // and return it. If an element exists at the current index and it is the
-    // same type, we return that. If the element is a different type, we create
-    // one and replace it then return it.
+    /**
+     * Returns an element with tagname `type`.
+     *
+     * This method uses an internal iterator to add new elements as they are
+     * drawn. If there is no child element at the current index, we append one
+     * and return it. If an element exists at the current index and it is the
+     * same type, we return that. If the element is a different type, we create
+     * one and replace it then return it.
+     */
     private _elementFactory(type: string) {
         let path;
         const children = this.group.childNodes;

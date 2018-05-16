@@ -1,33 +1,32 @@
-import { Points, Point } from "../geometry/point";
+import { Point, Points } from "../geometry/point";
+
 import { Bounds } from "../geometry/bounds";
+import { Color } from "../color";
+import { IViewport } from "../camera";
+import { Light } from "../light";
 import { Matrix } from "../geometry/matrix";
 import { Surface } from "../surface";
-import { IViewport } from "../camera";
-import { Color } from "../color";
-import { Light } from "../light";
-
-// ## RenderModels
-// ------------------
 
 const DEFAULT_NORMAL = Points.Z();
 
 export interface IRenderData {
     points: Point[];
-    // bounds: Bounds;
     barycenter: Point;
     normal: Point;
     v0: Point;
     v1: Point;
 }
 
-// The `RenderModel` object contains the transformed and projected points as
-// well as various data needed to shade and paint a `Surface`.
-//
-// Once initialized, the object will have a constant memory footprint down to
-// `Number` primitives. Also, we compare each transform and projection to
-// prevent unnecessary re-computation.
-//
-// If you need to force a re-computation, mark the surface as 'dirty'.
+/**
+ * The `RenderModel` object contains the transformed and projected points as
+ * well as various data needed to shade and paint a `Surface`.
+ *
+ * Once initialized, the object will have a constant memory footprint down to
+ * `Number` primitives. Also, we compare each transform and projection to
+ * prevent unnecessary re-computation.
+ *
+ * If you need to force a re-computation, mark the surface as 'dirty'.
+ */
 export class RenderModel {
     public points: Point[];
     public transformed: IRenderData;
@@ -63,6 +62,7 @@ export class RenderModel {
     private _update() {
         // Apply model transforms to surface points
         this._math(this.transformed, this.points, this.transform, false);
+
         // Project into camera space
         const cameraSpace: Point[] = [];
         for(const p of this.transformed.points) {
@@ -76,18 +76,21 @@ export class RenderModel {
     }
 
     private _checkFrustrum(points) {
-        // TODO figure out frustrum calculation!!!
+        /**
+         * TODO figure out frustrum calculation!!!
+         */
         return true;
-        // for (let p of points) {
-        //    if (p.z > -2) { return true; }
-        // }
-        // return false;
+        /**
+         * for (let p of points) {
+         *    if (p.z > -2) { return true; }
+         * }
+         * return false;
+         */
     }
 
     private _initRenderData(): IRenderData {
         return {
             points: this.points.map((p) => p.copy()),
-            // bounds: new Bounds(),
             barycenter: new Point(),
             normal: new Point(),
             v0: new Point(),
@@ -101,8 +104,8 @@ export class RenderModel {
             const p = points[i];
             const sp = set.points[i];
             sp.set(p).transform(transform);
-            // Applying the clip is what ultimately scales the x and y coordinates in
-            // a perpsective projection
+            // Applying the clip is what ultimately scales the x and y
+            // coordinates in a perpsective projection
             if (applyClip) {
                 sp.divide(sp.w);
             }
@@ -115,10 +118,6 @@ export class RenderModel {
             set.barycenter.add(p);
         }
         set.barycenter.divide(set.points.length);
-
-        // Compute the bounding box of the points
-        // Actually, skip this because it's not used and this is the inner loop!
-        // set.bounds.resetTo(set.points);
 
         // Compute normal, which is used for backface culling (when enabled)
         if (set.points.length < 2) {
@@ -136,8 +135,10 @@ export class RenderModel {
     }
 }
 
-// The `LightRenderModel` stores pre-computed values necessary for shading
-// surfaces with the supplied `Light`.
+/**
+ * The `LightRenderModel` stores pre-computed values necessary for shading
+ * surfaces with the supplied `Light`.
+ */
 export class LightRenderModel {
     public colorIntensity: Color;
     public type: string;

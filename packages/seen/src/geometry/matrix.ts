@@ -1,8 +1,10 @@
 import { Util } from "../util";
 
-// ## Math
-// #### Matrices, points, and other mathy stuff
-// ------------------
+/**
+ * ## Math
+ * #### Matrices, points, and other mathy stuff
+ * ------------------
+ */
 
 export interface IMatrixArray {
     slice: () => IMatrix;
@@ -17,11 +19,14 @@ export type IMatrix = IMatrixArray | [
     number, number, number, number
 ];
 
-// Pool object to speed computation and reduce object creation
+/**
+ * Pool object to speed computation and reduce object creation
+ */
 let ARRAY_POOL: IMatrix = new Array<number>(16);
 
-// Definition of identity matrix values
-
+/**
+ * Definition of identity matrix values
+ */
 // prettier-ignore
 export const IDENTITY: IMatrix = [
     1, 0, 0, 0,
@@ -30,8 +35,9 @@ export const IDENTITY: IMatrix = [
     0, 0, 0, 1
 ];
 
-// Indices with which to transpose the matrix array
-
+/**
+ * Indices with which to transpose the matrix array
+ */
 // prettier-ignore
 const TRANSPOSE_INDICES: IMatrix = [
     0, 4, 8, 12,
@@ -40,30 +46,39 @@ const TRANSPOSE_INDICES: IMatrix = [
     3, 7, 11, 15
 ];
 
-// The `Matrix` class stores transformations in the scene. These include:
-// (1) Camera Projection and Viewport transformations.
-// (2) Transformations of any `Transformable` type object, such as `Shape`s or `Model`s
-//
-// Most of the methods on `Matrix` are destructive, so be sure to use `.copy()`
-// when you want to preserve an object's value.
+/**
+ * The `Matrix` class stores transformations in the scene. These include:
+ * 1) Camera Projection and Viewport transformations.
+ * 2) Transformations of any `Transformable` type object, such as `Shape`s or
+ *    `Model`s
+ *
+ * Most of the methods on `Matrix` are destructive, so be sure to use `.copy()`
+ * when you want to preserve an object's value.
+ */
 export class Matrix {
     public m: IMatrix;
     private baked: IMatrix;
 
-    // Accepts a 16-value `Array`, defaults to the identity matrix.
+    /**
+     * Accepts a 16-value `Array`, defaults to the identity matrix.
+     */
     constructor(m?: IMatrix) {
         this.m = m || IDENTITY.slice();
         this.baked = IDENTITY;
     }
 
-    // Returns a new matrix instances with a copy of the value array
+    /**
+     * Returns a new matrix instances with a copy of the value array
+     */
     public copy() {
         return new Matrix(this.m.slice());
     }
 
-    // Multiply by the 16-value `Array` argument. This method uses the
-    // `ARRAY_POOL`, which prevents us from having to re-initialize a new
-    // temporary matrix every time. This drastically improves performance.
+    /**
+     * Multiply by the 16-value `Array` argument. This method uses the
+     * `ARRAY_POOL`, which prevents us from having to re-initialize a new
+     * temporary matrix every time. This drastically improves performance.
+     */
     public matrix(m) {
         const c = ARRAY_POOL;
         for (let j = 0; j < 4; j++) {
@@ -81,25 +96,33 @@ export class Matrix {
         return this;
     }
 
-    // Resets the matrix to the baked-in (default: identity).
+    /**
+     * Resets the matrix to the baked-in (default: identity).
+     */
     public reset() {
         this.m = this.baked.slice();
         return this;
     }
 
-    // Sets the array that this matrix will return to when calling `.reset()`.
-    // With no arguments, it uses the current matrix state.
+    /**
+     * Sets the array that this matrix will return to when calling `.reset()`.
+     * With no arguments, it uses the current matrix state.
+     */
     public bake(m?: IMatrix) {
         this.baked = (m != null ? m : this.m).slice();
         return this;
     }
 
-    // Multiply by the `Matrix` argument.
+    /**
+     * Multiply by the `Matrix` argument.
+     */
     public multiply(b: Matrix) {
         return this.matrix(b.m);
     }
 
-    // Tranposes this matrix
+    /**
+     * Tranposes this matrix
+     */
     public transpose() {
         const c = ARRAY_POOL;
         for (let i = 0; i < TRANSPOSE_INDICES.length; i++) {
@@ -111,7 +134,9 @@ export class Matrix {
         return this;
     }
 
-    // Apply a rotation about the X axis. `Theta` is measured in Radians
+    /**
+     * Apply a rotation about the X axis. `Theta` is measured in Radians
+     */
     public rotx(theta: number) {
         const ct = Math.cos(theta);
         const st = Math.sin(theta);
@@ -119,7 +144,9 @@ export class Matrix {
         return this.matrix(rm);
     }
 
-    // Apply a rotation about the Y axis. `Theta` is measured in Radians
+    /**
+     * Apply a rotation about the Y axis. `Theta` is measured in Radians
+     */
     public roty(theta: number) {
         const ct = Math.cos(theta);
         const st = Math.sin(theta);
@@ -127,7 +154,9 @@ export class Matrix {
         return this.matrix(rm);
     }
 
-    // Apply a rotation about the Z axis. `Theta` is measured in Radians
+    /**
+     * Apply a rotation about the Z axis. `Theta` is measured in Radians
+     */
     public rotz(theta: number) {
         const ct = Math.cos(theta);
         const st = Math.sin(theta);
@@ -135,15 +164,19 @@ export class Matrix {
         return this.matrix(rm);
     }
 
-    // Apply a translation. All arguments default to `0`
+    /**
+     * Apply a translation. All arguments default to `0`
+     */
     public translate(x = 0, y = 0, z = 0) {
         const rm = [1, 0, 0, x, 0, 1, 0, y, 0, 0, 1, z, 0, 0, 0, 1];
         return this.matrix(rm);
     }
 
-    // Apply a scale. If not all arguments are supplied, each dimension (x,y,z)
-    // is copied from the previous arugment. Therefore, `_scale()` is equivalent
-    // to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
+    /**
+     * Apply a scale. If not all arguments are supplied, each dimension (x,y,z)
+     * is copied from the previous arugment. Therefore, `_scale()` is equivalent
+     * to `_scale(1,1,1)`, and `_scale(1,-1)` is equivalent to `_scale(1,-1,-1)`
+     */
     public scale(sx: number, sy?: number, sz?: number) {
         if (sx == null) {
             sx = 1;
@@ -163,12 +196,16 @@ export class Matrix {
     }
 }
 
-// A convenience method for constructing Matrix objects.
+/**
+ * A convenience method for constructing Matrix objects.
+ */
 export const M = (m?: IMatrix) => {
     return new Matrix(m);
 };
 
-// A few useful Matrix objects.
+/**
+ * A few useful Matrix objects.
+ */
 export const Matrices = {
     identity() {
         return M();

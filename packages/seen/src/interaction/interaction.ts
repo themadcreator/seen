@@ -1,9 +1,6 @@
-import { Events, EventRegistrar } from "../events";
-import { Util } from "../util";
+import { EventRegistrar, Events } from "../events";
 
-// ## Interaction
-// #### Mouse drag and zoom
-// ------------------
+import { Util } from "../util";
 
 export interface IWindowEvents {
     mouseMove: (e: MouseEvent) => void;
@@ -15,7 +12,10 @@ export interface IWindowEvents {
     touchCancel: (e: TouchEvent) => void;
 }
 
-// A global window event dispatcher. Attaches listeners only if window is defined.
+/**
+ * A global window event dispatcher. Attaches listeners only if window is
+ * defined.
+ */
 export const WindowEvents = (() => {
     const events = new Events<IWindowEvents>();
 
@@ -42,9 +42,11 @@ export interface IMouseEvents {
     mouseWheel: (e: MouseWheelEvent) => void;
 }
 
-// An event dispatcher for mouse and drag events on a single dom element. The
-// available events are `'dragStart', 'drag', 'dragEnd', 'mouseMove',
-// 'mouseDown', 'mouseUp', 'mouseWheel'`
+/**
+ * An event dispatcher for mouse and drag events on a single dom element. The
+ * available events are `'dragStart', 'drag', 'dragEnd', 'mouseMove',
+ * 'mouseDown', 'mouseUp', 'mouseWheel'`
+ */
 export class MouseEvents implements EventRegistrar<IMouseEvents> {
     private el: HTMLElement;
     private isMouseDown = false;
@@ -57,14 +59,18 @@ export class MouseEvents implements EventRegistrar<IMouseEvents> {
         this.attach();
     }
 
-    // Attaches listeners to the element
+    /**
+     * Attaches listeners to the element
+     */
     public attach() {
         this.el.addEventListener("touchstart", this._onMouseDown);
         this.el.addEventListener("mousedown", this._onMouseDown);
         return this.el.addEventListener("mousewheel", this._onMouseWheel);
     }
 
-    // Dettaches listeners to the element
+    /**
+     * Dettaches listeners to the element
+     */
     public detach() {
         this.el.removeEventListener("touchstart", this._onMouseDown);
         this.el.removeEventListener("mousedown", this._onMouseDown);
@@ -109,7 +115,9 @@ export class MouseEvents implements EventRegistrar<IMouseEvents> {
 
 export type XYTuple = [number, number];
 
-// A class for computing mouse interia for interial scrolling
+/**
+ * A class for computing mouse interia for interial scrolling
+ */
 export class InertialMouse {
     public static inertiaExtinction = 0.1;
     public static smoothingTimeout = 300;
@@ -149,7 +157,9 @@ export class InertialMouse {
         return this;
     }
 
-    // Apply damping to slow the motion once the user has stopped dragging.
+    /**
+     * Apply damping to slow the motion once the user has stopped dragging.
+     */
     public damp() {
         this.x *= 1.0 - InertialMouse.inertiaExtinction;
         this.y *= 1.0 - InertialMouse.inertiaExtinction;
@@ -180,9 +190,11 @@ interface IDragState {
     inertia: InertialMouse;
 }
 
-// Adds simple mouse drag eventing to a DOM element. A 'drag' event is emitted
-// as the user is dragging their mouse. This is the easiest way to add mouse-
-// look or mouse-rotate to a scene.
+/**
+ * Adds simple mouse drag eventing to a DOM element. A 'drag' event is emitted
+ * as the user is dragging their mouse. This is the easiest way to add mouse-
+ * look or mouse-rotate to a scene.
+ */
 export class Drag implements IDragOptions, EventRegistrar<IDragEvents> {
     public static defaults(): IDragOptions {
         return { inertia: false };
@@ -276,7 +288,9 @@ export class Drag implements IDragOptions, EventRegistrar<IDragEvents> {
             return;
         }
 
-        // Apply damping and get x,y intertia values
+        /**
+         * Apply damping and get x,y intertia values
+         */
         const intertia = this._dragState.inertia.damp().get();
 
         if (Math.abs(intertia[0]) < 1 && Math.abs(intertia[1]) < 1) {
@@ -316,8 +330,10 @@ export interface IZoomEvents {
     zoom: (zoom: number) => void;
 }
 
-// Adds simple mouse wheel eventing to a DOM element. A 'zoom' event is emitted
-// as the user is scrolls their mouse wheel.
+/**
+ * Adds simple mouse wheel eventing to a DOM element. A 'zoom' event is emitted
+ * as the user is scrolls their mouse wheel.
+ */
 export class Zoom implements IZoomOptions, EventRegistrar<IZoomEvents> {
     public speed = 0.25;
     private el: HTMLElement;
@@ -332,7 +348,7 @@ export class Zoom implements IZoomOptions, EventRegistrar<IZoomEvents> {
         mouser.on("mouseWheel", this._onMouseWheel);
     }
 
-    _onMouseWheel(e: MouseWheelEvent) {
+    private _onMouseWheel(e: MouseWheelEvent) {
         // This prevents the page from scrolling when we mousewheel the element
         e.preventDefault();
 

@@ -1,21 +1,18 @@
-import { Point } from "../geometry/point";
-import { IRenderLayerContext, RenderContext } from "./context";
-import { Util } from "../util";
-import { RenderLayer } from "./layers";
-import { Scene } from "../scene";
-
 import {
-    IPathPainter,
-    IRectPainter,
-    ITextPainter,
     ICirclePainter,
     IFillStyle,
+    IPathPainter,
+    IRectPainter,
     IStrokeStyle,
+    ITextPainter,
     ITextStyle,
 } from "./painters";
+import { IRenderLayerContext, RenderContext } from "./context";
 
-// //// HTML5 Canvas Context
-// ------------------
+import { Point } from "../geometry/point";
+import { RenderLayer } from "./layers";
+import { Scene } from "../scene";
+import { Util } from "../util";
 
 export class CanvasStyler {
     constructor(public ctx: CanvasRenderingContext2D) {}

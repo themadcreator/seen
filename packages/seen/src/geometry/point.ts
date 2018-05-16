@@ -1,19 +1,25 @@
 import { Matrix } from "./matrix";
 
-// The `Point` object contains x,y,z, and w coordinates. `Point`s support
-// various arithmetic operations with other `Points`, scalars, or `Matrices`.
-//
-// Most of the methods on `Point` are destructive, so be sure to use `.copy()`
-// when you want to preserve an object's value.
+/**
+ * The `Point` object contains x,y,z, and w coordinates. `Point`s support
+ * various arithmetic operations with other `Points`, scalars, or `Matrices`.
+ *
+ * Most of the methods on `Point` are destructive, so be sure to use `.copy()`
+ * when you want to preserve an object's value.
+ */
 export class Point {
     constructor(public x = 0, public y = 0, public z = 0, public w = 1) {}
 
-    // Creates and returns a new `Point` with the same values as this object.
+    /**
+     * Creates and returns a new `Point` with the same values as this object.
+     */
     public copy() {
         return new Point(this.x, this.y, this.z, this.w);
     }
 
-    // Copies the values of the supplied `Point` into this object.
+    /**
+     * Copies the values of the supplied `Point` into this object.
+     */
     public set(p: Point) {
         this.x = p.x;
         this.y = p.y;
@@ -22,7 +28,9 @@ export class Point {
         return this;
     }
 
-    // Performs parameter-wise addition with the supplied `Point`. Excludes `@w`.
+    /**
+     * Performs parameter-wise addition with the supplied `Point`. Excludes `@w`.
+     */
     public add(q: Point) {
         this.x += q.x;
         this.y += q.y;
@@ -30,7 +38,9 @@ export class Point {
         return this;
     }
 
-    // Performs parameter-wise subtraction with the supplied `Point`. Excludes `@w`.
+    /**
+     * Performs parameter-wise subtraction with the supplied `Point`. Excludes `@w`.
+     */
     public subtract(q: Point) {
         this.x -= q.x;
         this.y -= q.y;
@@ -38,7 +48,9 @@ export class Point {
         return this;
     }
 
-    // Apply a translation.  Excludes `@w`.
+    /**
+     * Apply a translation.  Excludes `@w`.
+     */
     public translate(x = 0, y = 0, z = 0) {
         this.x += x;
         this.y += y;
@@ -46,7 +58,9 @@ export class Point {
         return this;
     }
 
-    // Multiplies each parameters by the supplied scalar value. Excludes `@w`.
+    /**
+     * Multiplies each parameters by the supplied scalar value. Excludes `@w`.
+     */
     public multiply(n = 1) {
         this.x *= n;
         this.y *= n;
@@ -54,7 +68,9 @@ export class Point {
         return this;
     }
 
-    // Divides each parameters by the supplied scalar value. Excludes `@w`.
+    /**
+     * Divides each parameters by the supplied scalar value. Excludes `@w`.
+     */
     public divide(n = 1) {
         this.x /= n;
         this.y /= n;
@@ -62,7 +78,9 @@ export class Point {
         return this;
     }
 
-    // Rounds each coordinate to the nearest integer. Excludes `@w`.
+    /**
+     * Rounds each coordinate to the nearest integer. Excludes `@w`.
+     */
     public round() {
         this.x = Math.round(this.x);
         this.y = Math.round(this.y);
@@ -70,7 +88,9 @@ export class Point {
         return this;
     }
 
-    // Truncates decimal each coordinate to the nearest integer. Excludes `@w`.
+    /**
+     * Truncates decimal each coordinate to the nearest integer. Excludes `@w`.
+     */
     public fix(digits = 2) {
         this.x = parseFloat(this.x.toFixed(digits));
         this.y = parseFloat(this.y.toFixed(digits));
@@ -78,7 +98,10 @@ export class Point {
         return this;
     }
 
-    // Divides this `Point` by its magnitude. If the point is (0,0,0) we return (0,0,1).
+    /**
+     * Divides this `Point` by its magnitude. If the point is (0,0,0) we return
+     * (0,0,1).
+     */
     public normalize() {
         const n = this.magnitude();
         if (n === 0) {
@@ -90,7 +113,9 @@ export class Point {
         return this;
     }
 
-    // Returns a new point that is perpendicular to this point
+    /**
+     * Returns a new point that is perpendicular to this point
+     */
     public perpendicular() {
         const n = this.copy().cross(Points.Z());
         const mag = n.magnitude();
@@ -102,58 +127,68 @@ export class Point {
             .normalize();
     }
 
-    // Apply a transformation from the supplied `Matrix`.
+    /**
+     * Apply a transformation from the supplied `Matrix`.
+     */
     public transform(matrix: Matrix) {
         const r = POINT_POOL;
 
         // prettier-ignore
         r.x =
-      this.x * matrix.m[0] +
-      this.y * matrix.m[1] +
-      this.z * matrix.m[2] +
-      this.w * matrix.m[3];
+            this.x * matrix.m[0] +
+            this.y * matrix.m[1] +
+            this.z * matrix.m[2] +
+            this.w * matrix.m[3];
 
         // prettier-ignore
         r.y =
-      this.x * matrix.m[4] +
-      this.y * matrix.m[5] +
-      this.z * matrix.m[6] +
-      this.w * matrix.m[7];
+            this.x * matrix.m[4] +
+            this.y * matrix.m[5] +
+            this.z * matrix.m[6] +
+            this.w * matrix.m[7];
 
         // prettier-ignore
         r.z =
-      this.x * matrix.m[8] +
-      this.y * matrix.m[9] +
-      this.z * matrix.m[10] +
-      this.w * matrix.m[11];
+            this.x * matrix.m[8] +
+            this.y * matrix.m[9] +
+            this.z * matrix.m[10] +
+            this.w * matrix.m[11];
 
         // prettier-ignore
         r.w =
-      this.x * matrix.m[12] +
-      this.y * matrix.m[13] +
-      this.z * matrix.m[14] +
-      this.w * matrix.m[15];
+            this.x * matrix.m[12] +
+            this.y * matrix.m[13] +
+            this.z * matrix.m[14] +
+            this.w * matrix.m[15];
 
         this.set(r);
         return this;
     }
 
-    // Returns this `Point`s magnitude squared. Excludes `@w`.
+    /**
+     * Returns this `Point`s magnitude squared. Excludes `@w`.
+     */
     public magnitudeSquared() {
         return this.dot(this);
     }
 
-    // Returns this `Point`s magnitude. Excludes `@w`.
+    /**
+     * Returns this `Point`s magnitude. Excludes `@w`.
+     */
     public magnitude() {
         return Math.sqrt(this.magnitudeSquared());
     }
 
-    // Computes the dot product with the supplied `Point`.
+    /**
+     * Computes the dot product with the supplied `Point`.
+     */
     public dot(q: Point) {
         return this.x * q.x + this.y * q.y + this.z * q.z;
     }
 
-    // Computes the cross product with the supplied `Point`.
+    /**
+     * Computes the cross product with the supplied `Point`.
+     */
     public cross(q: Point) {
         const r = POINT_POOL;
         r.x = this.y * q.z - this.z * q.y;
@@ -165,17 +200,23 @@ export class Point {
     }
 }
 
-// Convenience method for creating `Points`.
+/**
+ * Convenience method for creating `Points`.
+ */
 export const P = (x?: number, y?: number, z?: number, w?: number) => {
     return new Point(x, y, z, w);
 };
 
-// A pool object which prevents us from having to create new `Point` objects
-// for various calculations, which vastly improves performance.
+/**
+ * A pool object which prevents us from having to create new `Point` objects
+ * for various calculations, which vastly improves performance.
+ */
 const POINT_POOL = new Point();
 
-// A few useful `Point` objects. Be sure that you don't invoke destructive
-// methods on these objects.
+/**
+ * A few useful `Point` objects. Be sure that you don't invoke destructive
+ * methods on these objects.
+ */
 export const Points = {
     X() {
         return P(1, 0, 0);

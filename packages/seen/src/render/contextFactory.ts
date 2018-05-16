@@ -1,11 +1,13 @@
-import { Util } from "../util";
-import { Scene } from "../scene";
-import { RenderContext } from "./context";
-import { SvgRenderContext } from "./svg";
 import { CanvasRenderContext } from "./canvas";
+import { RenderContext } from "./context";
+import { Scene } from "../scene";
+import { SvgRenderContext } from "./svg";
+import { Util } from "../util";
 
-// Create a render context for the element with the specified `elementId`. elementId
-// should correspond to either an SVG or Canvas element.
+/**
+ * Create a render context for the element with the specified `elementId`.
+ * elementId should correspond to either an SVG or Canvas element.
+ */
 export const Context = (elementId: HTMLElement | string, scene: Scene) => {
     const tag = Util.element(elementId).tagName.toUpperCase();
 
