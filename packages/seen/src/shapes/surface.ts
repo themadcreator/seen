@@ -5,12 +5,7 @@ import { Point } from "../geometry";
 import { Transformable } from "../transformable";
 import { Util } from "../util";
 
-/**
- * A `Surface` is a defined as a planar object in 3D space. These paths don't
- * necessarily need to be convex, but they should be non-degenerate. This
- * library does not support shapes with holes.
- */
-export class Surface {
+export class GenericSurface<T> {
     /**
      * When 'false' this will override backface culling, which is useful if your
      * material is transparent. See comment in `seen.Scene`.
@@ -24,12 +19,9 @@ export class Surface {
     public fillMaterial = new Material(Colors.gray());
     public strokeMaterial = null;
     public dirty = false;
-
-    public text: string;
     public id: string;
 
-    public font: string;
-    public anchor: string;
+    public data?: T;
 
     constructor(public points: Point[], public painter: IPainter = Painters.path) {
         // We store a unique id for every surface so we can look them up quickly
@@ -46,4 +38,21 @@ export class Surface {
         this.strokeMaterial = Material.create(stroke);
         return this;
     }
+}
+
+export interface ITextSurfaceData {
+    text: string;
+    font?: string;
+    anchor?: string;
+}
+
+export class TextSurface extends GenericSurface<ITextSurfaceData> {
+}
+
+/**
+ * A `Surface` is a defined as a planar object in 3D space. These paths don't
+ * necessarily need to be convex, but they should be non-degenerate. This
+ * library does not support shapes with holes.
+ */
+export class Surface extends GenericSurface<{}> {
 }

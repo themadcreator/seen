@@ -1,5 +1,6 @@
+import { GenericSurface, Surface } from "./surface";
+
 import { IMaterializeable } from "../shade";
-import { Surface } from "./surface";
 import { Transformable } from "../transformable";
 
 /**
@@ -8,14 +9,14 @@ import { Transformable } from "../transformable";
  * patch is not.
  */
 export class Shape extends Transformable {
-    constructor(public type: string, public surfaces: Surface[]) {
+    constructor(public type: string, public surfaces: GenericSurface<any>[]) {
         super();
     }
 
     /**
      * Visit each surface
      */
-    public eachSurface(callback: (surface: Surface, i: number) => void) {
+    public eachSurface(callback: (surface: GenericSurface<any>, i: number) => void) {
         this.surfaces.forEach(callback);
         return this;
     }

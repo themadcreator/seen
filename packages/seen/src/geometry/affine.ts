@@ -17,7 +17,12 @@ export const Affine = {
      * affine transform for rendering.
      */
     ORTHONORMAL_BASIS() {
-        return [new Point(0, 0, 0), new Point(20, 0, 0), new Point(0, 20, 0)];
+        // prettier-ignore
+        return [
+            new Point(0, 0, 0),
+            new Point(20, 0, 0),
+            new Point(0, 20, 0),
+        ];
     },
 
     /**
@@ -36,7 +41,6 @@ export const Affine = {
         [ 0,  0, 0,  0, 20, 1],
         [ 0,  0, 0,  0,  0, 1]
     ],
-
 
     /**
      * Computes the parameters of an affine transform from the 3 projected

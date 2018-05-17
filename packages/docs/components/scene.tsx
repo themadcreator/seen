@@ -1,17 +1,29 @@
 import * as React from "react";
+
 import {
+    Body,
+    CanvasLayerRenderContext,
     Colors,
     Context,
     Drag,
+    GenericSurface,
     IDragEvent,
+    IGravitySimulationModel,
+    IRenderLayerContext,
+    ISphericalBody,
     Model,
     Models,
+    Points,
     Quaternion,
+    RenderModel,
     Scene,
     Shape,
     Shapes,
     Simplex3D,
-    Viewports
+    Simulation,
+    Surface,
+    Viewports,
+    generateRandomBodies
 } from "seen";
 
 export interface IBasicSceneDemoProps {
@@ -44,6 +56,7 @@ export class BasicSceneDemo extends React.PureComponent<IBasicSceneDemoProps> {
         const scene = new Scene({
             model: Models.default().add(model),
             viewport: Viewports.center(width, height),
+            cullBackfaces: false,
         });
 
         const context = Context(this.canvas, scene).render();
@@ -141,5 +154,121 @@ export const SceneDemoWavePatch = () => {
     );
 }
 
+// Define a customer painter to draw circle for gravitational bodies
+class BodyPainter {
+    public paint(renderModel: RenderModel, context: CanvasLayerRenderContext) {
+        // Apply surface's transformation to determine scale.
+        const unit       = Points.X().transform(renderModel.transform);
+        const scale      = Math.sqrt(unit.dot(unit));
 
+        const body       = renderModel.surface.data as ISphericalBody;
+        const radius     = scale * body.radius;
+        const massRadius = scale * Math.sqrt(body.mass) * 2;
+        const p          = renderModel.projected.points[0];
 
+        // Create radial gradient for painting the surface
+        const grd = context.ctx.createRadialGradient(p.x, p.y - (radius*0.5), 0, p.x, p.y - (radius*0.5), radius*2);
+        grd.addColorStop(0.2, Colors.white().hex());
+        grd.addColorStop(0.5, '#AEF');
+        grd.addColorStop(1.0, '#09C');
+
+        // Fill a circle from the body's radius and draw a circle representing its mass
+        const painter = context.circle();
+        painter.circle(p, radius).fill({
+            fill : grd
+        });
+        return painter.circle(p, massRadius).draw({
+            fill   : 'none',
+            stroke : '#09C',
+        });
+    }
+}
+
+// Since painters are stateless, we only need one instance
+const BODY_PAINTER = new BodyPainter();
+class Simulator {
+    private simulation: Simulation;
+
+    constructor(
+        model: IGravitySimulationModel,
+        private seenModel: Model) {
+        this.simulation = new Simulation(model);
+    }
+
+    public simulate = () => {
+
+        const collisions = this.simulation.simulate();
+        for (const collision of collisions) {
+            this.seenModel.remove(collision.a.shape);
+            this.seenModel.remove(collision.b.shape);
+        }
+
+        for (const object of this.simulation.model.objects) {
+            // Since we modify the internal points on the surface directly, we
+            // need to mark the surface as dirty so that it will be re-rendered
+            // properly.
+            if (object.shape != null) {
+              object.shape.eachSurface(s => s.dirty = true);
+            } else {
+                const shape = this.toShape(object as Body);
+                object.shape = shape;
+                this.seenModel.add(shape);
+            }
+        }
+    }
+
+    // Creates a 'body' Shape from a Gravity.Body object
+    private toShape(object: Body) {
+        const surface = new GenericSurface<ISphericalBody>([object.position], BODY_PAINTER);
+        surface.fill = null; // dont bother computing this shading
+        surface.data = object;
+        return new Shape('body', [surface]);
+    }
+}
+
+export const SceneDemoGravity = () => {
+    const bodyCount = 500;
+    const model = {
+      objects: generateRandomBodies(bodyCount),
+      scale: 1.0,
+      ticks: 0,
+      collisions: [],
+      barnesHutRatio: 0,
+    };
+    const seenModel = new Model();
+
+    // // Add mouse-rotate
+    // const dragger = new Drag('seen-canvas', {inertia : true});
+    // dragger.on('drag.rotate', function(e) {
+    //   const xform = Quaternion.xyToTransform(...Array.from(e.offsetRelative || []));
+    //   return seenModel.transform(xform);
+    // });
+
+    // // Add mousewheel-zoom
+    // const zoomer = new Zoom('seen-canvas', {smooth : false});
+    // zoomer.on('zoom.scale', function(e) {
+    //   const xform = M().scale(e.zoom);
+    //   return seenModel.transform(xform);
+    // });
+
+    // Create a context with a black fill layer and the scene layer
+    // TODO update react to allow this
+    // const context = Context('seen-canvas');
+    // context.layer(new FillLayer(width, height, '#000'));
+    // context.sceneLayer(scene);
+    // context.animate().start();
+
+    // Run simulator
+    const simulator = new Simulator(model, seenModel);
+    setInterval(simulator.simulate, 30);
+
+    return (
+        <BasicSceneDemo
+            width={400}
+            height={400}
+            model={seenModel}
+            dragRotate={true}
+            onAnimate={() => 0}
+        />
+    );
+}

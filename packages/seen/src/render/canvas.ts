@@ -110,7 +110,7 @@ export class CanvasTextPainter implements ITextPainter {
     }
 }
 
-class CanvasLayerRenderContext implements IRenderLayerContext {
+export class CanvasLayerRenderContext implements IRenderLayerContext {
     private pathPainter: CanvasPathPainter;
     private ciclePainter: CanvasCirclePainter;
     private textPainter: CanvasTextPainter;

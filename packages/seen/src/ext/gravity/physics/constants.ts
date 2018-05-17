@@ -1,0 +1,1 @@
+export const G = 6.674 // gravitation constant 6.674e-11 m^3⋅kg^−1⋅s^−2

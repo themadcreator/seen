@@ -180,6 +180,23 @@ export class Point {
     }
 
     /**
+     * Returns the squared distance between this point and the parameter p
+     */
+    public distanceSq(p: Point) {
+        const dx = p.x - this.x;
+        const dy = p.y - this.y;
+        const dz = p.z - this.z;
+        return (dx * dx) + (dy * dy) + (dz * dz);
+    }
+
+    /**
+     * Returns the distance between this point and the parameter p
+     */
+    public distance(p: Point) {
+        return Math.sqrt(this.distanceSq(p));
+    }
+
+    /**
      * Computes the dot product with the supplied `Point`.
      */
     public dot(q: Point) {

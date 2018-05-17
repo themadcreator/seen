@@ -13,3 +13,4 @@ export * from "./transformable";
 export * from "./util";
 
 export * from "./ext/simplex";
+export * from "./ext/gravity";

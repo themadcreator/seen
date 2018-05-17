@@ -7,7 +7,7 @@ export const Util = {
      * from `opts`. Second, overwrite undefined attributes of `obj` from
      * `defaults`.
      */
-    defaults<T>(obj: T, opts: Partial<T>, defaults: Partial<T>): void {
+    defaults<T>(obj: T, opts: Partial<T>, defaults: Partial<T>): T {
         for (var prop in opts) {
             if (!obj.hasOwnProperty(prop)) {
                 obj[prop] = opts[prop];
@@ -18,6 +18,7 @@ export const Util = {
                 obj[prop] = defaults[prop];
             }
         }
+        return obj;
     },
 
     /**

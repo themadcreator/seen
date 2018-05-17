@@ -1,8 +1,8 @@
 import { Bounds, Matrix, Point, Points } from "../geometry";
 import { Color, Light } from "../shade";
 
+import { GenericSurface } from "../shapes";
 import { IViewport } from "../camera";
-import { Surface } from "../shapes";
 
 const DEFAULT_NORMAL = Points.Z();
 
@@ -33,7 +33,7 @@ export class RenderModel {
     public fill: Color;
     public stroke: Color;
 
-    constructor(public surface: Surface, public transform: Matrix, public projection: Matrix, public viewport: Matrix) {
+    constructor(public surface: GenericSurface<any>, public transform: Matrix, public projection: Matrix, public viewport: Matrix) {
         this.points = this.surface.points;
         this.transformed = this._initRenderData();
         this.projected = this._initRenderData();

@@ -1,5 +1,6 @@
 import { Affine } from "../geometry/affine";
 import { IRenderLayerContext } from "./context";
+import { ITextSurfaceData } from "..";
 import { Point } from "../geometry/point";
 import { RenderModel } from "./model";
 
@@ -12,7 +13,7 @@ export interface IPainter {
 }
 
 export interface IFillStyle {
-    fill?: string;
+    fill?: string | CanvasGradient;
     "fill-opacity"?: number;
 }
 
@@ -72,13 +73,14 @@ export class PathPainter implements IPainter {
 
 export class TextPainter implements IPainter {
     paint(renderModel: RenderModel, context: IRenderLayerContext) {
+        const data = renderModel.surface.data as ITextSurfaceData;
         const style = {
             fill: renderModel.fill == null ? "none" : renderModel.fill.hex(),
-            font: renderModel.surface.font,
-            "text-anchor": renderModel.surface.anchor != null ? renderModel.surface.anchor : "middle",
+            font: data.font,
+            "text-anchor": data.anchor != null ? data.anchor : "middle",
         };
         const xform = Affine.solveForAffineTransform(renderModel.projected.points);
-        return context.text().fillText(xform, renderModel.surface.text, style);
+        return context.text().fillText(xform, data.text, style);
     }
 }
 
