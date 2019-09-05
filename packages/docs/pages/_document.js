@@ -7,6 +7,7 @@ export default class Document extends DefaultDocument {
             <html>
                 <Head>
                     <link rel="stylesheet" href="/_next/static/style.css" />
+                    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto" />
                 </Head>
                 <body>
                     <Main />

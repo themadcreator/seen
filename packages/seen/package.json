@@ -17,6 +17,7 @@
     "canvas"
   ],
   "scripts": {
+    "start": "yarn watch",
     "build": "tsc --project .",
     "watch": "tsc --project . --watch",
     "lint": "tslint 'src/**/*.ts*'",

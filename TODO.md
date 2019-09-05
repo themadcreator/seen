@@ -14,3 +14,8 @@
 # Shapes
 + Triangulated Torus
 
+
+
+- Incorporate library of shapes (incompat license)
+Finish obj and mocap updates
+Document interfaces and API

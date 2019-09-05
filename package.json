@@ -13,6 +13,7 @@
     "packages/docs"
   ],
   "scripts": {
+    "start": "lerna run start"
   },
   "devDependencies": {
     "circle-github-bot": "^0.4.0",

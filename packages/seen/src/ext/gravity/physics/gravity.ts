@@ -144,6 +144,22 @@ export class Simulation {
         return this.accumulator(this.model);
     }
 
+    /**
+     *
+     *
+     * Collide: A + B
+     * Index:
+     *          A: X
+     *          B: X
+     *
+     * Collide: B + C
+     * Index:
+     *          A: X
+     *          B: X
+     *          C: Y
+     *          X: Y
+     *
+     */
     private resolveCollisions(collisions: ICollision[]): ISphericalBody[] {
         const newObjects: Record<string, ISphericalBody> = {};
         const overwrittenIndex: Record<string, number> = {};
@@ -154,7 +170,8 @@ export class Simulation {
             while(overwrittenIndex[id] != null) {
                 id = overwrittenIndex[id];
             }
-            // get objects from original collision or new object if already collided
+            // get objects from original collision or new object if already
+            // collided
             return newObjects[id] || obj;
         }
 
